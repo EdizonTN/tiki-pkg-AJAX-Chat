@@ -2152,7 +2152,7 @@ var ajaxChat = {
 					this.dom['inputField'].focus();
 					break;
 				}
-				language = language.replace(/^\\s+|\\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
+				language = language.replace(/^\s+|\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
 				this.insert('[code' + (language && language !== 'auto' ? '=' + language : '') + ']', '[/code]');
 				break;
 			default:
@@ -2817,7 +2817,7 @@ var ajaxChat = {
 
 	replaceBBCodeCode: function(content, language) {
 		var languageClass = '';
-		language = (language || '').replace(/^\\s+|\\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
+		language = (language || '').replace(/^\s+|\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
 		if(language === 'auto') {
 			language = '';
 		} else if(language && typeof hljs !== 'undefined' && !hljs.getLanguage(language)) {
