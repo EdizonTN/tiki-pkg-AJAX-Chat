@@ -82,7 +82,6 @@ class AJAXChat {
 		$this->_requestVars['getInfos']		= isset($_REQUEST['getInfos'])		? $_REQUEST['getInfos']			: null;
 		$this->_requestVars['lang']			= isset($_REQUEST['lang'])			? $_REQUEST['lang']				: null;
 		$this->_requestVars['delete']		= isset($_REQUEST['delete'])		? (int)$_REQUEST['delete']		: null;
-		$this->_requestVars['token']		= isset($_REQUEST['token'])			? $_REQUEST['token']			: null;
 		
 		// Initialize custom request variables:
 		$this->initCustomRequestVars();
