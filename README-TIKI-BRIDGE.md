@@ -23,8 +23,8 @@ user identities and roles; the chat has no independent passwords or demo account
 2. Copy `chat/lib/config.php.example` to `chat/lib/config.php`.
 3. Configure the MySQLi connection and database name.
 4. Set `mzChatSharedSecret` to a random secret of at least 32 characters
-   (64 hexadecimal characters recommended). Use the same value only in this chat config;
-   do not publish it or place it in JavaScript.
+   (64 hexadecimal characters recommended). Generate one with `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`.
+   Use the same value only in this chat config; do not publish it or place it in JavaScript.
 5. Check `tikiRootPath`. By default it resolves two directory levels above
    `chat/lib/config.php`, which is correct when `chat/` is directly inside the Tiki root.
 6. Add the exact Tiki group names that should be chat moderators to
