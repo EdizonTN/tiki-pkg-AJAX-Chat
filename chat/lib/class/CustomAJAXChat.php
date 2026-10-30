@@ -98,6 +98,64 @@ class CustomAJAXChat extends AJAXChat {
 		return $onlineUsersData;
 	}
 
+	function isStealthAdminInPrivateRoom($channelID) {
+		if (empty($this->_mzBridgeConfig['adminStealthInPrivateRooms'])
+			|| $this->getUserRole() != AJAX_CHAT_ADMIN) {
+			return false;
+		}
+		$room = $this->getPrivateRoomByChannelID($channelID, false);
+		if (!$room || (int)$room['ownerID'] === (int)$this->getUserID()) {
+			return false;
+		}
+		return !$this->isRoomMember($room['id'], $this->getUserID());
+	}
+
+	function switchChannel($channelName) {
+		$channelID = $this->getChannelIDFromChannelName($channelName);
+		if ($channelID !== null && $this->getChannel() == $channelID) {
+			return;
+		}
+		if (!$this->validateChannel($channelID)) {
+			$this->insertChatBotMessage(
+				$this->getPrivateMessageID(),
+				'/error InvalidChannelName '.$channelName
+			);
+			return;
+		}
+
+		$oldChannel = $this->getChannel();
+		$hideOldPresence = $this->isStealthAdminInPrivateRoom($oldChannel);
+		$hideNewPresence = $this->isStealthAdminInPrivateRoom($channelID);
+		$this->setChannel($channelID);
+		$this->updateOnlineList();
+
+		if (!$hideOldPresence) {
+			$this->insertChatBotMessage($oldChannel, '/channelLeave '.$this->getUserName(), null, 1);
+		}
+		if (!$hideNewPresence) {
+			$this->insertChatBotMessage($this->getChannel(), '/channelEnter '.$this->getUserName(), null, 1);
+		}
+		$this->addInfoMessage($channelName, 'channelSwitch');
+		$this->addInfoMessage($channelID, 'channelID');
+		$this->_requestVars['lastID'] = 0;
+	}
+
+	function chatViewLogout($type) {
+		$hidePresence = $this->isStealthAdminInPrivateRoom($this->getChannel());
+		$this->removeFromOnlineList();
+		if (!$hidePresence) {
+			if($type !== null) {
+				$type = ' '.$type;
+			}
+			$this->insertChatBotMessage(
+				$this->getChannel(),
+				'/logout '.$this->getUserName().$type,
+				null,
+				1
+			);
+		}
+	}
+
 	function getValidLoginUserData() {
 		$claims = $this->verifyTikiAuthToken($this->getRequestVar('authToken'));
 		if(!$claims) {
