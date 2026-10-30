@@ -30,16 +30,16 @@ $config['dbConnection']['pass'] = '';
 // Database name:
 $config['dbConnection']['name'] = 'chat';
 // Database type:
-$config['dbConnection']['type'] = null;
+$config['dbConnection']['type'] = 'mysqli';
 // Database link:
 $config['dbConnection']['link'] = null;
 
 // Database table names:
 $config['dbTableNames'] = array();
-$config['dbTableNames']['online']		= 'ajax_chat_online';
-$config['dbTableNames']['messages']		= 'ajax_chat_messages';
-$config['dbTableNames']['bans']			= 'ajax_chat_bans';
-$config['dbTableNames']['invitations']	= 'ajax_chat_invitations';
+$config['dbTableNames']['online']		= 'mz_chat_online';
+$config['dbTableNames']['messages']		= 'mz_chat_messages';
+$config['dbTableNames']['bans']			= 'mz_chat_bans';
+$config['dbTableNames']['invitations']	= 'mz_chat_invitations';
 
 // Available languages:
 $config['langAvailable'] = array(
