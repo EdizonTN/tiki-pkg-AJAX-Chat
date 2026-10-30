@@ -13,6 +13,91 @@
 
 class CustomAJAXChat extends AJAXChat {
 
+	protected $_mzBridgeConfig = array(
+		'moderatorGroups' => array(),
+		'adminStealthInPrivateRooms' => false
+	);
+
+	function initCustomConfig() {
+		$paths = isset($this->_config['paths']) && is_array($this->_config['paths']) ? $this->_config['paths'] : array();
+		$configPath = isset($paths['bridgeConfigPath']) ? $paths['bridgeConfigPath'] : '';
+		if (!is_string($configPath) || $configPath === '' || !is_file($configPath) || !is_readable($configPath)) {
+			return;
+		}
+		try {
+			$bridgeConfig = require($configPath);
+			if (is_array($bridgeConfig)) {
+				$this->_mzBridgeConfig = array_merge($this->_mzBridgeConfig, $bridgeConfig);
+			}
+		} catch (Throwable $e) {
+			error_log('Mikrozone chat bridge config: '.$e->getMessage());
+		}
+		$this->_mzBridgeConfig['adminStealthInPrivateRooms'] =
+			isset($this->_mzBridgeConfig['adminStealthInPrivateRooms'])
+			&& $this->_mzBridgeConfig['adminStealthInPrivateRooms'] === true;
+	}
+
+	function databaseError($context, $result) {
+		$details = is_object($result) && method_exists($result, 'getError') ? $result->getError() : 'Unknown database error';
+		error_log('Mikrozone chat database error in '.$context.': '.$details);
+		http_response_code(500);
+		exit('Chat database error.');
+	}
+
+	function getOnlineUsersData($channelIDs = null, $key = null, $value = null) {
+		$onlineUsersData = parent::getOnlineUsersData(null, null, null);
+		if (!empty($this->_mzBridgeConfig['adminStealthInPrivateRooms']) && $onlineUsersData) {
+			$roomDiff = (int)$this->getConfig('roomChannelDiff');
+			$sql = 'SELECT o.userID, o.channel
+				FROM '.$this->getDataBaseTable('online').' o
+				INNER JOIN '.$this->getDataBaseTable('rooms').' r
+					ON o.channel = '.$roomDiff.' + r.id
+				LEFT JOIN '.$this->getDataBaseTable('roomMembers').' m
+					ON m.roomID = r.id AND m.userID = o.userID
+				WHERE o.userRole = '.$this->db->makeSafe(AJAX_CHAT_ADMIN).'
+					AND r.ownerID <> o.userID
+					AND m.userID IS NULL';
+			$result = $this->db->sqlQuery($sql);
+			if ($result->error()) {
+				$this->databaseError(__METHOD__, $result);
+			}
+			$hidden = array();
+			while ($row = $result->fetch()) {
+				$hidden[(int)$row['channel'].':'.(int)$row['userID']] = true;
+			}
+			$result->free();
+			$onlineUsersData = array_values(array_filter($onlineUsersData, function($userData) use ($hidden) {
+				$key = (int)$userData['channel'].':'.(int)$userData['userID'];
+				return !isset($hidden[$key]);
+			}));
+		}
+
+		if ($channelIDs || $key) {
+			$filtered = array();
+			foreach ($onlineUsersData as $userData) {
+				if ($channelIDs && !in_array($userData['channel'], $channelIDs)) {
+					continue;
+				}
+				if ($key) {
+					if (!isset($userData[$key])) {
+						return $filtered;
+					}
+					if ($value !== null) {
+						if ($userData[$key] == $value) {
+							$filtered[] = $userData;
+						}
+					} else {
+						$filtered[] = $userData[$key];
+					}
+				} else {
+					$filtered[] = $userData;
+				}
+			}
+			return $filtered;
+		}
+		return $onlineUsersData;
+	}
+
 	function getValidLoginUserData() {
 		$claims = $this->verifyTikiAuthToken($this->getRequestVar('authToken'));
 		if(!$claims) {
@@ -41,12 +126,11 @@ class CustomAJAXChat extends AJAXChat {
 			$this->storeTikiAuthClaims($claims, $token);
 			if($oldName !== $newName) {
 				$sql = 'UPDATE '.$this->getDataBaseTable('roomMembers').'
-					SET userName = "'.$this->db->makeSafe($newName).'"
+					SET userName = '.$this->db->makeSafe($newName)
 					WHERE userID = '.$this->db->makeSafe($this->getUserID());
 				$result = $this->db->sqlQuery($sql);
 				if($result->error()) {
-					echo $result->getError();
-					die();
+					$this->databaseError(__METHOD__, $result);
 				}
 			}
 			if($oldName !== $newName || $oldRole !== $claims['role']) {
@@ -129,16 +213,19 @@ class CustomAJAXChat extends AJAXChat {
 	function getInvitations() {
 		if($this->_invitations === null) {
 			$this->_invitations = parent::getInvitations();
-			$sql = 'SELECT r.id
-				FROM '.$this->getDataBaseTable('rooms').' r
-				LEFT JOIN '.$this->getDataBaseTable('roomMembers').' m
-					ON m.roomID = r.id AND m.userID = '.$this->db->makeSafe($this->getUserID()).'
-				WHERE r.ownerID = '.$this->db->makeSafe($this->getUserID()).'
-					OR m.userID IS NOT NULL';
+			if ($this->getUserRole() == AJAX_CHAT_ADMIN) {
+				$sql = 'SELECT id FROM '.$this->getDataBaseTable('rooms');
+			} else {
+				$sql = 'SELECT r.id
+					FROM '.$this->getDataBaseTable('rooms').' r
+					LEFT JOIN '.$this->getDataBaseTable('roomMembers').' m
+						ON m.roomID = r.id AND m.userID = '.$this->db->makeSafe($this->getUserID()).'
+					WHERE r.ownerID = '.$this->db->makeSafe($this->getUserID()).'
+						OR m.userID IS NOT NULL';
+			}
 			$result = $this->db->sqlQuery($sql);
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 			while($row = $result->fetch()) {
 				$channelID = (int)$this->getConfig('roomChannelDiff') + (int)$row['id'];
@@ -162,15 +249,16 @@ class CustomAJAXChat extends AJAXChat {
 			LIMIT 1';
 		$result = $this->db->sqlQuery($sql);
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		$room = $result->fetch();
 		$result->free();
 		if(!$room) {
 			return null;
 		}
-		if($requireAccess && (int)$room['ownerID'] !== (int)$this->getUserID()) {
+		if($requireAccess
+			&& (int)$room['ownerID'] !== (int)$this->getUserID()
+			&& $this->getUserRole() != AJAX_CHAT_ADMIN) {
 			$sql = 'SELECT userID
 				FROM '.$this->getDataBaseTable('roomMembers').'
 				WHERE roomID = '.$this->db->makeSafe($roomID).'
@@ -178,8 +266,7 @@ class CustomAJAXChat extends AJAXChat {
 				LIMIT 1';
 			$result = $this->db->sqlQuery($sql);
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 			$member = $result->fetch();
 			$result->free();
@@ -206,12 +293,11 @@ class CustomAJAXChat extends AJAXChat {
 		}
 		$sql = 'SELECT id
 			FROM '.$this->getDataBaseTable('rooms').'
-			WHERE name = "'.$this->db->makeSafe($name).'"
+			WHERE name = '.$this->db->makeSafe($name)
 			LIMIT 1';
 		$result = $this->db->sqlQuery($sql);
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		$row = $result->fetch();
 		$result->free();
@@ -319,8 +405,7 @@ class CustomAJAXChat extends AJAXChat {
 					WHERE ownerID = '.$this->db->makeSafe($this->getUserID());
 				$result = $this->db->sqlQuery($sql);
 				if($result->error()) {
-					echo $result->getError();
-					die();
+					$this->databaseError(__METHOD__, $result);
 				}
 				$countRow = $result->fetch();
 				$result->free();
@@ -332,7 +417,7 @@ class CustomAJAXChat extends AJAXChat {
 					(ownerID, name, dateTime)
 					VALUES (
 						'.$this->db->makeSafe($this->getUserID()).',
-						"'.$this->db->makeSafe($name).'",
+						'.$this->db->makeSafe($name).',
 						NOW()
 					)';
 				$result = $this->db->sqlQuery($sql);
@@ -360,8 +445,7 @@ class CustomAJAXChat extends AJAXChat {
 						LIMIT 50';
 					$result = $this->db->sqlQuery($sql);
 					if($result->error()) {
-						echo $result->getError();
-						die();
+						$this->databaseError(__METHOD__, $result);
 					}
 					$rooms = array();
 					while($row = $result->fetch()) {
@@ -403,22 +487,35 @@ class CustomAJAXChat extends AJAXChat {
 					return;
 				}
 				$channelID = (int)$this->getConfig('roomChannelDiff') + (int)$room['id'];
+				$defaultChannelID = (int)$this->getConfig('defaultChannelID');
+				$connection = $this->db->getConnectionID();
+				if (!$connection->begin_transaction()) {
+					$this->databaseError(__METHOD__, $this->db);
+				}
+				try {
+					$queries = array(
+						'UPDATE '.$this->getDataBaseTable('online').' SET channel = '.$this->db->makeSafe($defaultChannelID).' WHERE channel = '.$this->db->makeSafe($channelID),
+						'DELETE FROM '.$this->getDataBaseTable('messages').' WHERE channel = '.$this->db->makeSafe($channelID),
+						'DELETE FROM '.$this->getDataBaseTable('roomMembers').' WHERE roomID = '.$this->db->makeSafe($room['id']),
+						'DELETE FROM '.$this->getDataBaseTable('rooms').' WHERE id = '.$this->db->makeSafe($room['id'])
+					);
+					foreach($queries as $query) {
+						$result = $this->db->sqlQuery($query);
+						if($result->error()) {
+							throw new RuntimeException($result->getError());
+						}
+					}
+					if (!$connection->commit()) {
+						throw new RuntimeException($connection->error);
+					}
+				} catch (Throwable $e) {
+					$connection->rollback();
+					error_log('Mikrozone chat room deletion failed: '.$e->getMessage());
+					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Nepodarilo sa odstrániť miestnosť.');
+					return;
+				}
 				if((int)$this->getChannel() === $channelID) {
 					$this->switchChannel($this->getConfig('defaultChannelName'));
-				}
-				$defaultChannelID = (int)$this->getConfig('defaultChannelID');
-				$queries = array(
-					'UPDATE '.$this->getDataBaseTable('online').' SET channel = '.$this->db->makeSafe($defaultChannelID).' WHERE channel = '.$this->db->makeSafe($channelID),
-					'DELETE FROM '.$this->getDataBaseTable('messages').' WHERE channel = '.$this->db->makeSafe($channelID),
-					'DELETE FROM '.$this->getDataBaseTable('roomMembers').' WHERE roomID = '.$this->db->makeSafe($room['id']),
-					'DELETE FROM '.$this->getDataBaseTable('rooms').' WHERE id = '.$this->db->makeSafe($room['id'])
-				);
-				foreach($queries as $query) {
-					$result = $this->db->sqlQuery($query);
-					if($result->error()) {
-						echo $result->getError();
-						die();
-					}
 				}
 				$this->removeRoomFromInvitationCache($channelID);
 				$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomDeleted'), $this->getPrivateRoomChannelName($room['name'])));
@@ -494,12 +591,11 @@ class CustomAJAXChat extends AJAXChat {
 		if($toUserID === null) {
 			$sql = 'SELECT userID FROM '.$this->getDataBaseTable('roomMembers').'
 				WHERE roomID = '.$this->db->makeSafe($room['id']).'
-					AND userName = "'.$this->db->makeSafe($targetName).'"
+					AND userName = '.$this->db->makeSafe($targetName)
 				LIMIT 1';
 			$result = $this->db->sqlQuery($sql);
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 			$row = $result->fetch();
 			$result->free();
@@ -522,8 +618,7 @@ class CustomAJAXChat extends AJAXChat {
 			LIMIT 1';
 		$result = $this->db->sqlQuery($sql);
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		$member = $result->fetch();
 		$result->free();
@@ -536,14 +631,13 @@ class CustomAJAXChat extends AJAXChat {
 			VALUES (
 				'.$this->db->makeSafe($roomID).',
 				'.$this->db->makeSafe($userID).',
-				"'.$this->db->makeSafe($userName).'",
+				'.$this->db->makeSafe($userName).',
 				NOW()
 			)
 			ON DUPLICATE KEY UPDATE userName = VALUES(userName), dateTime = NOW()';
 		$result = $this->db->sqlQuery($sql);
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 
@@ -553,8 +647,7 @@ class CustomAJAXChat extends AJAXChat {
 				AND userID = '.$this->db->makeSafe($userID);
 		$result = $this->db->sqlQuery($sql);
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 
