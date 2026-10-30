@@ -2147,7 +2147,7 @@ var ajaxChat = {
 					this.dom['inputField'].focus();
 				break;
 			case 'code':
-				var language = prompt(this.lang['codeLanguageDialog'] || 'Code language (php, javascript, python, c, cpp, sql; use auto for automatic detection):', 'auto');
+				var language = prompt(this.lang['codeLanguageDialog'] || 'Code language (php, javascript, python, c, cpp, sql, json, html, css, xml, yaml, bash; use auto for automatic detection):', 'auto');
 				if(language === null) {
 					this.dom['inputField'].focus();
 					break;
