@@ -63,7 +63,7 @@ Then create a custom module in **Admin → Modules → Custom Modules**:
 
 Assign the module in **Admin → Modules → Assigned Modules**:
 
-- Zone: `Bottom` (site footer) or `Page Bottom` (bottom of the main content column).
+- Zone: `Bottom` (site footer) or `Page Bottom` (bottom of the main content column). Enable the chosen horizontal zone in **Look & Feel → Layout Options** if it is not available.
 - Parameters: `nobox=y`
 - Cache time: `0`
 - Leave the page filter empty to show it throughout the site.
