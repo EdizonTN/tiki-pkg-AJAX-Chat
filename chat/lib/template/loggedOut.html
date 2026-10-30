@@ -27,8 +27,12 @@
 					if(request.readyState !== 4) {
 						return;
 					}
-					if(request.status !== 200) {
+					if(request.status === 401) {
 						statusNode.textContent = 'Najprv sa prihláste do Mikrozone a potom obnovte túto stránku.';
+						return;
+					}
+					if(request.status !== 200) {
+						statusNode.textContent = 'Chat sa nepodarilo pripojiť k TikiWiki. Skontrolujte konfiguráciu a kontaktujte správcu.';
 						return;
 					}
 					try {
