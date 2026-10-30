@@ -17,11 +17,14 @@ function mz_chat_auth_error($status, $code) {
 	exit;
 }
 
-$configFile = __DIR__.'/lib/config.php';
+$configFile = __DIR__.'/lib/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
 	mz_chat_auth_error(500, 'chat_config_missing');
 }
-require($configFile);
+$config = require($configFile);
+if (!is_array($config)) {
+	mz_chat_auth_error(500, 'chat_config_invalid');
+}
 require_once(__DIR__.'/lib/class/MZChatAuth.php');
 
 $secret = isset($config['mzChatSharedSecret']) ? $config['mzChatSharedSecret'] : '';
@@ -29,29 +32,30 @@ if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH
 	mz_chat_auth_error(500, 'chat_auth_not_configured');
 }
 
-$tikiRoot = isset($config['tikiRootPath']) ? $config['tikiRootPath'] : dirname(__DIR__).DIRECTORY_SEPARATOR;
-$tikiSetup = rtrim($tikiRoot, '/\\').DIRECTORY_SEPARATOR.'tiki-setup.php';
+$paths = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : array();
+$tikiRoot = isset($paths['tikiRootPath']) ? $paths['tikiRootPath'] : '';
+$tikiUrlPath = isset($paths['tikiUrlPath']) ? $paths['tikiUrlPath'] : '';
+if (!is_string($tikiRoot) || $tikiRoot === '' || !is_string($tikiUrlPath) || $tikiUrlPath === '') {
+	mz_chat_auth_error(500, 'chat_paths_not_configured');
+}
+$tikiRoot = rtrim($tikiRoot, '/\\').DIRECTORY_SEPARATOR;
+$tikiSetup = $tikiRoot.'tiki-setup.php';
 if (!is_file($tikiSetup)) {
 	mz_chat_auth_error(500, 'tiki_setup_not_found');
 }
 
-// Tiki is installed one directory above _CHAT/. Set the working directory and
-// virtual script path to the Tiki root so its relative includes and session
-// cookie path are calculated as they are for a normal Tiki request.
-$tikiRootReal = realpath($tikiRoot);
-if($tikiRootReal === false || !is_dir($tikiRootReal) || !chdir($tikiRootReal)) {
+// Use the paths saved by the installer. No directory or URL autodetection at runtime.
+if (!chdir($tikiRoot)) {
 	mz_chat_auth_error(500, 'tiki_root_unavailable');
 }
-$scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', $_SERVER['SCRIPT_NAME']) : '/_CHAT/tiki-auth.php';
-$tikiWebPath = rtrim(dirname(dirname($scriptName)), '/');
-if($tikiWebPath === '.') {
-	$tikiWebPath = '';
+$tikiIndexPath = rtrim($tikiUrlPath, '/').'/index.php';
+if ($tikiIndexPath === 'index.php') {
+	$tikiIndexPath = '/index.php';
 }
-$tikiIndexPath = $tikiWebPath.'/index.php';
 $_SERVER['SCRIPT_NAME'] = $tikiIndexPath;
 $_SERVER['PHP_SELF'] = $tikiIndexPath;
 $_SERVER['REQUEST_URI'] = $tikiIndexPath;
-$_SERVER['SCRIPT_FILENAME'] = $tikiRootReal.DIRECTORY_SEPARATOR.'index.php';
+$_SERVER['SCRIPT_FILENAME'] = $tikiRoot.'index.php';
 
 require_once($tikiSetup);
 
@@ -70,8 +74,16 @@ if (!is_array($userInfo) || $userId < 1 || !empty($userInfo['userBanned']) || !e
 
 $groups = $tikiLib->get_user_groups($user);
 $isAdmin = in_array('Admins', $groups, true) || (isset($tiki_p_admin) && $tiki_p_admin === 'y');
-$moderatorGroups = isset($config['tikiChatModeratorGroups']) && is_array($config['tikiChatModeratorGroups'])
-	? $config['tikiChatModeratorGroups']
+$bridgeConfigPath = isset($paths['bridgeConfigPath']) ? $paths['bridgeConfigPath'] : '';
+if (!is_string($bridgeConfigPath) || $bridgeConfigPath === '' || !is_file($bridgeConfigPath) || !is_readable($bridgeConfigPath)) {
+	mz_chat_auth_error(500, 'bridge_config_missing');
+}
+$bridgeConfig = require($bridgeConfigPath);
+if (!is_array($bridgeConfig)) {
+	mz_chat_auth_error(500, 'bridge_config_invalid');
+}
+$moderatorGroups = isset($bridgeConfig['moderatorGroups']) && is_array($bridgeConfig['moderatorGroups'])
+	? $bridgeConfig['moderatorGroups']
 	: array();
 $isModerator = count(array_intersect($moderatorGroups, $groups)) > 0;
 
