@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_online (
 	ip VARBINARY(16) NOT NULL,
 	PRIMARY KEY (userID),
 	INDEX (userName)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE IF NOT EXISTS mz_chat_messages (
 	id INT(11) NOT NULL AUTO_INCREMENT,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_messages (
 	PRIMARY KEY (id),
 	INDEX message_condition (id, channel, dateTime),
 	INDEX (dateTime)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE IF NOT EXISTS mz_chat_bans (
 	userID INT(10) UNSIGNED NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_bans (
 	PRIMARY KEY (userID),
 	INDEX (userName),
 	INDEX (dateTime)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE IF NOT EXISTS mz_chat_invitations (
 	userID INT(10) UNSIGNED NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_invitations (
 	dateTime DATETIME NOT NULL,
 	PRIMARY KEY (userID, channel),
 	INDEX (dateTime)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE IF NOT EXISTS mz_chat_rooms (
 	id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_rooms (
 	UNIQUE KEY room_name (name),
 	INDEX (ownerID),
 	INDEX (dateTime)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE IF NOT EXISTS mz_chat_room_members (
 	roomID INT(10) UNSIGNED NOT NULL,
@@ -61,4 +61,4 @@ CREATE TABLE IF NOT EXISTS mz_chat_room_members (
 	INDEX (userID),
 	INDEX (userName),
 	INDEX (dateTime)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
