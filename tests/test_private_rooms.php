@@ -57,7 +57,7 @@ class AJAXChat {
 			'privateChannelPrefix'=>'[',
 			'privateChannelSuffix'=>']',
 			'defaultChannelName'=>'Public',
-			'defaultChannelID'=>1,
+			'defaultChannelID'=>0,
 			'limitChannelList'=>null
 		);
 	}
