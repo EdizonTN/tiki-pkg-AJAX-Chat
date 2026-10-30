@@ -259,6 +259,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						throw new RuntimeException('Tabuľka '.$tableName.' nemá požadovaný stĺpec '.$column.'.');
 					}
 				}
+				$status = $this->db->sqlQuery("SHOW TABLE STATUS WHERE Name = '".$tableName."'");
+				if ($status->error()) {
+					throw new RuntimeException('Nepodarilo sa overiť storage engine tabuľky '.$tableName.'.');
+				}
+				$tableStatus = $status->fetch();
+				$status->free();
+				if (!$tableStatus || !isset($tableStatus['Engine']) || strtolower($tableStatus['Engine']) !== 'innodb') {
+					throw new RuntimeException('Tabuľka '.$tableName.' musí používať InnoDB kvôli transakčnému mazaniu miestností.');
+				}
 			}
 		}
 
