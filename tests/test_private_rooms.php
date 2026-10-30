@@ -16,15 +16,18 @@ class TestRoomDatabase {
 	public $userID;
 	private $members;
 	function __construct($userID, $members) { $this->userID = $userID; $this->members = $members; }
-	function makeSafe($value) { return (string)$value; }
+	function makeSafe($value) { return "'".addslashes((string)$value)."'"; }
 	function sqlQuery($sql) {
+		if(strpos($sql, 'SELECT id FROM mz_chat_rooms') === 0) {
+			return new TestResult(array(array('id'=>1)));
+		}
 		if(strpos($sql, 'SELECT r.id') !== false) {
 			return new TestResult(($this->userID === 42 || in_array($this->userID, $this->members, true)) ? array(array('id'=>1)) : array());
 		}
 		if(strpos($sql, 'SELECT id, ownerID, name') !== false) {
 			return new TestResult(array(array('id'=>1, 'ownerID'=>42, 'name'=>'Workshop')));
 		}
-		if(strpos($sql, 'SELECT id') !== false && strpos($sql, 'WHERE name = "Workshop"') !== false) {
+		if(strpos($sql, 'SELECT id') !== false && strpos($sql, "WHERE name = 'Workshop'") !== false) {
 			return new TestResult(array(array('id'=>1)));
 		}
 		if(strpos($sql, 'SELECT userID') !== false && strpos($sql, 'roomID = 1') !== false) {
@@ -44,8 +47,9 @@ class AJAXChat {
 	protected $userID;
 	protected $userRole = AJAX_CHAT_USER;
 	protected $userName = 'test-user';
-	function __construct($userID, $members) {
+	function __construct($userID, $members, $userRole = AJAX_CHAT_USER) {
 		$this->userID = $userID;
+		$this->userRole = $userRole;
 		$this->db = new TestRoomDatabase($userID, $members);
 		$this->config = array(
 			'dbTableNames'=>array('rooms'=>'mz_chat_rooms','roomMembers'=>'mz_chat_room_members'),
@@ -108,5 +112,10 @@ $outsider = new CustomAJAXChat(99, array(77));
 check_room($outsider->getChannelIDFromChannelName('~Workshop~') === null, 'non-member cannot resolve the private room');
 check_room($outsider->getChannelNameFromChannelID($roomChannelID) === null, 'non-member cannot read the private room name');
 check_room(!in_array($roomChannelID, $outsider->getInvitations(), true), 'non-member does not see the private room in their channel list');
+
+$admin = new CustomAJAXChat(100, array(77), AJAX_CHAT_ADMIN);
+check_room($admin->getChannelIDFromChannelName('~Workshop~') === $roomChannelID, 'administrator can resolve a private room without an invitation');
+check_room($admin->getChannelNameFromChannelID($roomChannelID) === '~Workshop~', 'administrator can read a private room name without membership');
+check_room(in_array($roomChannelID, $admin->getInvitations(), true), 'administrator sees all private rooms in the channel list');
 
 echo "Private-room access checks passed.\n";
