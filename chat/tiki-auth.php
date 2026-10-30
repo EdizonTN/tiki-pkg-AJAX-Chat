@@ -62,11 +62,11 @@ if (empty($user) || $user === 'Anonymous') {
 $userLib = TikiLib::lib('user');
 $tikiLib = TikiLib::lib('tiki');
 $userInfo = $userLib->get_user_info($user);
-if (!is_array($userInfo) || empty($userInfo['userId']) || !empty($userInfo['userBanned']) || !empty($userInfo['waiting'])) {
+$userId = (int)$tikiLib->get_user_id($user);
+if (!is_array($userInfo) || $userId < 1 || !empty($userInfo['userBanned']) || !empty($userInfo['waiting'])) {
 	mz_chat_auth_error(401, 'tiki_user_unavailable');
 }
 
-$userId = (int)$userInfo['userId'];
 $groups = $tikiLib->get_user_groups($user);
 $isAdmin = in_array('Admins', $groups, true) || (isset($tiki_p_admin) && $tiki_p_admin === 'y');
 $moderatorGroups = isset($config['tikiChatModeratorGroups']) && is_array($config['tikiChatModeratorGroups'])
