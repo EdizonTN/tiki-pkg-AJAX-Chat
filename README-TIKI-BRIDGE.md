@@ -88,7 +88,7 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
 ## Current limitations to resolve before production
 
 - Multiple named private rooms are now supported. The schema installer now creates two additional tables (`mz_chat_rooms` and `mz_chat_room_members`) without dropping existing data. Create a room with `/room create nazov`,
-  list accessible rooms with `/room list`, leave a member room with `/room leave`, and
+  list accessible rooms with `/room list` (admins can use `/room list all`), leave a member room with `/room leave`, and
   delete an owned room with `/room delete nazov`. The owner invites online users with
   `/invite login` and removes them with `/uninvite login`. Membership is persistent.
   Room names appear as `~nazov~`; each user may own up to 10 rooms by default.
