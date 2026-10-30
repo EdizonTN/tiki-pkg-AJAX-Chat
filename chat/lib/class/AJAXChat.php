@@ -49,12 +49,17 @@ class AJAXChat {
 	}
 
 	function initConfig() {
-		$config = null;
-		if (!include(AJAX_CHAT_PATH.'lib/config.php')) {
-			echo('<strong>Error:</strong> Could not find a config.php file in "'.AJAX_CHAT_PATH.'lib/". Check to make sure the file exists.');
+		$configFile = AJAX_CHAT_PATH.'lib/Chat-config.php';
+		if (!is_file($configFile) || !is_readable($configFile)) {
+			echo('<strong>Error:</strong> Could not find a readable Chat-config.php file in "'.AJAX_CHAT_PATH.'lib/".');
 			die();
 		}
-		$this->_config = &$config;
+		$config = require($configFile);
+		if (!is_array($config)) {
+			echo('<strong>Error:</strong> Chat-config.php must return a configuration array.');
+			die();
+		}
+		$this->_config = $config;
 
 		// Initialize custom configuration settings:
 		$this->initCustomConfig();
