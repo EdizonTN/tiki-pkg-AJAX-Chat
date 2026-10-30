@@ -101,6 +101,8 @@ $member = new CustomAJAXChat(77, array(77));
 check_room($member->getChannelIDFromChannelName('~Workshop~') === $roomChannelID, 'invited member can resolve the room channel');
 check_room($member->getChannelNameFromChannelID($roomChannelID) === '~Workshop~', 'invited member can read the room name');
 check_room(in_array($roomChannelID, $member->getInvitations(), true), 'invited member sees the room in the accessible channel list');
+$memberChannels = $member->getChannels();
+check_room(isset($memberChannels['~Workshop~']) && $memberChannels['~Workshop~'] === $roomChannelID, 'invited member sees the room in the channel selector');
 
 $outsider = new CustomAJAXChat(99, array(77));
 check_room($outsider->getChannelIDFromChannelName('~Workshop~') === null, 'non-member cannot resolve the private room');
