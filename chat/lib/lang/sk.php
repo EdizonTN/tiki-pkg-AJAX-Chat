@@ -151,3 +151,7 @@ $lang['privateRoomMemberAlready'] = '%s už má prístup do tejto miestnosti.';
 $lang['privateRoomMemberNotFound'] = 'Používateľ nemá prístup do tejto miestnosti.';
 
 $lang['privateRoomCreateDenied'] = 'Nemáš oprávnenie vytvárať súkromné miestnosti.';
+
+$lang['privateRoomAdminListHeader'] = 'Súkromné miestnosti (posledných 50):';
+$lang['privateRoomAdminListEmpty'] = 'Neexistujú žiadne súkromné miestnosti.';
+$lang['privateRoomAdminListOwner'] = '%s — vlastník: %s';
