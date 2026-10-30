@@ -34,6 +34,14 @@ $config['dbConnection']['type'] = 'mysqli';
 // Database link:
 $config['dbConnection']['link'] = null;
 
+// TikiWiki root directory (the directory containing tiki-setup.php):
+$config['tikiRootPath'] = dirname(__DIR__, 2).DIRECTORY_SEPARATOR;
+// Shared secret used to sign Tiki -> chat authentication tokens.
+// Generate a unique random value of at least 32 characters and keep it private.
+$config['mzChatSharedSecret'] = 'REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_64_HEX_CHARACTERS';
+// Tiki group names which grant chat moderator privileges (Tiki Admins are always chat admins).
+$config['tikiChatModeratorGroups'] = array();
+
 // Database table names:
 $config['dbTableNames'] = array();
 $config['dbTableNames']['online']		= 'mz_chat_online';
