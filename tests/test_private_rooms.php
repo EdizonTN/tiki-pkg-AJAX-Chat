@@ -73,7 +73,7 @@ class AJAXChat {
 	function trimChannelName($name) { return trim($name); }
 	function trimUserName($name) { return trim($name); }
 	function stringLength($value) { return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value); }
-	function subString($value, $start, $length = null) { return $length === null ? mb_substr($value, $start, null, 'UTF-8') : mb_substr($value, $start, $length, 'UTF-8'); }
+	function subString($value, $start, $length = null) { if(function_exists('mb_substr')) return $length === null ? mb_substr($value, $start, null, 'UTF-8') : mb_substr($value, $start, $length, 'UTF-8'); return $length === null ? substr($value, $start) : substr($value, $start, $length); }
 	function getCustomChannels() { return array('Public'=>1); }
 	function getInvitations() { $this->_invitations = array(); return $this->_invitations; }
 	function parseCustomCommands($text, $parts) { return false; }
