@@ -5,120 +5,91 @@
  * @copyright (c) Sebastian Tschan
  * @license Modified MIT License
  * @link https://blueimp.net/ajax/
+ *
+ * Mikrozone authentication adapter:
+ * TikiWiki is the only identity and role authority. No chat passwords are used.
  */
 
 class CustomAJAXChat extends AJAXChat {
 
-	// Returns an associative array containing userName, userID and userRole
-	// Returns null if login is invalid
+	// Authenticate only with a signed token issued by the local TikiWiki session.
 	function getValidLoginUserData() {
-		
-		$customUsers = $this->getCustomUsers();
-		
-		if($this->getRequestVar('password')) {
-			// Check if we have a valid registered user:
-
-			$userName = $this->getRequestVar('userName');
-			$userName = $this->convertEncoding($userName, $this->getConfig('contentEncoding'), $this->getConfig('sourceEncoding'));
-
-			$password = $this->getRequestVar('password');
-			$password = $this->convertEncoding($password, $this->getConfig('contentEncoding'), $this->getConfig('sourceEncoding'));
-
-			foreach($customUsers as $key=>$value) {
-				if(($value['userName'] == $userName) && ($value['password'] == $password)) {
-					$userData = array();
-					$userData['userID'] = $key;
-					$userData['userName'] = $this->trimUserName($value['userName']);
-					$userData['userRole'] = $value['userRole'];
-					return $userData;
-				}
-			}
-			
+		$claims = $this->verifyTikiAuthToken($this->getRequestVar('authToken'));
+		if(!$claims) {
 			return null;
-		} else {
-			// Guest users:
-			return $this->getGuestUser();
 		}
+
+		$this->storeTikiAuthClaims($claims, $this->getRequestVar('authToken'));
+
+		return array(
+			'userID' => $claims['uid'],
+			'userName' => $this->trimUserName($claims['name']),
+			'userRole' => $claims['role']
+		);
 	}
 
-	// Store the channels the current user has access to
-	// Make sure channel names don't contain any whitespace
+	// Revalidate the chat session against a fresh Tiki token on every AJAX request.
+	// Tokens are refreshed by the browser before their 120-second lifetime expires.
+	function revalidateUserID() {
+		$token = $this->getRequestVar('authToken');
+		if(is_string($token) && $token !== '') {
+			$claims = $this->verifyTikiAuthToken($token);
+			if(!$claims || $claims['uid'] !== (int)$this->getUserID()) {
+				return false;
+			}
+
+			$oldName = $this->getUserName();
+			$oldRole = (int)$this->getUserRole();
+			$newName = $this->trimUserName($claims['name']);
+			$this->setUserName($newName);
+			$this->setUserRole($claims['role']);
+			$this->storeTikiAuthClaims($claims, $token);
+
+			if($oldName !== $newName || $oldRole !== $claims['role']) {
+				$this->updateOnlineList();
+			}
+			return true;
+		}
+
+		$expires = (int)$this->getSessionVar('TikiAuthExpires');
+		return ($expires > time());
+	}
+
+	function verifyTikiAuthToken($token) {
+		return MZChatAuth::verifyToken($token, $this->getConfig('mzChatSharedSecret'));
+	}
+
+	function storeTikiAuthClaims(array $claims, $token) {
+		$this->setSessionVar('TikiAuthExpires', $claims['exp']);
+		$this->setSessionVar('TikiAuthUserID', $claims['uid']);
+		$this->setSessionVar('TikiAuthLogin', $claims['login']);
+		$this->setSessionVar('TikiAuthName', $claims['name']);
+		$this->setSessionVar('TikiAuthRole', $claims['role']);
+		$this->setSessionVar('TikiAuthToken', $token);
+	}
+
+	// Every authenticated Tiki user can access the configured public channels.
+	// Private channels remain protected by AJAX Chat's invitation checks.
 	function &getChannels() {
 		if($this->_channels === null) {
 			$this->_channels = array();
-			
-			$customUsers = $this->getCustomUsers();
-			
-			// Get the channels, the user has access to:
-			if($this->getUserRole() == AJAX_CHAT_GUEST) {
-				$validChannels = $customUsers[0]['channels'];
-			} else {
-				$validChannels = $customUsers[$this->getUserID()]['channels'];
-			}
-			
-			// Add the valid channels to the channel list (the defaultChannelID is always valid):
-			foreach($this->getAllChannels() as $key=>$value) {
-				if ($value == $this->getConfig('defaultChannelID')) {
-					$this->_channels[$key] = $value;
+			$allChannels = $this->getAllChannels();
+			$limit = $this->getConfig('limitChannelList');
+
+			foreach($allChannels as $channelName => $channelID) {
+				if($limit && !in_array($channelID, $limit)) {
 					continue;
 				}
-				// Check if we have to limit the available channels:
-				if($this->getConfig('limitChannelList') && !in_array($value, $this->getConfig('limitChannelList'))) {
-					continue;
-				}
-				if(in_array($value, $validChannels)) {
-					$this->_channels[$key] = $value;
-				}
+				$this->_channels[$channelName] = $channelID;
 			}
 		}
 		return $this->_channels;
 	}
 
-	// Store all existing channels
-	// Make sure channel names don't contain any whitespace
-	function &getAllChannels() {
-		if($this->_allChannels === null) {
-			// Get all existing channels:
-			$customChannels = $this->getCustomChannels();
-			
-			$defaultChannelFound = false;
-			
-			foreach($customChannels as $name=>$id) {
-				$this->_allChannels[$this->trimChannelName($name)] = $id;
-				if($id == $this->getConfig('defaultChannelID')) {
-					$defaultChannelFound = true;
-				}
-			}
-			
-			if(!$defaultChannelFound) {
-				// Add the default channel as first array element to the channel list
-				// First remove it in case it appeard under a different ID
-				unset($this->_allChannels[$this->getConfig('defaultChannelName')]);
-				$this->_allChannels = array_merge(
-					array(
-						$this->trimChannelName($this->getConfig('defaultChannelName'))=>$this->getConfig('defaultChannelID')
-					),
-					$this->_allChannels
-				);
-			}
-		}
-		return $this->_allChannels;
-	}
-
-	function &getCustomUsers() {
-		// List containing the registered chat users:
-		$users = null;
-		require(AJAX_CHAT_PATH.'lib/data/users.php');
-		return $users;
-	}
-	
+	// Load the public channel list from the local channel definition file.
 	function getCustomChannels() {
-		// List containing the custom channels:
 		$channels = null;
 		require(AJAX_CHAT_PATH.'lib/data/channels.php');
-		// Channel array structure should be:
-		// ChannelName => ChannelID
 		return array_flip($channels);
 	}
-
 }
