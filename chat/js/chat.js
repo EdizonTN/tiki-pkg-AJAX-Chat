@@ -866,6 +866,9 @@ var ajaxChat = {
 			self.retryTimer = setTimeout(ajaxChat.forceNewRequest, ajaxChat.retryTimerDelay);
 
 			self.getHttpRequest(identifier).open(method, url, true);
+			if(self.token) {
+				self.getHttpRequest(identifier).setRequestHeader('X-CSRF-Token', self.token);
+			}
 			self.getHttpRequest(identifier).onreadystatechange = function() {
 				try {
 					ajaxChat.handleResponse(identifier);
@@ -2045,7 +2048,7 @@ var ajaxChat = {
 	logout: function() {
 		clearTimeout(this.timer);
 		var message = 'logout=true';
-		this.makeRequest(this.ajaxURL+"&token="+this.token,'POST',message);
+		this.makeRequest(this.ajaxURL,'POST',message);
 	},
 
 	handleLogout: function(url) {
