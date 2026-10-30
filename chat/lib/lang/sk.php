@@ -135,7 +135,7 @@ $lang['logsSearch'] = 'Vyhľadávanie';
 $lang['logsPrivateChannels'] = 'Súkromný kanál';
 $lang['logsPrivateMessages'] = 'Súkromná správa';
 
-$lang['privateRoomHelp'] = 'Príkazy: /room create Nazov_miestnosti, /room list, /room leave, /room delete [Nazov_miestnosti]. Pozývaj prihlásených používateľov cez /invite login a odoberaj prístup cez /uninvite login (iba vlastník miestnosti).';
+$lang['privateRoomHelp'] = 'Príkazy: /room create Nazov_miestnosti, /room list, /room leave, /room delete [Nazov_miestnosti]. Správcovia môžu použiť /room list all. Pozývaj prihlásených používateľov cez /invite login a odoberaj prístup cez /uninvite login (iba vlastník miestnosti).';
 $lang['privateRoomNameInvalid'] = 'Zadaj názov miestnosti s dĺžkou najviac %d znakov. Použi písmená, číslice, pomlčku alebo podčiarkovník.';
 $lang['privateRoomNameExists'] = 'Miestnosť alebo verejný kanál s týmto názvom už existuje.';
 $lang['privateRoomLimitReached'] = 'Dosiahol si maximálny počet súkromných miestností, ktoré môžeš vlastniť.';
