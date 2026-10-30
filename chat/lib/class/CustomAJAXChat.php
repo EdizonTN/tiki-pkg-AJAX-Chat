@@ -189,7 +189,7 @@ class CustomAJAXChat extends AJAXChat {
 			$this->storeTikiAuthClaims($claims, $token);
 			if($oldName !== $newName) {
 				$sql = 'UPDATE '.$this->getDataBaseTable('roomMembers').'
-					SET userName = '.$this->db->makeSafe($newName)
+					SET userName = '.$this->db->makeSafe($newName).'
 					WHERE userID = '.$this->db->makeSafe($this->getUserID());
 				$result = $this->db->sqlQuery($sql);
 				if($result->error()) {
@@ -356,7 +356,7 @@ class CustomAJAXChat extends AJAXChat {
 		}
 		$sql = 'SELECT id
 			FROM '.$this->getDataBaseTable('rooms').'
-			WHERE name = '.$this->db->makeSafe($name)
+			WHERE name = '.$this->db->makeSafe($name).'
 			LIMIT 1';
 		$result = $this->db->sqlQuery($sql);
 		if($result->error()) {
@@ -658,7 +658,7 @@ class CustomAJAXChat extends AJAXChat {
 		if($toUserID === null) {
 			$sql = 'SELECT userID FROM '.$this->getDataBaseTable('roomMembers').'
 				WHERE roomID = '.$this->db->makeSafe($room['id']).'
-					AND userName = '.$this->db->makeSafe($targetName)
+					AND userName = '.$this->db->makeSafe($targetName).'
 				LIMIT 1';
 			$result = $this->db->sqlQuery($sql);
 			if($result->error()) {
