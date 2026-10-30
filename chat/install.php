@@ -324,10 +324,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			'moderatorGroups' => array(),
 			'adminStealthInPrivateRooms' => false
 		);
+		$bridgeConfigNeedsWrite = !is_file($bridgeConfigPath);
 		if (is_file($bridgeConfigPath)) {
 			$existingBridgeConfig = require($bridgeConfigPath);
 			if (!is_array($existingBridgeConfig)) {
 				throw new RuntimeException('Bridge-config.php musí vracať konfiguračné pole.');
+			}
+			if (!array_key_exists('moderatorGroups', $existingBridgeConfig)
+				|| !array_key_exists('adminStealthInPrivateRooms', $existingBridgeConfig)) {
+				$bridgeConfigNeedsWrite = true;
 			}
 			$bridgeConfig = array_merge($bridgeConfig, $existingBridgeConfig);
 		}
@@ -337,8 +342,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		if (!isset($bridgeConfig['adminStealthInPrivateRooms'])
 			|| !is_bool($bridgeConfig['adminStealthInPrivateRooms'])) {
 			$bridgeConfig['adminStealthInPrivateRooms'] = false;
+			$bridgeConfigNeedsWrite = true;
 		}
-		if (!mzWriteBridgeConfig($bridgeConfigPath, $bridgeConfig)) {
+		if ($bridgeConfigNeedsWrite && !mzWriteBridgeConfig($bridgeConfigPath, $bridgeConfig)) {
 			throw new RuntimeException('Nepodarilo sa bezpečne uložiť Bridge-config.php.');
 		}
 		$sharedHtaccess = $bridgeDirectory.DIRECTORY_SEPARATOR.'.htaccess';
