@@ -42,7 +42,7 @@ $tikiRootReal = realpath($tikiRoot);
 if($tikiRootReal === false || !is_dir($tikiRootReal) || !chdir($tikiRootReal)) {
 	mz_chat_auth_error(500, 'tiki_root_unavailable');
 }
-$scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\\\', '/', $_SERVER['SCRIPT_NAME']) : '/chat/tiki-auth.php';
+$scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', $_SERVER['SCRIPT_NAME']) : '/chat/tiki-auth.php';
 $tikiWebPath = rtrim(dirname(dirname($scriptName)), '/');
 if($tikiWebPath === '') {
 	$tikiWebPath = '';
