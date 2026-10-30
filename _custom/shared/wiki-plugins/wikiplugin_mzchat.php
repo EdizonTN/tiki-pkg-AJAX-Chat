@@ -8,8 +8,11 @@ function wikiplugin_mzchat_info() {
 	return array(
 		'name' => tra('Mikrozone Chat'),
 		'description' => tra('Embeds the authenticated Mikrozone AJAX chat.'),
+		'documentation' => '',
+		'tags' => array('basic'),
 		'prefs' => array(),
-		'body' => tra('This plugin does not use a body.')
+		'introduced' => '30.0',
+		'params' => array()
 	);
 }
 
@@ -33,5 +36,6 @@ function wikiplugin_mzchat($data, $params) {
 	$html .= '<iframe src="'.$chatUrl.'" title="Mikrozone chat" loading="lazy" style="display:block;width:100%;height:280px;border:1px solid #ccc;background:#fff;"></iframe>';
 	$html .= '</section>';
 
-	return $html;
+	// Prevent the returned HTML from being parsed as wiki syntax a second time.
+	return ' '.$html.' ';
 }
