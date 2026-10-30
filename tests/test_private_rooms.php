@@ -30,7 +30,7 @@ class TestRoomDatabase {
 		if(strpos($sql, 'SELECT id') !== false && strpos($sql, "WHERE name = 'Workshop'") !== false) {
 			return new TestResult(array(array('id'=>1)));
 		}
-		if(strpos($sql, 'SELECT userID') !== false && strpos($sql, 'roomID = 1') !== false) {
+		if(strpos($sql, 'SELECT userID') !== false && strpos($sql, "roomID = '1'") !== false || strpos($sql, 'roomID = 1') !== false) {
 			$allowed = in_array($this->userID, $this->members, true);
 			return new TestResult($allowed ? array(array('userID'=>$this->userID)) : array());
 		}
