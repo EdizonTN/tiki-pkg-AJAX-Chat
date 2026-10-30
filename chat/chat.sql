@@ -40,3 +40,23 @@ CREATE TABLE IF NOT EXISTS mz_chat_invitations (
 	PRIMARY KEY (userID, channel),
 	INDEX (dateTime)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE IF NOT EXISTS mz_chat_rooms (
+	id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	ownerID INT(10) UNSIGNED NOT NULL,
+	name VARCHAR(48) NOT NULL,
+	dateTime DATETIME NOT NULL,
+	PRIMARY KEY (id),
+	UNIQUE KEY room_name (name),
+	INDEX (ownerID),
+	INDEX (dateTime)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+CREATE TABLE IF NOT EXISTS mz_chat_room_members (
+	roomID INT(10) UNSIGNED NOT NULL,
+	userID INT(10) UNSIGNED NOT NULL,
+	dateTime DATETIME NOT NULL,
+	PRIMARY KEY (roomID, userID),
+	INDEX (userID),
+	INDEX (dateTime)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
