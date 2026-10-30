@@ -87,6 +87,13 @@ class CustomAJAXChat extends AJAXChat {
 				}
 				$this->_channels[$channelName] = $channelID;
 			}
+			// Add private channels and persistent private rooms the current user may access.
+			foreach($this->getInvitations() as $privateChannelID) {
+				$privateChannelName = $this->getChannelNameFromChannelID($privateChannelID);
+				if($privateChannelName !== null && !array_key_exists($privateChannelName, $this->_channels)) {
+					$this->_channels[$privateChannelName] = $privateChannelID;
+				}
+			}
 		}
 		return $this->_channels;
 	}
