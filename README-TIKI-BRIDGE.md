@@ -108,6 +108,8 @@ Use the same PHP major/minor version as the web PHP-FPM runtime:
 find chat _custom tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/test_mz_chat_auth.php
 php tests/test_chat_schema.php
+node --check chat/js/chat.js
+node tests/test_code_blocks.js
 php -r 'echo extension_loaded("mysqli") ? "mysqli OK\\n" : "mysqli MISSING\\n";'
 ```
 
