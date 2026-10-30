@@ -113,6 +113,8 @@ find chat _custom tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/test_mz_chat_auth.php
 php tests/test_chat_schema.php
 php tests/test_private_rooms.php
+# Requires a local MariaDB 11.4 test database (see CI workflow)
+php tests/test_chat_database.php
 node --check chat/js/chat.js
 node tests/test_code_blocks.js
 php -r 'echo extension_loaded("mysqli") ? "mysqli OK" : "mysqli MISSING";'
