@@ -44,7 +44,7 @@ if($tikiRootReal === false || !is_dir($tikiRootReal) || !chdir($tikiRootReal)) {
 }
 $scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', $_SERVER['SCRIPT_NAME']) : '/chat/tiki-auth.php';
 $tikiWebPath = rtrim(dirname(dirname($scriptName)), '/');
-if($tikiWebPath === '') {
+if($tikiWebPath === '.') {
 	$tikiWebPath = '';
 }
 $tikiIndexPath = $tikiWebPath.'/index.php';
