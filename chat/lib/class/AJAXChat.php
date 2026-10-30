@@ -2189,7 +2189,7 @@ class AJAXChat {
 				if($this->getUserRole() != AJAX_CHAT_ADMIN) {
 					$condition .= ' AND channel = '.($this->getPrivateMessageID());
 				} else {
-					$condition .= ' AND channel > '.($this->getConfig('privateMessageDiff')-1);
+					$condition .= ' AND channel >= '.(int)$this->getConfig('privateMessageDiff').' AND channel < '.(int)$this->getConfig('roomChannelDiff');
 				}
 				break;
 			case '-1':
