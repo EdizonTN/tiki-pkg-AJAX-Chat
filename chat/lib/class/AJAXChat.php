@@ -140,12 +140,14 @@ class AJAXChat {
 			}
 			
 		} else if(
-			// Login if auto-login enabled or a login, userName or shoutbox parameter is given:
-			$this->getConfig('forceAutoLogin') ||
-			$this->getRequestVar('login') ||
-			$this->getRequestVar('userName') ||
-			$this->getRequestVar('authToken') ||
-			$this->getRequestVar('shoutbox')
+			!$this->getRequestVar('logout') && (
+				// Login if auto-login enabled or a login, userName, authToken or shoutbox parameter is given:
+				$this->getConfig('forceAutoLogin') ||
+				$this->getRequestVar('login') ||
+				$this->getRequestVar('userName') ||
+				$this->getRequestVar('authToken') ||
+				$this->getRequestVar('shoutbox')
+			)
 			) {
 			$this->login();
 		}
