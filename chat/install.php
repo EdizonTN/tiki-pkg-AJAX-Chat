@@ -31,8 +31,10 @@ if (!is_file($configFile) || !is_readable($configFile)) {
 	mzInstallerStop(500, 'Chýba alebo nie je čitateľný súbor _CHAT/lib/config.php.');
 }
 require($configFile);
+// Preserve the chat configuration before Tiki bootstrap introduces its own globals.
+$mzChatInstallerConfig = $config;
 
-$tikiRoot = isset($config['tikiRootPath']) ? $config['tikiRootPath'] : dirname(__DIR__).DIRECTORY_SEPARATOR;
+$tikiRoot = isset($mzChatInstallerConfig['tikiRootPath']) ? $mzChatInstallerConfig['tikiRootPath'] : dirname(__DIR__).DIRECTORY_SEPARATOR;
 $tikiSetup = rtrim($tikiRoot, '/\\').DIRECTORY_SEPARATOR.'tiki-setup.php';
 if (!is_file($tikiSetup)) {
 	mzInstallerStop(500, 'TikiWiki nebolo nájdené. Skontrolujte tikiRootPath v konfigurácii chatu.');
@@ -98,6 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	require(AJAX_CHAT_PATH.'lib/classes.php');
 
 	class CustomAJAXChatInstaller extends CustomAJAXChatInterface {
+		// The config was already loaded before Tiki bootstrap; avoid including it twice
+		// (which would redefine the AJAX_CHAT_* constants).
+		function initConfig() {
+			global $mzChatInstallerConfig;
+			$this->_config = $mzChatInstallerConfig;
+			$this->initCustomConfig();
+		}
+
 		function getDataBaseTableCreationQueries() {
 			$sqlFile = AJAX_CHAT_PATH.'chat.sql';
 			if (!is_file($sqlFile) || !is_readable($sqlFile)) {
