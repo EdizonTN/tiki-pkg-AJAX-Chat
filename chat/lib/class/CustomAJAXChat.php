@@ -353,7 +353,34 @@ class CustomAJAXChat extends AJAXChat {
 				break;
 
 			case 'list':
-				$this->insertParsedMessageList($textParts);
+				if(isset($textParts[2]) && strtolower($textParts[2]) === 'all' && $this->getUserRole() == AJAX_CHAT_ADMIN) {
+					$sql = 'SELECT id, ownerID, name
+						FROM '.$this->getDataBaseTable('rooms').'
+						ORDER BY id DESC
+						LIMIT 50';
+					$result = $this->db->sqlQuery($sql);
+					if($result->error()) {
+						echo $result->getError();
+						die();
+					}
+					$rooms = array();
+					while($row = $result->fetch()) {
+						$rooms[] = $row;
+					}
+					$result->free();
+					if(!$rooms) {
+						$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomAdminListEmpty'));
+					} else {
+						$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomAdminListHeader'));
+						foreach($rooms as $roomRow) {
+							$ownerName = $this->getNameFromID($roomRow['ownerID']);
+							$ownerLabel = $ownerName !== null ? $ownerName : '#'.$roomRow['ownerID'];
+							$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomAdminListOwner'), $this->getPrivateRoomChannelName($roomRow['name']), $ownerLabel));
+						}
+					}
+				} else {
+					$this->insertParsedMessageList($textParts);
+				}
 				break;
 
 			case 'leave':
