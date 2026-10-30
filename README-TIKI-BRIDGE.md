@@ -19,7 +19,7 @@ user identities and roles; the chat has no independent passwords or demo account
 
 ## Deployment and configuration
 
-1. Copy the repository's `_CHAT/` directory into the Tiki root and name the destination `_CHAT/` so the chat is available at `/_CHAT/`.
+1. Copy the repository's `chat/` directory into the Tiki root and name the destination `_CHAT/` so the chat is available at `/_CHAT/`.
 2. Copy `_CHAT/lib/config.php.example` to `_CHAT/lib/config.php`.
 3. Configure the MySQLi connection and database name. The obsolete `mysql_*` adapter has been removed; PHP 7+ requires MySQLi or PDO, and this branch uses MySQLi.
 4. Set `mzChatSharedSecret` to a random secret of at least 32 characters
