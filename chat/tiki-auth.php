@@ -65,8 +65,8 @@ if ($isAdmin) {
 	$chatRole = 1;
 }
 
-$realName = $tikiLib->get_user_preference($user, 'realName', '');
-$displayName = (is_string($realName) && trim($realName) !== '') ? trim($realName) : $user;
+// The Tiki login is unique and is therefore the safest chat display name.
+$displayName = (string)$user;
 $now = time();
 $claims = array(
 	'uid' => $userId,
