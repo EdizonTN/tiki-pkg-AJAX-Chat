@@ -14,35 +14,29 @@ user identities and roles; the chat has no independent passwords or demo account
   A Tiki logout or account switch therefore invalidates the chat session within the refresh window.
 - Tiki user ID is used as the chat user ID. The Tiki `Admins` group (or global
   `tiki_p_admin` permission) maps to chat administrator.
-- Moderator groups are configurable through `tikiChatModeratorGroups`. The default is empty
-  until the site's exact moderator group name is chosen.
+- Moderator groups are read from the Tiki-managed `_custom/shared/Bridge-config.php` file
+  (`moderatorGroups`). The installer creates it with an empty default list.
 
 ## Deployment and configuration
 
-1. Copy the repository's `chat/` directory into the Tiki root and name the destination `_CHAT/` so the chat is available at `/_CHAT/`.
-2. Copy `_CHAT/lib/config.php.example` to `_CHAT/lib/config.php`.
-3. Configure the MySQLi connection and database name. The obsolete `mysql_*` adapter has been removed; PHP 7+ requires MySQLi or PDO, and this branch uses MySQLi.
+1. Copy the repository's `chat/` directory to any web-accessible directory **inside the TikiWiki filesystem root**. The directory does not need to be named `_CHAT`; its URL and filesystem paths are detected by the installer.
+2. Copy `lib/Chat-config.php.example` to `lib/Chat-config.php`.
+3. Configure the MySQLi connection and the dedicated chat database. Do not use the Tiki database or its database user.
 4. Set `mzChatSharedSecret` to a random secret of at least 32 characters
    (64 hexadecimal characters recommended). Generate one with `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`.
-   Use the same value only in this chat config; do not publish it or place it in JavaScript.
-5. Check `tikiRootPath`. By default it resolves two directory levels above
-   `_CHAT/lib/config.php`, which is correct when `_CHAT/` is directly inside the Tiki root.
-6. Add the exact Tiki group names that should be chat moderators to
-   `tikiChatModeratorGroups`. Tiki administrators are chat administrators automatically.
+   Keep it private; it is never sent to JavaScript.
+5. Sign in to Tiki as an administrator and open the chat's `install.php` URL. The installer walks up the filesystem hierarchy **once during installation** to locate `tiki-setup.php`, derives the corresponding URL paths, creates the bridge configuration if needed, and saves all detected paths into `Chat-config.php`.
+6. Edit `_custom/shared/Bridge-config.php` to set the exact Tiki group names that should be chat moderators. Tiki administrators are chat administrators automatically.
 
-When upgrading an existing installation/configuration from an earlier branch, merge these
-new settings from `config.php.example` into the existing `config.php` rather than replacing
-the whole file:
+The saved path configuration contains:
 
-- `dbTableNames['rooms'] = 'mz_chat_rooms'`
-- `dbTableNames['roomMembers'] = 'mz_chat_room_members'`
-- `roomChannelDiff = 1500000000`
-- `allowPrivateRooms = true`
-- `maxPrivateRoomsPerUser = 10`
-- `privateRoomMaxNameLength = 40`
-- `privateRoomPrefix = '~'`, `privateRoomSuffix = '~'`
+- `chatRootPath` and `chatUrlPath`
+- `tikiRootPath` and `tikiUrlPath`
+- `bridgeConfigPath`
 
-Keep `roomChannelDiff` above the private-message ID range; the default value is intentional.
+Normal chat requests and the authentication endpoint read these stored values. They do not search parent directories or re-detect installation paths. If the chat is moved, run the installer again to update the saved paths; it preserves the database settings and HMAC secret.
+
+The bridge settings file is separate from the chat's private configuration. Tiki-side integration owns `Bridge-config.php`; database credentials and the HMAC secret remain only in `Chat-config.php`.
 
 ## Database installation
 
@@ -51,16 +45,16 @@ Create the separate `mz_chat` database first. Configure a dedicated database use
 `SELECT, INSERT, UPDATE, DELETE, CREATE` privileges only on `mz_chat.*`; do not use the
 Tiki database or its database user.
 
-After copying the chat and creating `_CHAT/lib/config.php`, sign in to Tiki as an administrator
-and open `/_CHAT/install.php`. The web installer:
+After copying the chat and creating `lib/Chat-config.php`, sign in to Tiki as an administrator
+and open the chat's `install.php` URL. The web installer:
 - requires an authenticated Tiki administrator;
 - uses a session-bound CSRF token and accepts POST only for installation;
 - creates/verifies the six expected tables in the configured chat database;
 - refuses to run again when all six tables already exist.
 
 It does not create the database or database account. After successful installation, delete
-`_CHAT/install.php` and revoke the database user's `CREATE` privilege. Runtime access needs
-only `SELECT, INSERT, UPDATE, DELETE`. The direct web access to `_CHAT/chat.sql` is denied
+`install.php` and revoke the database user's `CREATE` privilege. Runtime access needs
+only `SELECT, INSERT, UPDATE, DELETE`. The direct web access to `chat.sql` is denied
 by `.htaccess`.
 
 ## Install the Tiki wiki plugin
@@ -102,7 +96,7 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
   is not implemented yet.
 - File upload is not implemented.
 - The optional Ruby socket server is not used by this deployment. It is AGPL-licensed;
-  keep `socketServerEnabled = false` and omit `_CHAT/socket/` from the deployed copy.
+  keep `socketServerEnabled = false` and omit `socket/` from the deployed copy.
   The main chat core and other bundled assets have separate license notices in
   `THIRD-PARTY-NOTICES.md`.
 - Multiline code messages support `[code=php]...[/code]` and language selection from the Code toolbar button; `auto` enables automatic detection. The code is escaped before rendering. highlight.js 11.12.0 is bundled locally under BSD-3-Clause; see `THIRD-PARTY-NOTICES.md`.
