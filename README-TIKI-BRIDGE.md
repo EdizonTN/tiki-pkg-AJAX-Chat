@@ -110,7 +110,7 @@ php tests/test_mz_chat_auth.php
 php tests/test_chat_schema.php
 node --check chat/js/chat.js
 node tests/test_code_blocks.js
-php -r 'echo extension_loaded("mysqli") ? "mysqli OK\\n" : "mysqli MISSING\\n";'
+php -r 'echo extension_loaded("mysqli") ? "mysqli OK" : "mysqli MISSING";'
 ```
 
 The token unit tests run without Tiki or a database. The bridge still needs an integration
