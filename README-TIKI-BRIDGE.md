@@ -17,16 +17,17 @@ user identities and roles; the chat has no independent passwords or demo account
 - Moderator groups are configurable through `tikiChatModeratorGroups`. The default is empty
   until the site's exact moderator group name is chosen.
 
-## Configuration
+## Deployment and configuration
 
-1. Copy `chat/lib/config.php.example` to `chat/lib/config.php`.
-2. Configure the MySQLi connection and database name.
-3. Set `mzChatSharedSecret` to a random secret of at least 32 characters
+1. Copy the repository's `chat/` directory into the Tiki root so the chat is available at `/chat/`.
+2. Copy `chat/lib/config.php.example` to `chat/lib/config.php`.
+3. Configure the MySQLi connection and database name.
+4. Set `mzChatSharedSecret` to a random secret of at least 32 characters
    (64 hexadecimal characters recommended). Use the same value only in this chat config;
    do not publish it or place it in JavaScript.
-4. Check `tikiRootPath`. By default it resolves two directory levels above
+5. Check `tikiRootPath`. By default it resolves two directory levels above
    `chat/lib/config.php`, which is correct when `chat/` is directly inside the Tiki root.
-5. Add the exact Tiki group names that should be chat moderators to
+6. Add the exact Tiki group names that should be chat moderators to
    `tikiChatModeratorGroups`. Tiki administrators are chat administrators automatically.
 
 ## Database installation
