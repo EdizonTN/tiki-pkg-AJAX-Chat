@@ -13,6 +13,7 @@
 
 class CustomAJAXChat extends AJAXChat {
 
+	protected $_mzHiddenAdminPresence = null;
 	protected $_mzBridgeConfig = array(
 		'moderatorGroups' => array(),
 		'adminStealthInPrivateRooms' => false
@@ -47,7 +48,8 @@ class CustomAJAXChat extends AJAXChat {
 	function getOnlineUsersData($channelIDs = null, $key = null, $value = null) {
 		$onlineUsersData = parent::getOnlineUsersData(null, null, null);
 		if (!empty($this->_mzBridgeConfig['adminStealthInPrivateRooms']) && $onlineUsersData) {
-			$roomDiff = (int)$this->getConfig('roomChannelDiff');
+			if ($this->_mzHiddenAdminPresence === null) {
+				$roomDiff = (int)$this->getConfig('roomChannelDiff');
 			$sql = 'SELECT o.userID, o.channel
 				FROM '.$this->getDataBaseTable('online').' o
 				INNER JOIN '.$this->getDataBaseTable('rooms').' r
@@ -65,7 +67,10 @@ class CustomAJAXChat extends AJAXChat {
 			while ($row = $result->fetch()) {
 				$hidden[(int)$row['channel'].':'.(int)$row['userID']] = true;
 			}
-			$result->free();
+				$result->free();
+				$this->_mzHiddenAdminPresence = $hidden;
+			}
+			$hidden = $this->_mzHiddenAdminPresence;
 			$onlineUsersData = array_values(array_filter($onlineUsersData, function($userData) use ($hidden) {
 				$key = (int)$userData['channel'].':'.(int)$userData['userID'];
 				return !isset($hidden[$key]);
