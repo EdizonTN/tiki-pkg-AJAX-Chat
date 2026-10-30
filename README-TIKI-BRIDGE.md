@@ -73,7 +73,7 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
 
 ## Current limitations to resolve before production
 
-- Multiple named private rooms are now supported. Create one with `/room create nazov`,
+- Multiple named private rooms are now supported. The schema installer now creates two additional tables (`mz_chat_rooms` and `mz_chat_room_members`) without dropping existing data. Create a room with `/room create nazov`,
   list accessible rooms with `/room list`, leave a member room with `/room leave`, and
   delete an owned room with `/room delete nazov`. The owner invites online users with
   `/invite login` and removes them with `/uninvite login`. Membership is persistent.
@@ -93,6 +93,7 @@ Use the same PHP major/minor version as the web PHP-FPM runtime:
 ```sh
 find chat _custom tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/test_mz_chat_auth.php
+php tests/test_chat_schema.php
 php -r 'echo extension_loaded("mysqli") ? "mysqli OK\\n" : "mysqli MISSING\\n";'
 ```
 
