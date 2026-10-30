@@ -5,7 +5,7 @@ user identities and roles; the chat has no independent passwords or demo account
 
 ## Authentication design
 
-- The chat iframe calls `chat/tiki-auth.php` using the browser's existing Tiki session.
+- The chat iframe calls `/_CHAT/tiki-auth.php` using the browser's existing Tiki session.
 - The endpoint loads Tiki's `tiki-setup.php`, reads the authenticated Tiki user and groups,
   and issues a short-lived HMAC-SHA256 token.
 - The token contains the Tiki user ID, unique Tiki login, chat role, issue/expiry times and nonce.
@@ -19,14 +19,14 @@ user identities and roles; the chat has no independent passwords or demo account
 
 ## Deployment and configuration
 
-1. Copy the repository's `chat/` directory into the Tiki root so the chat is available at `/chat/`.
-2. Copy `chat/lib/config.php.example` to `chat/lib/config.php`.
+1. Copy the repository's `_CHAT/` directory into the Tiki root and name the destination `_CHAT/` so the chat is available at `/_CHAT/`.
+2. Copy `_CHAT/lib/config.php.example` to `_CHAT/lib/config.php`.
 3. Configure the MySQLi connection and database name. The obsolete `mysql_*` adapter has been removed; PHP 7+ requires MySQLi or PDO, and this branch uses MySQLi.
 4. Set `mzChatSharedSecret` to a random secret of at least 32 characters
    (64 hexadecimal characters recommended). Generate one with `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`.
    Use the same value only in this chat config; do not publish it or place it in JavaScript.
 5. Check `tikiRootPath`. By default it resolves two directory levels above
-   `chat/lib/config.php`, which is correct when `chat/` is directly inside the Tiki root.
+   `_CHAT/lib/config.php`, which is correct when `_CHAT/` is directly inside the Tiki root.
 6. Add the exact Tiki group names that should be chat moderators to
    `tikiChatModeratorGroups`. Tiki administrators are chat administrators automatically.
 
@@ -47,15 +47,21 @@ Keep `roomChannelDiff` above the private-message ID range; the default value is 
 ## Database installation
 
 The schema uses the isolated `mz_chat_*` prefix and contains no destructive DROP statements.
+Create the separate `mz_chat` database first. Configure a dedicated database user with
+`SELECT, INSERT, UPDATE, DELETE, CREATE` privileges only on `mz_chat.*`; do not use the
+Tiki database or its database user.
 
-Run from the chat directory:
+After copying the chat and creating `_CHAT/lib/config.php`, sign in to Tiki as an administrator
+and open `/_CHAT/install.php`. The web installer:
+- requires an authenticated Tiki administrator;
+- uses a session-bound CSRF token and accepts POST only for installation;
+- creates/verifies the six expected tables in the configured chat database;
+- refuses to run again when all six tables already exist.
 
-```sh
-php install.php
-```
-
-The installer is CLI-only. If command-line PHP is unavailable, import `chat/chat.sql`
-through the database administration tool. Remove `chat/install.php` after installation.
+It does not create the database or database account. After successful installation, delete
+`_CHAT/install.php` and revoke the database user's `CREATE` privilege. Runtime access needs
+only `SELECT, INSERT, UPDATE, DELETE`. The direct web access to `_CHAT/chat.sql` is denied
+by `.htaccess`.
 
 ## Install the Tiki wiki plugin
 
@@ -96,12 +102,12 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
   is not implemented yet.
 - File upload is not implemented.
 - The optional Ruby socket server is not used by this deployment. It is AGPL-licensed;
-  keep `socketServerEnabled = false` and omit `chat/socket/` from the deployed copy.
+  keep `socketServerEnabled = false` and omit `_CHAT/socket/` from the deployed copy.
   The main chat core and other bundled assets have separate license notices in
   `THIRD-PARTY-NOTICES.md`.
 - Multiline code messages support `[code=php]...[/code]` and language selection from the Code toolbar button; `auto` enables automatic detection. The code is escaped before rendering. highlight.js 11.12.0 is bundled locally under BSD-3-Clause; see `THIRD-PARTY-NOTICES.md`.
 - The Tiki moderator group mapping must be set to the site's actual group name.
-- The bridge and chat must be tested together on the real Tiki 30.1 + PHP-FPM + MariaDB stack
+- The bridge and chat must be tested together on the Tiki 30.1 + PHP + MariaDB stack
   before deployment. No runtime test against the user's hosting environment has been performed.
 
 ## Local validation before deployment
