@@ -33,7 +33,7 @@ function wikiplugin_mzchat($data, $params, $offset = 0, $parseOptions = array())
 	$html .= '<strong>Mikrozone chat</strong>';
 	$html .= '<a href="'.$popupUrl.'" target="mzchatPopup" rel="noopener" onclick="window.open(this.href,\'mzchatPopup\',\'width=1000,height=700,resizable=yes,scrollbars=yes\');return false;">'.tra('Otvoriť v samostatnom okne').'</a>';
 	$html .= '</div>';
-	$html .= '<iframe src="'.$chatUrl.'" title="Mikrozone chat" loading="lazy" style="display:block;width:100%;height:280px;border:1px solid #ccc;background:#fff;"></iframe>';
+	$html .= '<iframe src="'.$chatUrl.'" title="Mikrozone chat" loading="lazy" style="display:block;width:100%;height:360px;border:1px solid #ccc;background:#fff;"></iframe>';
 	$html .= '</section>';
 
 	// Prevent the returned HTML from being parsed as wiki syntax a second time.
