@@ -147,3 +147,5 @@ $lang['privateRoomOwnerCannotLeave'] = 'The owner cannot leave their room. Use /
 $lang['privateRoomLeft'] = 'You left private room %s.';
 $lang['privateRoomMemberAlready'] = '%s already has access to this room.';
 $lang['privateRoomMemberNotFound'] = 'That user is not a member of this room.';
+
+$lang['privateRoomCreateDenied'] = 'You are not allowed to create private rooms.';
