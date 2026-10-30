@@ -52,14 +52,14 @@ _custom/shared/wiki-plugins/wikiplugin_mzchat.php
 ```
 
 to the same path in the Tiki installation. Tiki 30 defines this shared custom wiki-plugin
-directory as `_custom/shared/wiki-plugins`. Clear the Tiki cache after copying the file.
+directory as `_custom/shared/wiki-plugins`. Clear the Tiki cache after copying the file and enable `MZCHAT` in the plugin manager if Tiki reports it as disabled.
 
 Then create a custom module in **Admin → Modules → Custom Modules**:
 
 - Name: `mzchat`
 - Title: `Mikrozone chat`
 - Content: `{MZCHAT() /}`
-- Enable wiki parsing for the module content, if that option is shown.
+- Enable **Must be wiki parsed** for the module content; this is required for `{MZCHAT() /}` to execute.
 
 Assign the module in **Admin → Modules → Assigned Modules**:
 
