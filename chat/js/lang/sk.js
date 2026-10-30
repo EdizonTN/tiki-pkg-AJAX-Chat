@@ -22,6 +22,7 @@ var ajaxChatLang = {
 	privmsgto: '(súkromne hovorí s %s)',
 	invite: '%s vás pozýva na rozhovor %s.',
 	inviteto: 'Vaša pozvánka na rozhovor s %s v kanáli %s bola odoslaná.',
+	codeLanguageDialog: 'Jazyk kódu (php, javascript, python, c, cpp, sql; pre automatické rozpoznanie zadaj auto):',
 	uninvite: '%s neprijal Vaše pozvanie z kanálu %s.',
 	uninviteto: 'Vaše pozvanie pre %s v kanáli %s bolo poslané.',
 	queryOpen: 'Súkromný kanál s %s otvorený.',
