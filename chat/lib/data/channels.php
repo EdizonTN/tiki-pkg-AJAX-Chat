@@ -8,7 +8,6 @@
  */
 
 // Public channels available to all authenticated Mikrozone users.
-// Private conversations/rooms are managed separately by AJAX Chat.
-$channels = array(
-	'Public' => 0
-);
+// Array keys are channel IDs; values are channel names.
+$channels = array();
+$channels[0] = 'Public';
