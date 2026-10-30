@@ -30,6 +30,20 @@ user identities and roles; the chat has no independent passwords or demo account
 6. Add the exact Tiki group names that should be chat moderators to
    `tikiChatModeratorGroups`. Tiki administrators are chat administrators automatically.
 
+When upgrading an existing installation/configuration from an earlier branch, merge these
+new settings from `config.php.example` into the existing `config.php` rather than replacing
+the whole file:
+
+- `dbTableNames['rooms'] = 'mz_chat_rooms'`
+- `dbTableNames['roomMembers'] = 'mz_chat_room_members'`
+- `roomChannelDiff = 1500000000`
+- `allowPrivateRooms = true`
+- `maxPrivateRoomsPerUser = 10`
+- `privateRoomMaxNameLength = 40`
+- `privateRoomPrefix = '~'`, `privateRoomSuffix = '~'`
+
+Keep `roomChannelDiff` above the private-message ID range; the default value is intentional.
+
 ## Database installation
 
 The schema uses the isolated `mz_chat_*` prefix and contains no destructive DROP statements.
