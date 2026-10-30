@@ -39,6 +39,16 @@ class CustomAJAXChat extends AJAXChat {
 			$this->setUserName($newName);
 			$this->setUserRole($claims['role']);
 			$this->storeTikiAuthClaims($claims, $token);
+			if($oldName !== $newName) {
+				$sql = 'UPDATE '.$this->getDataBaseTable('roomMembers').'
+					SET userName = "'.$this->db->makeSafe($newName).'"
+					WHERE userID = '.$this->db->makeSafe($this->getUserID());
+				$result = $this->db->sqlQuery($sql);
+				if($result->error()) {
+					echo $result->getError();
+					die();
+				}
+			}
 			if($oldName !== $newName || $oldRole !== $claims['role']) {
 				$this->updateOnlineList();
 			}
