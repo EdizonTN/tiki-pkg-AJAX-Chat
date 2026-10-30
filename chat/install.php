@@ -234,6 +234,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			return $queries;
 		}
 
+		function validateDataBaseTables(array $expectedTables) {
+			$expectedColumns = array(
+				'online' => array('userID', 'userName', 'userRole', 'channel', 'dateTime', 'ip'),
+				'messages' => array('id', 'userID', 'userName', 'userRole', 'channel', 'dateTime', 'ip', 'text'),
+				'bans' => array('userID', 'userName', 'dateTime', 'ip'),
+				'invitations' => array('userID', 'channel', 'dateTime'),
+				'rooms' => array('id', 'ownerID', 'name', 'dateTime'),
+				'roomMembers' => array('roomID', 'userID', 'userName', 'dateTime')
+			);
+			foreach ($expectedColumns as $key => $columns) {
+				$tableName = $expectedTables[$key];
+				$result = $this->db->sqlQuery('SHOW COLUMNS FROM `'.$tableName.'`');
+				if ($result->error()) {
+					throw new RuntimeException('Nepodarilo sa overiť stĺpce tabuľky '.$tableName.': '.$result->getError());
+				}
+				$actualColumns = array();
+				while ($row = $result->fetch()) {
+					$actualColumns[] = $row['Field'];
+				}
+				$result->free();
+				foreach ($columns as $column) {
+					if (!in_array($column, $actualColumns, true)) {
+						throw new RuntimeException('Tabuľka '.$tableName.' nemá požadovaný stĺpec '.$column.'.');
+					}
+				}
+			}
+		}
+
 		function createDataBaseTables() {
 			$expectedTables = array(
 				'online' => 'mz_chat_online',
@@ -262,6 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				$result->free();
 			}
 			if ($existingTables === count($expectedTables)) {
+				$this->validateDataBaseTables($expectedTables);
 				return false;
 			}
 
@@ -271,6 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					throw new RuntimeException($result->getError());
 				}
 			}
+			$this->validateDataBaseTables($expectedTables);
 			return true;
 		}
 	}
