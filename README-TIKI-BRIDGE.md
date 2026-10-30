@@ -5,7 +5,7 @@ user identities and roles; the chat has no independent passwords or demo account
 
 ## Authentication design
 
-- The chat iframe calls `/_CHAT/tiki-auth.php` using the browser's existing Tiki session.
+- The chat login page calls `tiki-auth.php` relative to the chat URL, using the browser's existing Tiki session.
 - The endpoint loads Tiki's `tiki-setup.php`, reads the authenticated Tiki user and groups,
   and issues a short-lived HMAC-SHA256 token.
 - The token contains the Tiki user ID, unique Tiki login, chat role, issue/expiry times and nonce.
@@ -57,33 +57,10 @@ It does not create the database or database account. After successful installati
 only `SELECT, INSERT, UPDATE, DELETE`. The direct web access to `chat.sql` is denied
 by `.htaccess`.
 
-## Install the Tiki wiki plugin
+## Tiki page embedding
 
-Copy:
-
-```
-_custom/shared/wiki-plugins/wikiplugin_mzchat.php
-```
-
-to the same path in the Tiki installation. Tiki 30 defines this shared custom wiki-plugin
-directory as `_custom/shared/wiki-plugins`. Clear the Tiki cache after copying the file and enable `MZCHAT` in the plugin manager if Tiki reports it as disabled.
-
-Then create a custom module in **Admin → Modules → Custom Modules**:
-
-- Name: `mzchat`
-- Title: `Mikrozone chat`
-- Content: `{MZCHAT() /}`
-- Enable **Must be wiki parsed** for the module content; this is required for `{MZCHAT() /}` to execute.
-
-Assign the module in **Admin → Modules → Assigned Modules**:
-
-- Zone: `Bottom` (site footer) or `Page Bottom` (bottom of the main content column). Enable the chosen horizontal zone in **Look & Feel → Layout Options** if it is not available.
-- Parameters: `nobox=y`
-- Cache time: `0`
-- Leave the page filter empty to show it throughout the site.
-- Restrict visibility to the `Registered` group if desired.
-
-The plugin embeds the chat and provides a link to open it in a separate browser window.
+Tiki page embedding and the wiki plugin are intentionally deferred to a later integration phase.
+The Phase 6 wiki plugin still contains the old `/_CHAT/` URL and must not be used when testing a relocated chat directory. For Phase 7, open the chat directly through its detected URL.
 
 ## Current limitations to resolve before production
 
@@ -100,7 +77,7 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
   The main chat core and other bundled assets have separate license notices in
   `THIRD-PARTY-NOTICES.md`.
 - Multiline code messages support `[code=php]...[/code]` and language selection from the Code toolbar button; `auto` enables automatic detection. The code is escaped before rendering. highlight.js 11.12.0 is bundled locally under BSD-3-Clause; see `THIRD-PARTY-NOTICES.md`.
-- The Tiki moderator group mapping must be set to the site's actual group name.
+- The Tiki moderator group mapping in `_custom/shared/Bridge-config.php` must be set to the site's actual group name.
 - The bridge and chat must be tested together on the Tiki 30.1 + PHP + MariaDB stack
   before deployment. No runtime test against the user's hosting environment has been performed.
 
