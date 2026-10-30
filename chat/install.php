@@ -58,8 +58,8 @@ class CustomAJAXChatInstaller extends CustomAJAXChatInterface {
 				$queries[] = $statement;
 			}
 		}
-		if (count($queries) !== 4) {
-			throw new RuntimeException('Expected exactly four CREATE TABLE statements in chat.sql.');
+		if (count($queries) !== 6) {
+			throw new RuntimeException('Expected exactly six CREATE TABLE statements in chat.sql.');
 		}
 		return $queries;
 	}
@@ -69,7 +69,9 @@ class CustomAJAXChatInstaller extends CustomAJAXChatInterface {
 			'online' => 'mz_chat_online',
 			'messages' => 'mz_chat_messages',
 			'bans' => 'mz_chat_bans',
-			'invitations' => 'mz_chat_invitations'
+			'invitations' => 'mz_chat_invitations',
+			'rooms' => 'mz_chat_rooms',
+			'roomMembers' => 'mz_chat_room_members'
 		);
 		foreach ($expectedTables as $key => $tableName) {
 			if ($this->getConfig('dbTableNames', $key) !== $tableName) {
