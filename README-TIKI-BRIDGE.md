@@ -82,3 +82,16 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
 - The Tiki moderator group mapping must be set to the site's actual group name.
 - The bridge and chat must be tested together on the real Tiki 30.1 + PHP-FPM + MariaDB stack
   before deployment. No runtime test against the user's hosting environment has been performed.
+
+## Local validation before deployment
+
+Use the same PHP major/minor version as the web PHP-FPM runtime:
+
+```sh
+find chat _custom tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+php tests/test_mz_chat_auth.php
+php -r 'echo extension_loaded("mysqli") ? "mysqli OK\\n" : "mysqli MISSING\\n";'
+```
+
+The token unit tests run without Tiki or a database. The bridge still needs an integration
+test with the actual Tiki 30.1 installation and its PHP-FPM session configuration.
