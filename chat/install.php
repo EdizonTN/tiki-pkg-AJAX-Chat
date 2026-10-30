@@ -145,6 +145,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				}
 			}
 
+			// If the complete schema already exists, do not run the installer again.
+			$existingTables = 0;
+			foreach ($expectedTables as $tableName) {
+				$result = $this->db->sqlQuery("SHOW TABLES LIKE '".$tableName."'");
+				if ($result->error()) {
+					throw new RuntimeException($result->getError());
+				}
+				if ($result->numRows() > 0) {
+					$existingTables++;
+				}
+				$result->free();
+			}
+			if ($existingTables === count($expectedTables)) {
+				throw new RuntimeException('Databázová schéma už je kompletne nainštalovaná. Opakovaná inštalácia je zablokovaná.');
+			}
+
 			foreach ($this->getDataBaseTableCreationQueries() as $sql) {
 				$result = $this->db->sqlQuery($sql);
 				if ($result->error()) {
