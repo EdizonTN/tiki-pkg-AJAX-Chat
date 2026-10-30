@@ -551,6 +551,13 @@ class CustomAJAXChat extends AJAXChat {
 				}
 				$channelID = (int)$this->getConfig('roomChannelDiff') + (int)$room['id'];
 				$defaultChannelID = (int)$this->getConfig('defaultChannelID');
+				if ((int)$this->getChannel() === $channelID) {
+					$this->setChannel($defaultChannelID);
+					$this->updateOnlineList();
+					$this->addInfoMessage($this->getConfig('defaultChannelName'), 'channelSwitch');
+					$this->addInfoMessage($defaultChannelID, 'channelID');
+					$this->_requestVars['lastID'] = 0;
+				}
 				$connection = $this->db->getConnectionID();
 				if (!$connection->begin_transaction()) {
 					$this->databaseError(__METHOD__, $this->db);
@@ -576,9 +583,6 @@ class CustomAJAXChat extends AJAXChat {
 					error_log('Mikrozone chat room deletion failed: '.$e->getMessage());
 					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Nepodarilo sa odstrániť miestnosť.');
 					return;
-				}
-				if((int)$this->getChannel() === $channelID) {
-					$this->switchChannel($this->getConfig('defaultChannelName'));
 				}
 				$this->removeRoomFromInvitationCache($channelID);
 				$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomDeleted'), $this->getPrivateRoomChannelName($room['name'])));
