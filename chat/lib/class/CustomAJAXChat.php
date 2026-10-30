@@ -6,21 +6,19 @@
  * @license Modified MIT License
  * @link https://blueimp.net/ajax/
  *
- * Mikrozone authentication adapter:
- * TikiWiki is the only identity and role authority. No chat passwords are used.
+ * Mikrozone adapter:
+ * - TikiWiki is the only identity and role authority.
+ * - Multiple named private rooms are stored separately from public channels.
  */
 
 class CustomAJAXChat extends AJAXChat {
 
-	// Authenticate only with a signed token issued by the local TikiWiki session.
 	function getValidLoginUserData() {
 		$claims = $this->verifyTikiAuthToken($this->getRequestVar('authToken'));
 		if(!$claims) {
 			return null;
 		}
-
 		$this->storeTikiAuthClaims($claims, $this->getRequestVar('authToken'));
-
 		return array(
 			'userID' => $claims['uid'],
 			'userName' => $this->trimUserName($claims['name']),
@@ -28,8 +26,6 @@ class CustomAJAXChat extends AJAXChat {
 		);
 	}
 
-	// Revalidate the chat session against a fresh Tiki token on every AJAX request.
-	// Tokens are refreshed by the browser before their 120-second lifetime expires.
 	function revalidateUserID() {
 		$token = $this->getRequestVar('authToken');
 		if(is_string($token) && $token !== '') {
@@ -37,22 +33,18 @@ class CustomAJAXChat extends AJAXChat {
 			if(!$claims || $claims['uid'] !== (int)$this->getUserID()) {
 				return false;
 			}
-
 			$oldName = $this->getUserName();
 			$oldRole = (int)$this->getUserRole();
 			$newName = $this->trimUserName($claims['name']);
 			$this->setUserName($newName);
 			$this->setUserRole($claims['role']);
 			$this->storeTikiAuthClaims($claims, $token);
-
 			if($oldName !== $newName || $oldRole !== $claims['role']) {
 				$this->updateOnlineList();
 			}
 			return true;
 		}
-
-		$expires = (int)$this->getSessionVar('TikiAuthExpires');
-		return ($expires > time());
+		return ((int)$this->getSessionVar('TikiAuthExpires') > time());
 	}
 
 	function verifyTikiAuthToken($token) {
@@ -73,14 +65,12 @@ class CustomAJAXChat extends AJAXChat {
 		$this->setSessionVar('TikiAuthToken', $token);
 	}
 
-	// Every authenticated Tiki user can access the configured public channels.
-	// Private channels remain protected by AJAX Chat's invitation checks.
+	// All configured public channels are available to authenticated Tiki users.
 	function &getChannels() {
 		if($this->_channels === null) {
 			$this->_channels = array();
 			$allChannels = $this->getAllChannels();
 			$limit = $this->getConfig('limitChannelList');
-
 			foreach($allChannels as $channelName => $channelID) {
 				if($limit && !in_array($channelID, $limit)) {
 					continue;
@@ -91,7 +81,6 @@ class CustomAJAXChat extends AJAXChat {
 		return $this->_channels;
 	}
 
-	// Store all existing public channels, including the configured default channel.
 	function &getAllChannels() {
 		if($this->_allChannels === null) {
 			$customChannels = $this->getCustomChannels();
@@ -113,10 +102,421 @@ class CustomAJAXChat extends AJAXChat {
 		return $this->_allChannels;
 	}
 
-	// Load the public channel list from the local channel definition file.
 	function getCustomChannels() {
 		$channels = null;
 		require(AJAX_CHAT_PATH.'lib/data/channels.php');
 		return array_flip($channels);
+	}
+
+	// Extend the upstream invitations with persistent private-room memberships.
+	function getInvitations() {
+		if($this->_invitations === null) {
+			$this->_invitations = parent::getInvitations();
+			$sql = 'SELECT r.id
+				FROM '.$this->getDataBaseTable('rooms').' r
+				LEFT JOIN '.$this->getDataBaseTable('roomMembers').' m
+					ON m.roomID = r.id AND m.userID = '.$this->db->makeSafe($this->getUserID()).'
+				WHERE r.ownerID = '.$this->db->makeSafe($this->getUserID()).'
+					OR m.userID IS NOT NULL';
+			$result = $this->db->sqlQuery($sql);
+			if($result->error()) {
+				echo $result->getError();
+				die();
+			}
+			while($row = $result->fetch()) {
+				$channelID = (int)$this->getConfig('roomChannelDiff') + (int)$row['id'];
+				if(!in_array($channelID, $this->_invitations)) {
+					$this->_invitations[] = $channelID;
+				}
+			}
+			$result->free();
+		}
+		return $this->_invitations;
+	}
+
+	function getPrivateRoomByID($roomID, $requireAccess = true) {
+		$roomID = (int)$roomID;
+		if($roomID < 1) {
+			return null;
+		}
+		$sql = 'SELECT id, ownerID, name
+			FROM '.$this->getDataBaseTable('rooms').'
+			WHERE id = '.$this->db->makeSafe($roomID).'
+			LIMIT 1';
+		$result = $this->db->sqlQuery($sql);
+		if($result->error()) {
+			echo $result->getError();
+			die();
+		}
+		$room = $result->fetch();
+		$result->free();
+		if(!$room) {
+			return null;
+		}
+		if($requireAccess && (int)$room['ownerID'] !== (int)$this->getUserID()) {
+			$sql = 'SELECT userID
+				FROM '.$this->getDataBaseTable('roomMembers').'
+				WHERE roomID = '.$this->db->makeSafe($roomID).'
+					AND userID = '.$this->db->makeSafe($this->getUserID()).'
+				LIMIT 1';
+			$result = $this->db->sqlQuery($sql);
+			if($result->error()) {
+				echo $result->getError();
+				die();
+			}
+			$member = $result->fetch();
+			$result->free();
+			if(!$member) {
+				return null;
+			}
+		}
+		return $room;
+	}
+
+	function getPrivateRoomByChannelID($channelID, $requireAccess = true) {
+		$diff = (int)$this->getConfig('roomChannelDiff');
+		$channelID = (int)$channelID;
+		if($channelID <= $diff) {
+			return null;
+		}
+		return $this->getPrivateRoomByID($channelID - $diff, $requireAccess);
+	}
+
+	function getPrivateRoomByName($name, $requireAccess = true) {
+		$name = $this->trimChannelName($name);
+		if($name === '') {
+			return null;
+		}
+		$sql = 'SELECT id
+			FROM '.$this->getDataBaseTable('rooms').'
+			WHERE name = "'.$this->db->makeSafe($name).'"
+			LIMIT 1';
+		$result = $this->db->sqlQuery($sql);
+		if($result->error()) {
+			echo $result->getError();
+			die();
+		}
+		$row = $result->fetch();
+		$result->free();
+		return $row ? $this->getPrivateRoomByID($row['id'], $requireAccess) : null;
+	}
+
+	function getPrivateRoomChannelName($name) {
+		return $this->getConfig('privateRoomPrefix').$name.$this->getConfig('privateRoomSuffix');
+	}
+
+	function getChannelIDFromChannelName($channelName) {
+		if(!$channelName) {
+			return null;
+		}
+		$channels = $this->getAllChannels();
+		if(array_key_exists($channelName, $channels)) {
+			return $channels[$channelName];
+		}
+		if($channelName == $this->getPrivateChannelName()) {
+			return $this->getPrivateChannelID();
+		}
+
+		$length = $this->stringLength($channelName);
+		$prefix = $this->getConfig('privateRoomPrefix');
+		$suffix = $this->getConfig('privateRoomSuffix');
+		$prefixLength = $this->stringLength($prefix);
+		$suffixLength = $this->stringLength($suffix);
+		if($length > ($prefixLength + $suffixLength)
+			&& $this->subString($channelName, 0, $prefixLength) == $prefix
+			&& $this->subString($channelName, $length - $suffixLength) == $suffix) {
+			$roomName = $this->subString($channelName, $prefixLength, $length - ($prefixLength + $suffixLength));
+			$room = $this->getPrivateRoomByName($roomName, true);
+			if($room) {
+				return (int)$this->getConfig('roomChannelDiff') + (int)$room['id'];
+			}
+			return null;
+		}
+
+		// Retain the upstream personal private-channel syntax: [TikiLogin].
+		$privatePrefix = $this->getConfig('privateChannelPrefix');
+		$privateSuffix = $this->getConfig('privateChannelSuffix');
+		$privatePrefixLength = $this->stringLength($privatePrefix);
+		$privateSuffixLength = $this->stringLength($privateSuffix);
+		if($length > ($privatePrefixLength + $privateSuffixLength)
+			&& $this->subString($channelName, 0, $privatePrefixLength) == $privatePrefix
+			&& $this->subString($channelName, $length - $privateSuffixLength) == $privateSuffix) {
+			$userName = $this->subString($channelName, $privatePrefixLength, $length - ($privatePrefixLength + $privateSuffixLength));
+			$userID = $this->getIDFromName($userName);
+			if($userID !== null) {
+				return $this->getPrivateChannelID($userID);
+			}
+		}
+		return null;
+	}
+
+	function getChannelNameFromChannelID($channelID) {
+		foreach($this->getAllChannels() as $name => $id) {
+			if($id == $channelID) {
+				return $name;
+			}
+		}
+		if((int)$channelID == (int)$this->getPrivateChannelID()) {
+			return $this->getPrivateChannelName();
+		}
+		$room = $this->getPrivateRoomByChannelID($channelID, false);
+		if($room) {
+			return $this->getPrivateRoomChannelName($room['name']);
+		}
+		$userName = $this->getNameFromID($channelID - $this->getConfig('privateChannelDiff'));
+		if($userName === null) {
+			return null;
+		}
+		return $this->getPrivateChannelName($userName);
+	}
+
+	function parseCustomCommands($text, $textParts) {
+		if(isset($textParts[0]) && $textParts[0] === '/room') {
+			$this->insertParsedMessageRoom($textParts);
+			return true;
+		}
+		return parent::parseCustomCommands($text, $textParts);
+	}
+
+	function insertParsedMessageRoom($textParts) {
+		$action = isset($textParts[1]) ? strtolower($textParts[1]) : 'help';
+		switch($action) {
+			case 'create':
+				if(!$this->getConfig('allowPrivateRooms') || $this->getUserRole() < AJAX_CHAT_USER) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), '/error InviteNotAllowed');
+					return;
+				}
+				$rawName = implode('_', array_slice($textParts, 2));
+				$name = $this->trimChannelName($rawName);
+				$maxLength = (int)$this->getConfig('privateRoomMaxNameLength');
+				if($name === '' || $this->stringLength($name) > $maxLength) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Použi: /room create nazov_miestnosti (max. '.$maxLength.' znakov).');
+					return;
+				}
+				if($this->getPrivateRoomByName($name, false) || array_key_exists($name, $this->getAllChannels())) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Miestnosť s týmto názvom už existuje.');
+					return;
+				}
+				$sql = 'SELECT COUNT(*) AS roomCount
+					FROM '.$this->getDataBaseTable('rooms').'
+					WHERE ownerID = '.$this->db->makeSafe($this->getUserID());
+				$result = $this->db->sqlQuery($sql);
+				if($result->error()) {
+					echo $result->getError();
+					die();
+				}
+				$countRow = $result->fetch();
+				$result->free();
+				if((int)$countRow['roomCount'] >= (int)$this->getConfig('maxPrivateRoomsPerUser')) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Dosiahol si maximálny počet vlastných súkromných miestností.');
+					return;
+				}
+				$sql = 'INSERT INTO '.$this->getDataBaseTable('rooms').'
+					(ownerID, name, dateTime)
+					VALUES (
+						'.$this->db->makeSafe($this->getUserID()).',
+						"'.$this->db->makeSafe($name).'",
+						NOW()
+					)';
+				$result = $this->db->sqlQuery($sql);
+				if($result->error()) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Miestnosť sa nepodarilo vytvoriť.');
+					return;
+				}
+				$roomID = (int)$this->db->getLastInsertedID();
+				if($roomID < 1) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Miestnosť sa nepodarilo vytvoriť.');
+					return;
+				}
+				$channelID = (int)$this->getConfig('roomChannelDiff') + $roomID;
+				$this->addRoomToInvitationCache($channelID);
+				$channelName = $this->getPrivateRoomChannelName($name);
+				$this->insertChatBotMessage($this->getPrivateMessageID(), 'Súkromná miestnosť vytvorená: '.$channelName);
+				$this->switchChannel($channelName);
+				break;
+
+			case 'list':
+				$this->insertParsedMessageList($textParts);
+				break;
+
+			case 'leave':
+				$this->leavePrivateRoom();
+				break;
+
+			case 'delete':
+				$rawName = implode('_', array_slice($textParts, 2));
+				if($rawName !== '') {
+					$room = $this->getPrivateRoomByName($rawName, false);
+				} else {
+					$room = $this->getPrivateRoomByChannelID($this->getChannel(), false);
+				}
+				if(!$room) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Súkromná miestnosť sa nenašla.');
+					return;
+				}
+				if((int)$room['ownerID'] !== (int)$this->getUserID() && $this->getUserRole() != AJAX_CHAT_ADMIN) {
+					$this->insertChatBotMessage($this->getPrivateMessageID(), '/error InviteNotAllowed');
+					return;
+				}
+				$channelID = (int)$this->getConfig('roomChannelDiff') + (int)$room['id'];
+				if((int)$this->getChannel() === $channelID) {
+					$this->switchChannel($this->getConfig('defaultChannelName'));
+				}
+				$defaultChannelID = (int)$this->getConfig('defaultChannelID');
+				$this->db->sqlQuery('UPDATE '.$this->getDataBaseTable('online').' SET channel = '.$this->db->makeSafe($defaultChannelID).' WHERE channel = '.$this->db->makeSafe($channelID));
+				$this->db->sqlQuery('DELETE FROM '.$this->getDataBaseTable('messages').' WHERE channel = '.$this->db->makeSafe($channelID));
+				$this->db->sqlQuery('DELETE FROM '.$this->getDataBaseTable('roomMembers').' WHERE roomID = '.$this->db->makeSafe($room['id']));
+				$this->db->sqlQuery('DELETE FROM '.$this->getDataBaseTable('rooms').' WHERE id = '.$this->db->makeSafe($room['id']));
+				$this->removeRoomFromInvitationCache($channelID);
+				$this->insertChatBotMessage($this->getPrivateMessageID(), 'Súkromná miestnosť '.$this->getPrivateRoomChannelName($room['name']).' bola odstránená.');
+				break;
+
+			case 'help':
+			default:
+				$this->insertChatBotMessage($this->getPrivateMessageID(), 'Príkazy: /room create nazov, /room list, /room leave, /room delete [nazov]. Pozvánky: /invite login a /uninvite login (iba vlastník miestnosti).');
+				break;
+		}
+	}
+
+	function leavePrivateRoom() {
+		$room = $this->getPrivateRoomByChannelID($this->getChannel(), true);
+		if(!$room) {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), 'Nie si v súkromnej miestnosti.');
+			return;
+		}
+		if((int)$room['ownerID'] === (int)$this->getUserID()) {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), 'Vlastník nemôže opustiť vlastnú miestnosť. Použi /room delete.');
+			return;
+		}
+		$this->removeRoomMember($room['id'], $this->getUserID());
+		$this->removeRoomFromInvitationCache((int)$this->getConfig('roomChannelDiff') + (int)$room['id']);
+		$this->switchChannel($this->getConfig('defaultChannelName'));
+		$this->insertChatBotMessage($this->getPrivateMessageID(), 'Opustil si súkromnú miestnosť '.$this->getPrivateRoomChannelName($room['name']).'.');
+	}
+
+	function insertParsedMessageInvite($textParts) {
+		$room = $this->getPrivateRoomByChannelID($this->getChannel(), true);
+		if(!$room) {
+			return parent::insertParsedMessageInvite($textParts);
+		}
+		if((int)$room['ownerID'] !== (int)$this->getUserID() && $this->getUserRole() != AJAX_CHAT_ADMIN) {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), '/error InviteNotAllowed');
+			return;
+		}
+		if(!isset($textParts[1]) || trim($textParts[1]) === '') {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), '/error MissingUserName');
+			return;
+		}
+		$targetName = $this->trimUserName($textParts[1]);
+		$toUserID = $this->getIDFromName($targetName);
+		if($toUserID === null) {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), '/error UserNameNotFound '.$targetName);
+			return;
+		}
+		if((int)$toUserID === (int)$room['ownerID'] || $this->isRoomMember($room['id'], $toUserID)) {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), $targetName.' už má prístup do tejto miestnosti.');
+			return;
+		}
+		$this->addRoomMember($room['id'], $toUserID, $targetName);
+		$roomName = $this->getPrivateRoomChannelName($room['name']);
+		$this->insertChatBotMessage($this->getPrivateMessageID(), '/inviteto '.$targetName.' '.$roomName);
+		$this->insertChatBotMessage($this->getPrivateMessageID($toUserID), '/invite '.$this->getUserName().' '.$roomName);
+	}
+
+	function insertParsedMessageUninvite($textParts) {
+		$room = $this->getPrivateRoomByChannelID($this->getChannel(), true);
+		if(!$room) {
+			return parent::insertParsedMessageUninvite($textParts);
+		}
+		if((int)$room['ownerID'] !== (int)$this->getUserID() && $this->getUserRole() != AJAX_CHAT_ADMIN) {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), '/error InviteNotAllowed');
+			return;
+		}
+		if(!isset($textParts[1]) || trim($textParts[1]) === '') {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), '/error MissingUserName');
+			return;
+		}
+		$targetName = $this->trimUserName($textParts[1]);
+		$toUserID = $this->getIDFromName($targetName);
+		if($toUserID === null) {
+			$sql = 'SELECT userID FROM '.$this->getDataBaseTable('roomMembers').'
+				WHERE roomID = '.$this->db->makeSafe($room['id']).'
+					AND userName = "'.$this->db->makeSafe($targetName).'"
+				LIMIT 1';
+			$result = $this->db->sqlQuery($sql);
+			if($result->error()) {
+				echo $result->getError();
+				die();
+			}
+			$row = $result->fetch();
+			$result->free();
+			$toUserID = $row ? (int)$row['userID'] : null;
+		}
+		if($toUserID === null || (int)$toUserID === (int)$room['ownerID'] || !$this->isRoomMember($room['id'], $toUserID)) {
+			$this->insertChatBotMessage($this->getPrivateMessageID(), 'Používateľ nemá prístup do tejto miestnosti.');
+			return;
+		}
+		$this->removeRoomMember($room['id'], $toUserID);
+		$roomName = $this->getPrivateRoomChannelName($room['name']);
+		$this->insertChatBotMessage($this->getPrivateMessageID(), '/uninviteto '.$targetName.' '.$roomName);
+		$this->insertChatBotMessage($this->getPrivateMessageID($toUserID), '/uninvite '.$this->getUserName().' '.$roomName);
+	}
+
+	function isRoomMember($roomID, $userID) {
+		$sql = 'SELECT userID FROM '.$this->getDataBaseTable('roomMembers').'
+			WHERE roomID = '.$this->db->makeSafe($roomID).'
+				AND userID = '.$this->db->makeSafe($userID).'
+			LIMIT 1';
+		$result = $this->db->sqlQuery($sql);
+		if($result->error()) {
+			echo $result->getError();
+			die();
+		}
+		$member = $result->fetch();
+		$result->free();
+		return (bool)$member;
+	}
+
+	function addRoomMember($roomID, $userID, $userName) {
+		$sql = 'INSERT INTO '.$this->getDataBaseTable('roomMembers').'
+			(roomID, userID, userName, dateTime)
+			VALUES (
+				'.$this->db->makeSafe($roomID).',
+				'.$this->db->makeSafe($userID).',
+				"'.$this->db->makeSafe($userName).'",
+				NOW()
+			)
+			ON DUPLICATE KEY UPDATE userName = VALUES(userName), dateTime = NOW()';
+		$result = $this->db->sqlQuery($sql);
+		if($result->error()) {
+			echo $result->getError();
+			die();
+		}
+	}
+
+	function removeRoomMember($roomID, $userID) {
+		$sql = 'DELETE FROM '.$this->getDataBaseTable('roomMembers').'
+			WHERE roomID = '.$this->db->makeSafe($roomID).'
+				AND userID = '.$this->db->makeSafe($userID);
+		$result = $this->db->sqlQuery($sql);
+		if($result->error()) {
+			echo $result->getError();
+			die();
+		}
+	}
+
+	function addRoomToInvitationCache($channelID) {
+		if($this->_invitations === null) {
+			$this->getInvitations();
+		}
+		if(!in_array($channelID, $this->_invitations)) {
+			$this->_invitations[] = $channelID;
+		}
+	}
+
+	function removeRoomFromInvitationCache($channelID) {
+		if($this->_invitations !== null) {
+			$this->_invitations = array_values(array_diff($this->_invitations, array($channelID)));
+		}
 	}
 }
