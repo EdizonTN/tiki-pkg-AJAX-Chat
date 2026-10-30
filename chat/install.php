@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				$result->free();
 			}
 			if ($existingTables === count($expectedTables)) {
-				throw new RuntimeException('Databázová schéma už je kompletne nainštalovaná. Opakovaná inštalácia je zablokovaná.');
+				return false;
 			}
 
 			foreach ($this->getDataBaseTableCreationQueries() as $sql) {
@@ -167,13 +167,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					throw new RuntimeException($result->getError());
 				}
 			}
+			return true;
 		}
 	}
 
 	try {
 		$installer = new CustomAJAXChatInstaller();
-		$installer->createDataBaseTables();
-		$resultMessage = 'Hotovo. Všetkých šesť tabuliek chatu bolo vytvorených alebo už existovalo. Existujúce tabuľky ani dáta neboli odstránené.';
+		if ($installer->createDataBaseTables()) {
+			$resultMessage = 'Hotovo. Chýbajúce chatové tabuľky boli vytvorené. Existujúce tabuľky ani dáta neboli odstránené.';
+		} else {
+			$resultMessage = 'Chatová databázová schéma už je kompletne nainštalovaná. Opakovaná inštalácia bola zablokovaná.';
+		}
 		$resultClass = 'success';
 	} catch (Throwable $e) {
 		error_log('Mikrozone chat installer: '.$e->getMessage());
