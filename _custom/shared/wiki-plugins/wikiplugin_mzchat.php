@@ -16,7 +16,7 @@ function wikiplugin_mzchat_info() {
 	);
 }
 
-function wikiplugin_mzchat($data, $params) {
+function wikiplugin_mzchat($data, $params, $offset = 0, $parseOptions = array()) {
 	global $user;
 
 	if (empty($user) || $user === 'Anonymous') {
