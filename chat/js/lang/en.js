@@ -20,6 +20,7 @@ var ajaxChatLang = {
 	privmsgto: '(whispers to %s)',
 	invite: '%s invites you to join %s.',
 	inviteto: 'Your invitation to %s to join channel %s has been sent.',
+	codeLanguageDialog: 'Code language (php, javascript, python, c, cpp, sql; type auto for automatic detection):',
 	uninvite: '%s uninvites you from channel %s.',
 	uninviteto: 'Your uninvitation to %s for channel %s has been sent.',	
 	queryOpen: 'Private channel opened to %s.',
