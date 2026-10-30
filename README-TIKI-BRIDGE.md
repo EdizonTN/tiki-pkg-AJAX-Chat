@@ -34,7 +34,14 @@ user identities and roles; the chat has no independent passwords or demo account
 6. Edit `_custom/shared/Bridge-config.php` to set the exact Tiki group names that should be chat moderators.
    Tiki administrators are chat administrators automatically. The file also contains
    `adminStealthInPrivateRooms`; set it to `true` to enable hidden administrator visits to
-   private rooms, or leave it `false` (the default) to show normal presence.
+   private rooms, or leave it `false` (the default) to show normal presence. Example:
+
+   ```php
+   return array(
+       'moderatorGroups' => array('Moderators'),
+       'adminStealthInPrivateRooms' => false
+   );
+   ```
 
 The saved path configuration contains:
 
@@ -57,7 +64,7 @@ After copying the chat and creating `lib/Chat-config.php`, sign in to Tiki as an
 and open the chat's `install.php` URL. The web installer:
 - requires an authenticated Tiki administrator;
 - uses a session-bound CSRF token and accepts POST only for installation;
-- creates/verifies the six expected tables in the configured chat database;
+- creates/verifies the six expected tables in the configured chat database, checks the required columns and requires InnoDB storage engines;
 - detects an already complete schema and leaves its tables and data untouched, while still updating the saved installation paths.
 
 It does not create the database or database account. After successful installation, revoke
@@ -65,7 +72,7 @@ the database user's `CREATE` privilege. The installer may remain in place: only 
 administrators can use it, and CSRF protection is required for POST. If the chat is moved,
 run it again to refresh the saved paths. When the complete schema already exists, this path
 refresh requires no `CREATE` privilege. Runtime access needs only `SELECT, INSERT, UPDATE,
-DELETE`. Direct web access to `chat.sql` is denied by `.htaccess`.
+DELETE`. All six chat tables use InnoDB so private-room deletion is transactional. Direct web access to `chat.sql` and `Chat-config.php` is denied by `.htaccess`. Database errors are written to the server error log; SQL diagnostics are not sent to chat clients.
 
 ## Tiki page embedding
 
