@@ -363,10 +363,19 @@ class CustomAJAXChat extends AJAXChat {
 					$this->switchChannel($this->getConfig('defaultChannelName'));
 				}
 				$defaultChannelID = (int)$this->getConfig('defaultChannelID');
-				$this->db->sqlQuery('UPDATE '.$this->getDataBaseTable('online').' SET channel = '.$this->db->makeSafe($defaultChannelID).' WHERE channel = '.$this->db->makeSafe($channelID));
-				$this->db->sqlQuery('DELETE FROM '.$this->getDataBaseTable('messages').' WHERE channel = '.$this->db->makeSafe($channelID));
-				$this->db->sqlQuery('DELETE FROM '.$this->getDataBaseTable('roomMembers').' WHERE roomID = '.$this->db->makeSafe($room['id']));
-				$this->db->sqlQuery('DELETE FROM '.$this->getDataBaseTable('rooms').' WHERE id = '.$this->db->makeSafe($room['id']));
+				$queries = array(
+					'UPDATE '.$this->getDataBaseTable('online').' SET channel = '.$this->db->makeSafe($defaultChannelID).' WHERE channel = '.$this->db->makeSafe($channelID),
+					'DELETE FROM '.$this->getDataBaseTable('messages').' WHERE channel = '.$this->db->makeSafe($channelID),
+					'DELETE FROM '.$this->getDataBaseTable('roomMembers').' WHERE roomID = '.$this->db->makeSafe($room['id']),
+					'DELETE FROM '.$this->getDataBaseTable('rooms').' WHERE id = '.$this->db->makeSafe($room['id'])
+				);
+				foreach($queries as $query) {
+					$result = $this->db->sqlQuery($query);
+					if($result->error()) {
+						echo $result->getError();
+						die();
+					}
+				}
 				$this->removeRoomFromInvitationCache($channelID);
 				$this->insertChatBotMessage($this->getPrivateMessageID(), 'Súkromná miestnosť '.$this->getPrivateRoomChannelName($room['name']).' bola odstránená.');
 				break;
