@@ -2217,8 +2217,8 @@ var ajaxChat = {
 				// Protect rendered code blocks from line-break conversion, URL linking,
 				// emoticons and custom text replacements.
 				var codeBlocks = [];
-				text = text.replace(/<pre class="mz-chat-code"[\\s\\S]*?<\\/pre>/g, function(codeBlock) {
-					var placeholder = '\\uE000' + codeBlocks.length.toString(36) + '\\uE001';
+				text = text.replace(/<pre class="mz-chat-code"[\s\S]*?<\/pre>/g, function(codeBlock) {
+					var placeholder = '\uE000' + codeBlocks.length.toString(36) + '\uE001';
 					codeBlocks.push({placeholder: placeholder, html: codeBlock});
 					return placeholder;
 				});
