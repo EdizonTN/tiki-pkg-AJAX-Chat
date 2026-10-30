@@ -54,7 +54,9 @@ class AJAXChat {
 			echo('<strong>Error:</strong> Could not find a readable Chat-config.php file in "'.AJAX_CHAT_PATH.'lib/".');
 			die();
 		}
-		$config = require($configFile);
+		$config = (isset($GLOBALS['mzChatConfig']) && is_array($GLOBALS['mzChatConfig']))
+			? $GLOBALS['mzChatConfig']
+			: require($configFile);
 		if (!is_array($config)) {
 			echo('<strong>Error:</strong> Chat-config.php must return a configuration array.');
 			die();
