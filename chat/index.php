@@ -11,8 +11,18 @@
 // Suppress errors:
 ini_set('display_errors', 0);
 
-// Path to the chat directory:
-define('AJAX_CHAT_PATH', dirname($_SERVER['SCRIPT_FILENAME']).'/');
+// Load the installer-generated configuration and use its stored chat filesystem path.
+$configFile = __DIR__.'/lib/Chat-config.php';
+if (!is_file($configFile) || !is_readable($configFile)) {
+	http_response_code(500);
+	exit('Chat is not configured. Run install.php first.');
+}
+$chatConfig = require($configFile);
+if (!is_array($chatConfig) || empty($chatConfig['paths']['chatRootPath'])) {
+	http_response_code(500);
+	exit('Chat paths are not configured. Run install.php first.');
+}
+define('AJAX_CHAT_PATH', rtrim($chatConfig['paths']['chatRootPath'], '/\\').DIRECTORY_SEPARATOR);
 
 // Include custom libraries and initialization code:
 require(AJAX_CHAT_PATH.'lib/custom.php');
