@@ -73,10 +73,13 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
 
 ## Current limitations to resolve before production
 
-- The upstream private-channel implementation provides one personal private channel per user.
-  It supports invitations/group conversation in that channel, but not multiple independently
-  named private rooms created by a user. This needs a separate room model and is not claimed
-  as complete.
+- Multiple named private rooms are now supported. Create one with `/room create nazov`,
+  list accessible rooms with `/room list`, leave a member room with `/room leave`, and
+  delete an owned room with `/room delete nazov`. The owner invites online users with
+  `/invite login` and removes them with `/uninvite login`. Membership is persistent.
+  Room names appear as `~nazov~`; each user may own up to 10 rooms by default.
+- Invitations currently target users who are online in the chat; offline Tiki-user lookup
+  is not implemented yet.
 - File upload is not implemented.
 - Syntax highlighting for code messages is not implemented yet.
 - The Tiki moderator group mapping must be set to the site's actual group name.
