@@ -149,3 +149,5 @@ $lang['privateRoomOwnerCannotLeave'] = 'Vlastník nemôže opustiť vlastnú mie
 $lang['privateRoomLeft'] = 'Opustil si súkromnú miestnosť %s.';
 $lang['privateRoomMemberAlready'] = '%s už má prístup do tejto miestnosti.';
 $lang['privateRoomMemberNotFound'] = 'Používateľ nemá prístup do tejto miestnosti.';
+
+$lang['privateRoomCreateDenied'] = 'Nemáš oprávnenie vytvárať súkromné miestnosti.';
