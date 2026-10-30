@@ -50,12 +50,14 @@ and open the chat's `install.php` URL. The web installer:
 - requires an authenticated Tiki administrator;
 - uses a session-bound CSRF token and accepts POST only for installation;
 - creates/verifies the six expected tables in the configured chat database;
-- refuses to run again when all six tables already exist.
+- detects an already complete schema and leaves its tables and data untouched, while still updating the saved installation paths.
 
-It does not create the database or database account. After successful installation, delete
-`install.php` and revoke the database user's `CREATE` privilege. Runtime access needs
-only `SELECT, INSERT, UPDATE, DELETE`. The direct web access to `chat.sql` is denied
-by `.htaccess`.
+It does not create the database or database account. After successful installation, revoke
+the database user's `CREATE` privilege. The installer may remain in place: only Tiki
+administrators can use it, and CSRF protection is required for POST. If the chat is moved,
+run it again to refresh the saved paths. When the complete schema already exists, this path
+refresh requires no `CREATE` privilege. Runtime access needs only `SELECT, INSERT, UPDATE,
+DELETE`. Direct web access to `chat.sql` is denied by `.htaccess`.
 
 ## Tiki page embedding
 
