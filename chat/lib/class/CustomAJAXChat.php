@@ -259,7 +259,7 @@ class CustomAJAXChat extends AJAXChat {
 		if((int)$channelID == (int)$this->getPrivateChannelID()) {
 			return $this->getPrivateChannelName();
 		}
-		$room = $this->getPrivateRoomByChannelID($channelID, false);
+		$room = $this->getPrivateRoomByChannelID($channelID, $this->getUserRole() != AJAX_CHAT_ADMIN);
 		if($room) {
 			return $this->getPrivateRoomChannelName($room['name']);
 		}
