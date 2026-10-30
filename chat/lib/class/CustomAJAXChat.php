@@ -86,6 +86,28 @@ class CustomAJAXChat extends AJAXChat {
 		return $this->_channels;
 	}
 
+	// Store all existing public channels, including the configured default channel.
+	function &getAllChannels() {
+		if($this->_allChannels === null) {
+			$customChannels = $this->getCustomChannels();
+			$defaultChannelFound = false;
+			foreach($customChannels as $name => $id) {
+				$this->_allChannels[$this->trimChannelName($name)] = $id;
+				if($id == $this->getConfig('defaultChannelID')) {
+					$defaultChannelFound = true;
+				}
+			}
+			if(!$defaultChannelFound) {
+				unset($this->_allChannels[$this->getConfig('defaultChannelName')]);
+				$this->_allChannels = array_merge(
+					array($this->trimChannelName($this->getConfig('defaultChannelName')) => $this->getConfig('defaultChannelID')),
+					$this->_allChannels
+				);
+			}
+		}
+		return $this->_allChannels;
+	}
+
 	// Load the public channel list from the local channel definition file.
 	function getCustomChannels() {
 		$channels = null;
