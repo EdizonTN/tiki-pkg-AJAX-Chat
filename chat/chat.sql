@@ -55,8 +55,10 @@ CREATE TABLE IF NOT EXISTS mz_chat_rooms (
 CREATE TABLE IF NOT EXISTS mz_chat_room_members (
 	roomID INT(10) UNSIGNED NOT NULL,
 	userID INT(10) UNSIGNED NOT NULL,
+	userName VARCHAR(48) NOT NULL,
 	dateTime DATETIME NOT NULL,
 	PRIMARY KEY (roomID, userID),
 	INDEX (userID),
+	INDEX (userName),
 	INDEX (dateTime)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
