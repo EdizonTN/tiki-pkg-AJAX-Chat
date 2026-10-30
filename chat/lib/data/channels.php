@@ -7,9 +7,8 @@
  * @link https://blueimp.net/ajax/
  */
 
-// List containing the custom channels:
-$channels = array();
-
-// Sample channel list:
-$channels[0] = 'Public';
-$channels[1] = 'Private';
+// Public channels available to all authenticated Mikrozone users.
+// Private conversations/rooms are managed separately by AJAX Chat.
+$channels = array(
+	'Public' => 0
+);
