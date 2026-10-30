@@ -87,6 +87,14 @@ class AJAXChat {
 
 require_once(AJAX_CHAT_PATH.'lib/class/CustomAJAXChat.php');
 
+class TestableCustomAJAXChat extends CustomAJAXChat {
+	function setAdminStealth($enabled) {
+		$this->_mzBridgeConfig['adminStealthInPrivateRooms'] = (bool)$enabled;
+	}
+}
+
+
+
 function check_room($condition, $message) {
 	if(!$condition) {
 		fwrite(STDERR, "FAIL: ".$message."\n");
@@ -117,5 +125,20 @@ $admin = new CustomAJAXChat(100, array(77), AJAX_CHAT_ADMIN);
 check_room($admin->getChannelIDFromChannelName('~Workshop~') === $roomChannelID, 'administrator can resolve a private room without an invitation');
 check_room($admin->getChannelNameFromChannelID($roomChannelID) === '~Workshop~', 'administrator can read a private room name without membership');
 check_room(in_array($roomChannelID, $admin->getInvitations(), true), 'administrator sees all private rooms in the channel list');
+
+$stealthAdmin = new TestableCustomAJAXChat(100, array(77), AJAX_CHAT_ADMIN);
+$stealthAdmin->setAdminStealth(true);
+check_room($stealthAdmin->isStealthAdminInPrivateRoom($roomChannelID), 'enabled stealth mode hides a non-member administrator in a private room');
+
+$visibleOwner = new TestableCustomAJAXChat(42, array(77), AJAX_CHAT_ADMIN);
+$visibleOwner->setAdminStealth(true);
+check_room(!$visibleOwner->isStealthAdminInPrivateRoom($roomChannelID), 'a room-owning administrator is not hidden');
+
+$visibleMember = new TestableCustomAJAXChat(77, array(77), AJAX_CHAT_ADMIN);
+$visibleMember->setAdminStealth(true);
+check_room(!$visibleMember->isStealthAdminInPrivateRoom($roomChannelID), 'an administrator who is a room member is not hidden');
+
+$disabledStealth = new TestableCustomAJAXChat(100, array(77), AJAX_CHAT_ADMIN);
+check_room(!$disabledStealth->isStealthAdminInPrivateRoom($roomChannelID), 'administrator stealth mode is disabled by default');
 
 echo "Private-room access checks passed.\n";
