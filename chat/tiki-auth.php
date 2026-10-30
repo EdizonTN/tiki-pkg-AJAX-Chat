@@ -35,7 +35,7 @@ if (!is_file($tikiSetup)) {
 	mz_chat_auth_error(500, 'tiki_setup_not_found');
 }
 
-// Tiki is installed one directory above chat/. Set the working directory and
+// Tiki is installed one directory above _CHAT/. Set the working directory and
 // virtual script path to the Tiki root so its relative includes and session
 // cookie path are calculated as they are for a normal Tiki request.
 $tikiRootReal = realpath($tikiRoot);
