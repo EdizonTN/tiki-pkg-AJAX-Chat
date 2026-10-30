@@ -62,7 +62,7 @@ $config['langAvailable'] = array(
 	'ar','bg','ca','cy','cz','da','de','el','en','es','et','fa','fi','fr','gl','he','hr','hu','in','it','ja','ka','kr','mk','nl','nl-be','no','pl','pt-br','pt-pt','ro','ru','sk','sl','sr','sv','th','tr','uk','zh','zh-tw'
 );
 // Default language:
-$config['langDefault'] = 'en';
+$config['langDefault'] = 'sk';
 // Language names (each languge code in available languages must have a display name assigned here):
 $config['langNames'] = array(
 	'ar'=>'عربي', 'bg'=>'Български', 'ca'=>'Català', 'cy'=>'Cymraeg', 'cz'=>'Česky', 'da'=>'Dansk', 'de'=>'Deutsch', 'el'=>'Ελληνικα', 'en'=>'English',
