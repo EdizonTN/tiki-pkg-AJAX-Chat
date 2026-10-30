@@ -95,6 +95,10 @@ The plugin embeds the chat and provides a link to open it in a separate browser 
 - Invitations currently target users who are online in the chat; offline Tiki-user lookup
   is not implemented yet.
 - File upload is not implemented.
+- The optional Ruby socket server is not used by this deployment. It is AGPL-licensed;
+  keep `socketServerEnabled = false` and omit `chat/socket/` from the deployed copy.
+  The main chat core and other bundled assets have separate license notices in
+  `THIRD-PARTY-NOTICES.md`.
 - Multiline code messages support `[code=php]...[/code]` and language selection from the Code toolbar button; `auto` enables automatic detection. The code is escaped before rendering. highlight.js 11.12.0 is bundled locally under BSD-3-Clause; see `THIRD-PARTY-NOTICES.md`.
 - The Tiki moderator group mapping must be set to the site's actual group name.
 - The bridge and chat must be tested together on the real Tiki 30.1 + PHP-FPM + MariaDB stack
