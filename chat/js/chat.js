@@ -1495,6 +1495,7 @@ var ajaxChat = {
 	},
 
 	updateChatlistView: function() {
+		this.highlightCodeBlocks();
 		if(this.dom['chatList'].childNodes && this.settings['maxMessages']) {
 			while(this.dom['chatList'].childNodes.length > this.settings['maxMessages']) {
 				this.dom['chatList'].removeChild(this.dom['chatList'].firstChild);
@@ -1504,6 +1505,20 @@ var ajaxChat = {
 		if(this.settings['autoScroll']) {
 			var self = this;
 			setTimeout(function() { self.scrollChatList(); }, 50);
+		}
+	},
+
+	highlightCodeBlocks: function() {
+		if(typeof hljs === 'undefined' || !this.dom['chatList'] || !this.dom['chatList'].querySelectorAll) {
+			return;
+		}
+		var codeElements = this.dom['chatList'].querySelectorAll('pre.mz-chat-code code:not([data-highlighted])');
+		for(var i = 0; i < codeElements.length; i++) {
+			try {
+				hljs.highlightElement(codeElements[i]);
+			} catch(e) {
+				this.debugMessage('highlightCodeBlocks', e);
+			}
 		}
 	},
 
@@ -2131,6 +2146,15 @@ var ajaxChat = {
 				else
 					this.dom['inputField'].focus();
 				break;
+			case 'code':
+				var language = prompt(this.lang['codeLanguageDialog'] || 'Code language (php, javascript, python, c, cpp, sql; use auto for automatic detection):', 'auto');
+				if(language === null) {
+					this.dom['inputField'].focus();
+					break;
+				}
+				language = language.replace(/^\\s+|\\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
+				this.insert('[code' + (language && language !== 'auto' ? '=' + language : '') + ']', '[/code]');
+				break;
 			default:
 				this.insert('[' + bbCode + ']', '[/' + bbCode + ']');
 		}
@@ -2680,7 +2704,7 @@ var ajaxChat = {
 		}
 		// Remove the BBCode tags:
 		return text.replace(
-			/\[(\w+)(?:=([^<>]*?))?\](.+?)\[\/\1\]/gm,
+			/\[(\w+)(?:=([^<>]*?))?\]([\s\S]+?)\[\/\1\]/gm,
 			this.replaceBBCodeCallback
 		);
 	},
@@ -2690,8 +2714,8 @@ var ajaxChat = {
 		if(!ajaxChat.inArray(ajaxChat.bbCodeTags, p1)) {
 			return str;
 		}
-		// Avoid invalid XHTML (unclosed tags):
-		if(ajaxChat.containsUnclosedTags(p3)) {
+		// Code is escaped as literal text below, so HTML-like source must not block it.
+		if(p1 !== 'code' && ajaxChat.containsUnclosedTags(p3)) {
 			return str;
 		}
 		switch(p1) {
@@ -2704,7 +2728,7 @@ var ajaxChat = {
 			case 'quote':
 				return ajaxChat.replaceBBCodeQuote(p3, p2);
 			case 'code':
-				return ajaxChat.replaceBBCodeCode(p3);
+				return ajaxChat.replaceBBCodeCode(p3, p2);
 			case 'u':
 				return ajaxChat.replaceBBCodeUnderline(p3);
 			default:
@@ -2791,11 +2815,20 @@ var ajaxChat = {
 				+ '</q></span>';
 	},
 
-	replaceBBCodeCode: function(content) {
-		// Replace vertical tabs and multiple spaces with two non-breaking space characters:
-		return 	'<code>'
-				+ this.replaceBBCode(content.replace(/\t|(?:  )/gm, '&#160;&#160;'))
-				+ '</code>';
+	replaceBBCodeCode: function(content, language) {
+		var languageClass = '';
+		language = (language || '').replace(/^\\s+|\\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
+		if(language === 'auto') {
+			language = '';
+		} else if(language && typeof hljs !== 'undefined' && !hljs.getLanguage(language)) {
+			language = 'plaintext';
+		}
+		if(language) {
+			languageClass = ' class="language-' + language + '"';
+		}
+		// Code is literal text: escape HTML and do not recursively parse BBCode inside it.
+		var code = this.encodeSpecialChars(content.replace(/\t/g, '    '));
+		return '<pre class="mz-chat-code" data-language="' + this.encodeSpecialChars(language || 'auto') + '"><code' + languageClass + '>' + code + '</code></pre>';
 	},
 
 	replaceBBCodeUnderline: function(content) {
