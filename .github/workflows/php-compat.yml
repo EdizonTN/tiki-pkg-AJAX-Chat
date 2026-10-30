@@ -1,0 +1,50 @@
+name: PHP compatibility
+
+on:
+  push:
+    branches:
+      - "mz/**"
+  pull_request:
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.2", "8.3", "8.4"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mysqli, mbstring, iconv
+          coverage: none
+
+      - name: Check required extensions
+        run: php -r "exit(extension_loaded('mysqli') ? 0 : 1);"
+
+      - name: Lint all PHP files
+        shell: bash
+        run: |
+          set -euo pipefail
+          find chat _custom -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do
+            php -l "$file"
+          done
+
+      - name: Test Tiki token helper
+        run: |
+          php -r '
+          require "chat/lib/class/MZChatAuth.php";
+          $secret = str_repeat("a", 64);
+          $now = time();
+          $claims = ["uid"=>42, "login"=>"test", "name"=>"test", "role"=>1, "iat"=>$now, "exp"=>$now+120, "nonce"=>bin2hex(random_bytes(16))];
+          $token = MZChatAuth::createToken($claims, $secret);
+          $decoded = MZChatAuth::verifyToken($token, $secret);
+          if (!$decoded || $decoded["uid"] !== 42) { fwrite(STDERR, "Token test failed\n"); exit(1); }
+          if (MZChatAuth::verifyToken($token, str_repeat("b", 64)) !== false) { fwrite(STDERR, "Wrong-secret test failed\n"); exit(1); }
+          echo "Token tests passed\n";
+          '
