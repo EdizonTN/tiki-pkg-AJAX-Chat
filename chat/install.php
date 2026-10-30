@@ -280,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		if ($installer->createDataBaseTables()) {
 			$resultMessage = 'Hotovo. Chýbajúce chatové tabuľky boli vytvorené. Existujúce tabuľky ani dáta neboli odstránené.';
 		} else {
-			$resultMessage = 'Chatová databázová schéma už je kompletne nainštalovaná. Opakovaná inštalácia bola zablokovaná.';
+			$resultMessage = 'Chatová databázová schéma už existuje. Cesty a konfigurácia bridge boli aktualizované; tabuľky sa nemenili.';
 		}
 		$resultClass = 'success';
 	} catch (Throwable $e) {
@@ -312,5 +312,5 @@ if ($resultMessage !== '') {
 }
 echo '<form method="post"><input type="hidden" name="csrf_token" value="'.$token.'">';
 echo '<button type="submit">Vytvoriť / overiť databázové tabuľky</button></form>';
-echo '<p><strong>Po úspešnej inštalácii:</strong> odstráňte súbor <code>install.php</code> a odoberte databázovému používateľovi oprávnenie <code>CREATE</code>. Chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
+echo '<p><strong>Po úspešnej inštalácii:</strong> odoberte databázovému používateľovi oprávnenie <code>CREATE</code>. Inštalátor môžete ponechať: prístup majú iba administrátori TikiWiki a CSRF token chráni POST. Pri presunutí chatu ho spustite znova, aby sa aktualizovali uložené cesty. Ak ho z bezpečnostných dôvodov odstránite, pred budúcou zmenou umiestnenia ho obnovte z distribúcie.</p><p>Chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
 echo '</main></body></html>';
