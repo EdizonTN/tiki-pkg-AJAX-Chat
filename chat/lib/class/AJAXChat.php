@@ -82,6 +82,7 @@ class AJAXChat {
 		$this->_requestVars['getInfos']		= isset($_REQUEST['getInfos'])		? $_REQUEST['getInfos']			: null;
 		$this->_requestVars['lang']			= isset($_REQUEST['lang'])			? $_REQUEST['lang']				: null;
 		$this->_requestVars['delete']		= isset($_REQUEST['delete'])		? (int)$_REQUEST['delete']		: null;
+		$this->_requestVars['authToken']	= isset($_SERVER['HTTP_X_MZ_AUTH_TOKEN']) ? $_SERVER['HTTP_X_MZ_AUTH_TOKEN'] : (isset($_POST['authToken']) ? $_POST['authToken'] : null);
 		
 		// Initialize custom request variables:
 		$this->initCustomRequestVars();
@@ -143,6 +144,7 @@ class AJAXChat {
 			$this->getConfig('forceAutoLogin') ||
 			$this->getRequestVar('login') ||
 			$this->getRequestVar('userName') ||
+			$this->getRequestVar('authToken') ||
 			$this->getRequestVar('shoutbox')
 			) {
 			$this->login();
