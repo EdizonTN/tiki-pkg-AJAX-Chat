@@ -41,6 +41,10 @@ $config['tikiRootPath'] = dirname(__DIR__, 2).DIRECTORY_SEPARATOR;
 $config['mzChatSharedSecret'] = 'REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_64_HEX_CHARACTERS';
 // Tiki group names which grant chat moderator privileges (Tiki Admins are always chat admins).
 $config['tikiChatModeratorGroups'] = array();
+$config['roomChannelDiff'] = 1500000000;
+$config['allowPrivateRooms'] = true;
+$config['maxPrivateRoomsPerUser'] = 10;
+$config['privateRoomMaxNameLength'] = 40;
 
 // Database table names:
 $config['dbTableNames'] = array();
@@ -48,6 +52,8 @@ $config['dbTableNames']['online']		= 'mz_chat_online';
 $config['dbTableNames']['messages']		= 'mz_chat_messages';
 $config['dbTableNames']['bans']			= 'mz_chat_bans';
 $config['dbTableNames']['invitations']	= 'mz_chat_invitations';
+$config['dbTableNames']['rooms']		= 'mz_chat_rooms';
+$config['dbTableNames']['roomMembers']	= 'mz_chat_room_members';
 
 // Available languages:
 $config['langAvailable'] = array(
