@@ -31,6 +31,14 @@ class AJAXChat {
 		$this->initialize();
 	}
 
+	function databaseError($context, $errorSource) {
+		$details = is_object($errorSource) && method_exists($errorSource, 'getError')
+			? $errorSource->getError() : 'Unknown database error';
+		error_log('AJAX Chat database error in '.$context.': '.$details);
+		http_response_code(500);
+		exit('Chat database error.');
+	}
+
 	function initialize() {
 		// Initialize configuration settings:
 		$this->initConfig();
@@ -105,14 +113,12 @@ class AJAXChat {
 			// Connect to the database server:
 			$this->db->connect($this->_config['dbConnection']);
 			if($this->db->error()) {
-				echo $this->db->getError();
-				die();
+				$this->databaseError(__METHOD__, $this->db);
 			}
 			// Select the database:
 			$this->db->select($this->_config['dbConnection']['name']);
 			if($this->db->error()) {
-				echo $this->db->getError();
-				die();
+				$this->databaseError(__METHOD__, $this->db);
 			}
 		}
 		// Unset the dbConnection array for safety purposes:
@@ -630,8 +636,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		$this->resetOnlineUsersData();
@@ -648,8 +653,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		$this->removeUserFromOnlineUsersData();
@@ -671,8 +675,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		$this->resetOnlineUsersData();
@@ -1409,8 +1412,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		$row = $result->fetch();
@@ -1456,8 +1458,7 @@ class AJAXChat {
 			
 			// Stop if an error occurs:
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 			
 			if($result->affectedRows() == 1) {
@@ -1548,8 +1549,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		if($this->getConfig('socketServerEnabled')) {
@@ -1673,8 +1673,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 
 		// Update the socket server authentication for the kicked user:
@@ -1703,8 +1702,7 @@ class AJAXChat {
 			
 			// Stop if an error occurs:
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 			
 			while($row = $result->fetch()) {
@@ -1777,8 +1775,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 	
@@ -1793,8 +1790,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 	
@@ -1809,8 +1805,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 	
@@ -1831,8 +1826,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		$this->resetOnlineUsersData();
@@ -1853,8 +1847,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		if($result->numRows() > 0) {
@@ -1894,8 +1887,7 @@ class AJAXChat {
 			
 			// Stop if an error occurs:
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 		}
 	}
@@ -2065,8 +2057,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		$messages = '';
@@ -2140,8 +2131,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 		
 		$messages = '';
@@ -2307,8 +2297,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 
 		$xml = '<messages>';
@@ -2354,8 +2343,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 	
@@ -2424,8 +2412,7 @@ class AJAXChat {
 			
 			// Stop if an error occurs:
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 			
 			while($row = $result->fetch()) {
@@ -2607,8 +2594,7 @@ class AJAXChat {
 			
 			// Stop if an error occurs:
 			if($result->error()) {
-				echo $result->getError();
-				die();
+				$this->databaseError(__METHOD__, $result);
 			}
 			
 			while($row = $result->fetch()) {
@@ -2631,8 +2617,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 
@@ -2657,8 +2642,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 
@@ -2677,8 +2661,7 @@ class AJAXChat {
 		
 		// Stop if an error occurs:
 		if($result->error()) {
-			echo $result->getError();
-			die();
+			$this->databaseError(__METHOD__, $result);
 		}
 	}
 	
