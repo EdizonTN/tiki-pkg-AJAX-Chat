@@ -133,7 +133,7 @@ $lang['logsSearch'] = 'Search';
 $lang['logsPrivateChannels'] = 'Private Channels';
 $lang['logsPrivateMessages'] = 'Private Messages';
 
-$lang['privateRoomHelp'] = 'Commands: /room create Room_Name, /room list, /room leave, /room delete [Room_Name]. Invite online users with /invite login and remove them with /uninvite login (room owner only).';
+$lang['privateRoomHelp'] = 'Commands: /room create Room_Name, /room list, /room leave, /room delete [Room_Name]. Admins can use /room list all. Invite online users with /invite login and remove them with /uninvite login (room owner only).';
 $lang['privateRoomNameInvalid'] = 'Enter a room name of up to %d characters using letters, numbers, hyphens or underscores.';
 $lang['privateRoomNameExists'] = 'A room or public channel with this name already exists.';
 $lang['privateRoomLimitReached'] = 'You have reached the maximum number of private rooms you can own.';
