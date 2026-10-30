@@ -1,6 +1,6 @@
 # Mikrozone AJAX Chat – TikiWiki 30 bridge
 
-This branch adds a Tiki-backed authentication bridge. TikiWiki remains the authority for
+This branch adds a Tiki-backed authentication bridge and private-room administration controls. TikiWiki remains the authority for
 user identities and roles; the chat has no independent passwords or demo accounts.
 
 ## Authentication design
@@ -16,6 +16,11 @@ user identities and roles; the chat has no independent passwords or demo account
   `tiki_p_admin` permission) maps to chat administrator.
 - Moderator groups are read from the Tiki-managed `_custom/shared/Bridge-config.php` file
   (`moderatorGroups`). The installer creates it with an empty default list.
+- Tiki administrators can access every private room, even without an invitation or membership.
+  Moderators retain global message-deletion rights, but do not automatically gain private-room access.
+- The optional `adminStealthInPrivateRooms` setting hides an administrator's presence in a private
+  room when that administrator is neither its owner nor a member. It also suppresses channel
+  enter/leave and logout notices for that hidden visit. It defaults to `false`.
 
 ## Deployment and configuration
 
@@ -26,7 +31,10 @@ user identities and roles; the chat has no independent passwords or demo account
    (64 hexadecimal characters recommended). Generate one with `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`.
    Keep it private; it is never sent to JavaScript.
 5. Sign in to Tiki as an administrator and open the chat's `install.php` URL. The installer walks up the filesystem hierarchy **once during installation** to locate `tiki-setup.php`, derives the corresponding URL paths, creates the bridge configuration if needed, and saves all detected paths into `Chat-config.php`.
-6. Edit `_custom/shared/Bridge-config.php` to set the exact Tiki group names that should be chat moderators. Tiki administrators are chat administrators automatically.
+6. Edit `_custom/shared/Bridge-config.php` to set the exact Tiki group names that should be chat moderators.
+   Tiki administrators are chat administrators automatically. The file also contains
+   `adminStealthInPrivateRooms`; set it to `true` to enable hidden administrator visits to
+   private rooms, or leave it `false` (the default) to show normal presence.
 
 The saved path configuration contains:
 
@@ -36,7 +44,7 @@ The saved path configuration contains:
 
 Normal chat requests and the authentication endpoint read these stored values. They do not search parent directories or re-detect installation paths. If the chat is moved, run the installer again to update the saved paths; it preserves the database settings and HMAC secret.
 
-The bridge settings file is separate from the chat's private configuration. Tiki-side integration owns `Bridge-config.php`; database credentials and the HMAC secret remain only in `Chat-config.php`.
+The bridge settings file is separate from the chat's private configuration. Tiki-side integration owns `Bridge-config.php`; database credentials and the HMAC secret remain only in `Chat-config.php`. The installer validates required database credentials and the HMAC secret before attempting schema operations. Direct HTTP access to `Chat-config.php` is denied by the chat directory's `.htaccess`. The chat URL is generated from the installer-saved root-relative path, not the request's Host header.
 
 ## Database installation
 
@@ -62,7 +70,7 @@ DELETE`. Direct web access to `chat.sql` is denied by `.htaccess`.
 ## Tiki page embedding
 
 Tiki page embedding and the wiki plugin are intentionally deferred to a later integration phase.
-The Phase 6 wiki plugin still contains the old `/_CHAT/` URL and must not be used when testing a relocated chat directory. For Phase 7, open the chat directly through its detected URL.
+The Phase 6 wiki plugin still contains the old `/_CHAT/` URL and must not be used when testing a relocated chat directory. For Phase 8, open the chat directly through its detected URL.
 
 ## Current limitations to resolve before production
 
@@ -79,7 +87,7 @@ The Phase 6 wiki plugin still contains the old `/_CHAT/` URL and must not be use
   The main chat core and other bundled assets have separate license notices in
   `THIRD-PARTY-NOTICES.md`.
 - Multiline code messages support `[code=php]...[/code]` and language selection from the Code toolbar button; `auto` enables automatic detection. The code is escaped before rendering. highlight.js 11.12.0 is bundled locally under BSD-3-Clause; see `THIRD-PARTY-NOTICES.md`.
-- The Tiki moderator group mapping in `_custom/shared/Bridge-config.php` must be set to the site's actual group name.
+- The Tiki moderator group mapping in `_custom/shared/Bridge-config.php` must be set to the site's actual group name. The optional administrator stealth setting is disabled by default.
 - The bridge and chat must be tested together on the Tiki 30.1 + PHP + MariaDB stack
   before deployment. No runtime test against the user's hosting environment has been performed.
 
