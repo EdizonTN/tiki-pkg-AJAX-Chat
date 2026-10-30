@@ -35,6 +35,23 @@ if (!is_file($tikiSetup)) {
 	mz_chat_auth_error(500, 'tiki_setup_not_found');
 }
 
+// Tiki is installed one directory above chat/. Set the working directory and
+// virtual script path to the Tiki root so its relative includes and session
+// cookie path are calculated as they are for a normal Tiki request.
+$tikiRootReal = realpath($tikiRoot);
+if($tikiRootReal === false || !is_dir($tikiRootReal) || !chdir($tikiRootReal)) {
+	mz_chat_auth_error(500, 'tiki_root_unavailable');
+}
+$scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\\\', '/', $_SERVER['SCRIPT_NAME']) : '/chat/tiki-auth.php';
+$tikiWebPath = rtrim(dirname(dirname($scriptName)), '/');
+if($tikiWebPath === '') {
+	$tikiWebPath = '';
+}
+$tikiIndexPath = $tikiWebPath.'/index.php';
+$_SERVER['SCRIPT_NAME'] = $tikiIndexPath;
+$_SERVER['PHP_SELF'] = $tikiIndexPath;
+$_SERVER['REQUEST_URI'] = $tikiIndexPath;
+
 require_once($tikiSetup);
 
 global $user, $tiki_p_admin;
