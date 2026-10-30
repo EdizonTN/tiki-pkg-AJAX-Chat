@@ -56,7 +56,12 @@ class CustomAJAXChat extends AJAXChat {
 	}
 
 	function verifyTikiAuthToken($token) {
-		return MZChatAuth::verifyToken($token, $this->getConfig('mzChatSharedSecret'));
+		$claims = MZChatAuth::verifyToken($token, $this->getConfig('mzChatSharedSecret'));
+		// AJAX Chat reserves ID ranges above this value for private channels/messages.
+		if($claims && $claims['uid'] >= (int)$this->getConfig('privateChannelDiff')) {
+			return false;
+		}
+		return $claims;
 	}
 
 	function storeTikiAuthClaims(array $claims, $token) {
