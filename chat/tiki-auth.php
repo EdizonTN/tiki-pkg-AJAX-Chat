@@ -51,6 +51,7 @@ $tikiIndexPath = $tikiWebPath.'/index.php';
 $_SERVER['SCRIPT_NAME'] = $tikiIndexPath;
 $_SERVER['PHP_SELF'] = $tikiIndexPath;
 $_SERVER['REQUEST_URI'] = $tikiIndexPath;
+$_SERVER['SCRIPT_FILENAME'] = $tikiRootReal.DIRECTORY_SEPARATOR.'index.php';
 
 require_once($tikiSetup);
 
