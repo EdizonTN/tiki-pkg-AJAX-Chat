@@ -2210,13 +2210,27 @@ var ajaxChat = {
 
 	replaceText: function(text) {
 		try{
-			text = this.replaceLineBreaks(text);
 			if(text.charAt(0) === '/') {
 				text = this.replaceCommands(text);
 			} else {
 				text = this.replaceBBCode(text);
+				// Protect rendered code blocks from line-break conversion, URL linking,
+				// emoticons and custom text replacements.
+				var codeBlocks = [];
+				text = text.replace(/<pre class="mz-chat-code"[\\s\\S]*?<\\/pre>/g, function(codeBlock) {
+					var placeholder = '\\uE000' + codeBlocks.length.toString(36) + '\\uE001';
+					codeBlocks.push({placeholder: placeholder, html: codeBlock});
+					return placeholder;
+				});
+				text = this.replaceLineBreaks(text);
 				text = this.replaceHyperLinks(text);
 				text = this.replaceEmoticons(text);
+				text = this.breakLongWords(text);
+				text = this.replaceCustomText(text);
+				for(var i = 0; i < codeBlocks.length; i++) {
+					text = text.replace(codeBlocks[i].placeholder, codeBlocks[i].html);
+				}
+				return text;
 			}
 			text = this.breakLongWords(text);
 			text = this.replaceCustomText(text);
