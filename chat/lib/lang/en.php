@@ -38,7 +38,7 @@ $lang['bbCodeTitleBold'] = 'Bold text: [b]text[/b]';
 $lang['bbCodeTitleItalic'] = 'Italic text: [i]text[/i]';
 $lang['bbCodeTitleUnderline'] = 'Underline text: [u]text[/u]';
 $lang['bbCodeTitleQuote'] = 'Quote text: [quote]text[/quote] or [quote=author]text[/quote]';
-$lang['bbCodeTitleCode'] = 'Code display: [code]code[/code]';
+$lang['bbCodeTitleCode'] = 'Multiline code block with optional syntax highlighting: [code=php]...[/code]';
 $lang['bbCodeTitleURL'] = 'Insert URL: [url]http://example.org[/url] or [url=http://example.org]text[/url]';
 $lang['bbCodeTitleImg'] = 'Insert image: [img]http://example.org/image.jpg[/img]';
 $lang['bbCodeTitleColor'] = 'Font Color: [color=red]text[/color]';
