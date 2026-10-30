@@ -293,7 +293,7 @@ class CustomAJAXChat extends AJAXChat {
 		switch($action) {
 			case 'create':
 				if(!$this->getConfig('allowPrivateRooms') || $this->getUserRole() < AJAX_CHAT_USER) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), '/error InviteNotAllowed');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomCreateDenied'));
 					return;
 				}
 				$rawName = implode('_', array_slice($textParts, 2));
@@ -335,7 +335,7 @@ class CustomAJAXChat extends AJAXChat {
 				}
 				$roomID = (int)$this->db->getLastInsertedID();
 				if($roomID < 1) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Miestnosť sa nepodarilo vytvoriť.');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomCreateFailed'));
 					return;
 				}
 				$channelID = (int)$this->getConfig('roomChannelDiff') + $roomID;
@@ -365,7 +365,7 @@ class CustomAJAXChat extends AJAXChat {
 					return;
 				}
 				if((int)$room['ownerID'] !== (int)$this->getUserID() && $this->getUserRole() != AJAX_CHAT_ADMIN) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), '/error InviteNotAllowed');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomDeleteDenied'));
 					return;
 				}
 				$channelID = (int)$this->getConfig('roomChannelDiff') + (int)$room['id'];
