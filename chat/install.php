@@ -69,6 +69,24 @@ function mzWritePhpConfig($file, array $values) {
 	return true;
 }
 
+function mzWriteBridgeConfig($file, array $values) {
+	$directory = dirname($file);
+	if (!is_dir($directory) || !is_writable($directory)) {
+		return false;
+	}
+	$tempFile = $file.'.tmp.'.bin2hex(random_bytes(6));
+	$contents = "<?php\\n// Tiki-managed Mikrozone chat bridge settings.\\nreturn ".var_export($values, true).";\\n";
+	if (file_put_contents($tempFile, $contents, LOCK_EX) === false) {
+		return false;
+	}
+	@chmod($tempFile, 0640);
+	if (!@rename($tempFile, $file)) {
+		@unlink($tempFile);
+		return false;
+	}
+	return true;
+}
+
 $configFile = AJAX_CHAT_PATH.'lib/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
 	mzInstallerStop(500, 'Chýba alebo nie je čitateľný súbor lib/Chat-config.php. Najprv skopírujte Chat-config.php.example na Chat-config.php a doplňte databázové údaje a HMAC secret.');
@@ -76,6 +94,22 @@ if (!is_file($configFile) || !is_readable($configFile)) {
 $mzChatInstallerConfig = require($configFile);
 if (!is_array($mzChatInstallerConfig)) {
 	mzInstallerStop(500, 'Chat-config.php musí vracať konfiguračné pole.');
+}
+
+$db = isset($mzChatInstallerConfig['dbConnection']) && is_array($mzChatInstallerConfig['dbConnection'])
+	? $mzChatInstallerConfig['dbConnection'] : array();
+foreach (array('host', 'user', 'pass', 'name') as $key) {
+	if (!isset($db[$key]) || !is_string($db[$key]) || trim($db[$key]) === ''
+		|| strpos($db[$key], 'REPLACE_WITH_') === 0) {
+		mzInstallerStop(500, 'Neplatná databázová konfigurácia. Skontrolujte host, user, pass a name v Chat-config.php.');
+	}
+}
+if (!isset($db['type']) || $db['type'] !== 'mysqli') {
+	mzInstallerStop(500, 'Databázový typ musí byť mysqli.');
+}
+$secret = isset($mzChatInstallerConfig['mzChatSharedSecret']) ? $mzChatInstallerConfig['mzChatSharedSecret'] : '';
+if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH_') === 0) {
+	mzInstallerStop(500, 'HMAC secret musí byť jedinečný náhodný reťazec s dĺžkou aspoň 32 znakov.');
 }
 
 // Path detection is deliberately performed only by this installer.
@@ -247,12 +281,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			throw new RuntimeException('Nepodarilo sa vytvoriť adresár _custom/shared.');
 		}
 		$bridgeConfigPath = $bridgeDirectory.DIRECTORY_SEPARATOR.'Bridge-config.php';
-		if (!is_file($bridgeConfigPath)) {
-			$bridgeDefaults = "<?php\n// Tiki-managed Mikrozone chat bridge settings.\nreturn ".var_export(array('moderatorGroups' => array()), true).";\n";
-			if (file_put_contents($bridgeConfigPath, $bridgeDefaults, LOCK_EX) === false) {
-				throw new RuntimeException('Nepodarilo sa vytvoriť Bridge-config.php.');
+		$bridgeConfig = array(
+			'moderatorGroups' => array(),
+			'adminStealthInPrivateRooms' => false
+		);
+		if (is_file($bridgeConfigPath)) {
+			$existingBridgeConfig = require($bridgeConfigPath);
+			if (!is_array($existingBridgeConfig)) {
+				throw new RuntimeException('Bridge-config.php musí vracať konfiguračné pole.');
 			}
-			@chmod($bridgeConfigPath, 0640);
+			$bridgeConfig = array_merge($bridgeConfig, $existingBridgeConfig);
+		}
+		if (!isset($bridgeConfig['moderatorGroups']) || !is_array($bridgeConfig['moderatorGroups'])) {
+			throw new RuntimeException('Bridge-config.php: moderatorGroups musí byť pole.');
+		}
+		if (!isset($bridgeConfig['adminStealthInPrivateRooms'])
+			|| !is_bool($bridgeConfig['adminStealthInPrivateRooms'])) {
+			$bridgeConfig['adminStealthInPrivateRooms'] = false;
+		}
+		if (!mzWriteBridgeConfig($bridgeConfigPath, $bridgeConfig)) {
+			throw new RuntimeException('Nepodarilo sa bezpečne uložiť Bridge-config.php.');
 		}
 		$sharedHtaccess = $bridgeDirectory.DIRECTORY_SEPARATOR.'.htaccess';
 		$denyBridgeRule = "<Files \"Bridge-config.php\">\n    Require all denied\n</Files>";
