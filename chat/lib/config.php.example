@@ -45,6 +45,8 @@ $config['roomChannelDiff'] = 1500000000;
 $config['allowPrivateRooms'] = true;
 $config['maxPrivateRoomsPerUser'] = 10;
 $config['privateRoomMaxNameLength'] = 40;
+$config['privateRoomPrefix'] = '~';
+$config['privateRoomSuffix'] = '~';
 
 // Database table names:
 $config['dbTableNames'] = array();
