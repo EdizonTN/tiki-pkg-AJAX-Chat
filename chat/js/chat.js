@@ -3036,7 +3036,9 @@ var ajaxChat = {
 	// Override to add custom initialization code
 	// This method is called on page load
 	customInitialize: function() {
-		this.startMZAuthRefresh();
+		if(this.token) {
+			this.startMZAuthRefresh();
+		}
 	},
 
 	startMZAuthRefresh: function() {
