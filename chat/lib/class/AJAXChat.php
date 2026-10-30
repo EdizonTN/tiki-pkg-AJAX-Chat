@@ -191,6 +191,9 @@ class AJAXChat {
 			}
 			array_push($channels, $this->getPrivateMessageID());
 			array_push($channels, $this->getPrivateChannelID());
+			foreach($this->getInvitations() as $privateChannelID) {
+				array_push($channels, $privateChannelID);
+			}
 		} else {
 			// The channelID "ALL" authenticates for all channels:
 			$channels = array('ALL');
