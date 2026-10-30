@@ -149,3 +149,7 @@ $lang['privateRoomMemberAlready'] = '%s already has access to this room.';
 $lang['privateRoomMemberNotFound'] = 'That user is not a member of this room.';
 
 $lang['privateRoomCreateDenied'] = 'You are not allowed to create private rooms.';
+
+$lang['privateRoomAdminListHeader'] = 'Private rooms (latest 50):';
+$lang['privateRoomAdminListEmpty'] = 'No private rooms exist.';
+$lang['privateRoomAdminListOwner'] = '%s — owner: %s';
