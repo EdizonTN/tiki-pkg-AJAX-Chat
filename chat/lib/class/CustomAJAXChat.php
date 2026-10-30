@@ -293,7 +293,7 @@ class CustomAJAXChat extends AJAXChat {
 					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Použi: /room create nazov_miestnosti (max. '.$maxLength.' znakov).');
 					return;
 				}
-				if($this->getPrivateRoomByName($name, false) || array_key_exists($name, $this->getAllChannels())) {
+				if($this->getPrivateRoomByName($name, false) || array_key_exists($name, $this->getAllChannels()) || array_key_exists($this->getPrivateRoomChannelName($name), $this->getAllChannels())) {
 					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Miestnosť s týmto názvom už existuje.');
 					return;
 				}
