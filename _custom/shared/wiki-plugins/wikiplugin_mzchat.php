@@ -23,8 +23,8 @@ function wikiplugin_mzchat($data, $params, $offset = 0, $parseOptions = array())
 		return '<div class="mzchat-login-required">'.tra('Prihláste sa do Mikrozone, aby ste mohli používať chat.').'</div>';
 	}
 
-	$chatUrl = TikiLib::tikiUrl('chat/index.php?embed=1');
-	$popupUrl = TikiLib::tikiUrl('chat/index.php?popup=1');
+	$chatUrl = TikiLib::tikiUrl('_CHAT/index.php?embed=1');
+	$popupUrl = TikiLib::tikiUrl('_CHAT/index.php?popup=1');
 	$chatUrl = htmlspecialchars($chatUrl, ENT_QUOTES, 'UTF-8');
 	$popupUrl = htmlspecialchars($popupUrl, ENT_QUOTES, 'UTF-8');
 
