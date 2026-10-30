@@ -21,7 +21,7 @@ user identities and roles; the chat has no independent passwords or demo account
 
 1. Copy the repository's `chat/` directory into the Tiki root so the chat is available at `/chat/`.
 2. Copy `chat/lib/config.php.example` to `chat/lib/config.php`.
-3. Configure the MySQLi connection and database name.
+3. Configure the MySQLi connection and database name. The obsolete `mysql_*` adapter has been removed; PHP 7+ requires MySQLi or PDO, and this branch uses MySQLi.
 4. Set `mzChatSharedSecret` to a random secret of at least 32 characters
    (64 hexadecimal characters recommended). Generate one with `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`.
    Use the same value only in this chat config; do not publish it or place it in JavaScript.
