@@ -560,7 +560,9 @@ class CustomAJAXChat extends AJAXChat {
 				}
 				$connection = $this->db->getConnectionID();
 				if (!$connection->begin_transaction()) {
-					$this->databaseError(__METHOD__, $this->db);
+					error_log('Mikrozone chat room deletion: transaction start failed: '.$connection->error);
+					http_response_code(500);
+					exit('Chat database error.');
 				}
 				try {
 					$queries = array(
