@@ -121,6 +121,7 @@ var ajaxChat = {
 
 	initConfig: function(config) {
 		this.token					= config["token"];
+		this.authToken				= config["authToken"];
 		this.loginChannelID			= config['loginChannelID'];
 		this.loginChannelName		= config['loginChannelName'];
 		this.timerRate				= config['timerRate'];
@@ -868,6 +869,9 @@ var ajaxChat = {
 			self.getHttpRequest(identifier).open(method, url, true);
 			if(self.token) {
 				self.getHttpRequest(identifier).setRequestHeader('X-CSRF-Token', self.token);
+			}
+			if(self.authToken) {
+				self.getHttpRequest(identifier).setRequestHeader('X-MZ-Auth-Token', self.authToken);
 			}
 			self.getHttpRequest(identifier).onreadystatechange = function() {
 				try {
@@ -3032,11 +3036,52 @@ var ajaxChat = {
 	// Override to add custom initialization code
 	// This method is called on page load
 	customInitialize: function() {
+		this.startMZAuthRefresh();
+	},
+
+	startMZAuthRefresh: function() {
+		var self = this;
+		this.refreshMZAuthToken();
+		this.authRefreshTimer = setInterval(function() {
+			self.refreshMZAuthToken();
+		}, 45000);
+	},
+
+	refreshMZAuthToken: function() {
+		var self = this;
+		var request = new XMLHttpRequest();
+		request.open('GET', 'tiki-auth.php', true);
+		request.withCredentials = true;
+		request.setRequestHeader('Accept', 'application/json');
+		request.onreadystatechange = function() {
+			if(request.readyState === 4) {
+				if(request.status === 200) {
+					try {
+						var response = JSON.parse(request.responseText);
+						if(response && response.ok && response.token) {
+							self.authToken = response.token;
+							return;
+						}
+					} catch(e) {
+						self.debugMessage('refreshMZAuthToken::parse', e);
+					}
+				} else if(request.status === 401) {
+					if(self.authRefreshTimer) {
+						clearInterval(self.authRefreshTimer);
+					}
+					self.logout();
+				}
+			}
+		};
+		request.send(null);
 	},
 
 	// Override to add custom finalization code
 	// This method is called on page unload
 	customFinalize: function() {
+		if(this.authRefreshTimer) {
+			clearInterval(this.authRefreshTimer);
+		}
 	},
 
 	// Override to add custom user menu items:
