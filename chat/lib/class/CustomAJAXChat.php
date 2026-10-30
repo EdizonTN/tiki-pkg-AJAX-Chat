@@ -300,11 +300,11 @@ class CustomAJAXChat extends AJAXChat {
 				$name = $this->trimChannelName($rawName);
 				$maxLength = (int)$this->getConfig('privateRoomMaxNameLength');
 				if($name === '' || $this->stringLength($name) > $maxLength) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Použi: /room create nazov_miestnosti (max. '.$maxLength.' znakov).');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomNameInvalid'), $maxLength));
 					return;
 				}
 				if($this->getPrivateRoomByName($name, false) || array_key_exists($name, $this->getAllChannels()) || array_key_exists($this->getPrivateRoomChannelName($name), $this->getAllChannels())) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Miestnosť s týmto názvom už existuje.');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomNameExists'));
 					return;
 				}
 				$sql = 'SELECT COUNT(*) AS roomCount
@@ -318,7 +318,7 @@ class CustomAJAXChat extends AJAXChat {
 				$countRow = $result->fetch();
 				$result->free();
 				if((int)$countRow['roomCount'] >= (int)$this->getConfig('maxPrivateRoomsPerUser')) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Dosiahol si maximálny počet vlastných súkromných miestností.');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomLimitReached'));
 					return;
 				}
 				$sql = 'INSERT INTO '.$this->getDataBaseTable('rooms').'
@@ -330,7 +330,7 @@ class CustomAJAXChat extends AJAXChat {
 					)';
 				$result = $this->db->sqlQuery($sql);
 				if($result->error()) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Miestnosť sa nepodarilo vytvoriť.');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomCreateFailed'));
 					return;
 				}
 				$roomID = (int)$this->db->getLastInsertedID();
@@ -341,7 +341,7 @@ class CustomAJAXChat extends AJAXChat {
 				$channelID = (int)$this->getConfig('roomChannelDiff') + $roomID;
 				$this->addRoomToInvitationCache($channelID);
 				$channelName = $this->getPrivateRoomChannelName($name);
-				$this->insertChatBotMessage($this->getPrivateMessageID(), 'Súkromná miestnosť vytvorená: '.$channelName);
+				$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomCreated'), $channelName));
 				$this->switchChannel($channelName);
 				break;
 
@@ -361,7 +361,7 @@ class CustomAJAXChat extends AJAXChat {
 					$room = $this->getPrivateRoomByChannelID($this->getChannel(), false);
 				}
 				if(!$room) {
-					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Súkromná miestnosť sa nenašla.');
+					$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomNotFound'));
 					return;
 				}
 				if((int)$room['ownerID'] !== (int)$this->getUserID() && $this->getUserRole() != AJAX_CHAT_ADMIN) {
@@ -387,12 +387,12 @@ class CustomAJAXChat extends AJAXChat {
 					}
 				}
 				$this->removeRoomFromInvitationCache($channelID);
-				$this->insertChatBotMessage($this->getPrivateMessageID(), 'Súkromná miestnosť '.$this->getPrivateRoomChannelName($room['name']).' bola odstránená.');
+				$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomDeleted'), $this->getPrivateRoomChannelName($room['name'])));
 				break;
 
 			case 'help':
 			default:
-				$this->insertChatBotMessage($this->getPrivateMessageID(), 'Príkazy: /room create nazov, /room list, /room leave, /room delete [nazov]. Pozvánky: /invite login a /uninvite login (iba vlastník miestnosti).');
+				$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomHelp'));
 				break;
 		}
 	}
@@ -400,17 +400,17 @@ class CustomAJAXChat extends AJAXChat {
 	function leavePrivateRoom() {
 		$room = $this->getPrivateRoomByChannelID($this->getChannel(), true);
 		if(!$room) {
-			$this->insertChatBotMessage($this->getPrivateMessageID(), 'Nie si v súkromnej miestnosti.');
+			$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomNotInRoom'));
 			return;
 		}
 		if((int)$room['ownerID'] === (int)$this->getUserID()) {
-			$this->insertChatBotMessage($this->getPrivateMessageID(), 'Vlastník nemôže opustiť vlastnú miestnosť. Použi /room delete.');
+			$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomOwnerCannotLeave'));
 			return;
 		}
 		$this->removeRoomMember($room['id'], $this->getUserID());
 		$this->removeRoomFromInvitationCache((int)$this->getConfig('roomChannelDiff') + (int)$room['id']);
 		$this->switchChannel($this->getConfig('defaultChannelName'));
-		$this->insertChatBotMessage($this->getPrivateMessageID(), 'Opustil si súkromnú miestnosť '.$this->getPrivateRoomChannelName($room['name']).'.');
+		$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomLeft'), $this->getPrivateRoomChannelName($room['name'])));
 	}
 
 	function insertParsedMessageInvite($textParts) {
@@ -433,7 +433,7 @@ class CustomAJAXChat extends AJAXChat {
 			return;
 		}
 		if((int)$toUserID === (int)$room['ownerID'] || $this->isRoomMember($room['id'], $toUserID)) {
-			$this->insertChatBotMessage($this->getPrivateMessageID(), $targetName.' už má prístup do tejto miestnosti.');
+			$this->insertChatBotMessage($this->getPrivateMessageID(), sprintf($this->getLang('privateRoomMemberAlready'), $targetName));
 			return;
 		}
 		$this->addRoomMember($room['id'], $toUserID, $targetName);
@@ -472,7 +472,7 @@ class CustomAJAXChat extends AJAXChat {
 			$toUserID = $row ? (int)$row['userID'] : null;
 		}
 		if($toUserID === null || (int)$toUserID === (int)$room['ownerID'] || !$this->isRoomMember($room['id'], $toUserID)) {
-			$this->insertChatBotMessage($this->getPrivateMessageID(), 'Používateľ nemá prístup do tejto miestnosti.');
+			$this->insertChatBotMessage($this->getPrivateMessageID(), $this->getLang('privateRoomMemberNotFound'));
 			return;
 		}
 		$this->removeRoomMember($room['id'], $toUserID);
