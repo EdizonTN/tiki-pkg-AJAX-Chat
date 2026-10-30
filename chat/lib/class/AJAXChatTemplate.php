@@ -174,6 +174,9 @@ class AJAXChatTemplate {
 					return 'write_forbidden';
 				else
 					return 'write_allowed';
+                        case 'AUTH_TOKEN':
+                                return $this->ajaxChat->getSessionVar('TikiAuthToken');
+
                         case 'TOKEN':
                                 return $this->ajaxChat->getSessionVar('CsrfToken');
 			
