@@ -1241,7 +1241,7 @@ class AJAXChat {
 			
 	function insertParsedMessageWhois($textParts) {
 		// Only moderators/admins:
-		if($this->getUserRole() == AJAX_CHAT_ADMIN || $this->getUserRole() == AJAX_CHAT_MODERATOR) {
+		if($this->getUserRole() == AJAX_CHAT_ADMIN) {
 			if(count($textParts) == 1) {
 				$this->insertChatBotMessage(
 					$this->getPrivateMessageID(),
@@ -2305,7 +2305,7 @@ class AJAXChat {
 			$xml .= ' userID="'.$row['userID'].'"';
 			$xml .= ' userRole="'.$row['userRole'].'"';
 			$xml .= ' channelID="'.$row['channelID'].'"';
-			if($this->getUserRole() == AJAX_CHAT_ADMIN || $this->getUserRole() == AJAX_CHAT_MODERATOR) {
+			if($this->getUserRole() == AJAX_CHAT_ADMIN) {
 				$xml .= ' ip="'.$this->ipFromStorageFormat($row['ip']).'"';					
 			}
 			$xml .= '>';
