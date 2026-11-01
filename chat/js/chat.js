@@ -2841,7 +2841,7 @@ var ajaxChat = {
 			languageClass = ' class="language-' + language + '"';
 		}
 		// Code is literal text: escape HTML and do not recursively parse BBCode inside it.
-		var code = this.encodeSpecialChars(content.replace(/\t/g, '    '));
+		var code = this.encodeSpecialChars(this.decodeSpecialChars(content).replace(/\t/g, '    '));
 		return '<pre class="mz-chat-code" data-language="' + this.encodeSpecialChars(language || 'auto') + '"><code' + languageClass + '>' + code + '</code></pre>';
 	},
 
