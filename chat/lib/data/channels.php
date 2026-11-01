@@ -7,9 +7,7 @@
  * @link https://blueimp.net/ajax/
  */
 
-// List containing the custom channels:
+// Public channels available to all authenticated Mikrozone users.
+// Array keys are channel IDs; values are channel names.
 $channels = array();
-
-// Sample channel list:
 $channels[0] = 'Public';
-$channels[1] = 'Private';

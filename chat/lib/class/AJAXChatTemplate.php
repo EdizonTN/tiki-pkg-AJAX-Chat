@@ -174,8 +174,11 @@ class AJAXChatTemplate {
 					return 'write_forbidden';
 				else
 					return 'write_allowed';
+                        case 'AUTH_TOKEN':
+                                return $this->ajaxChat->getSessionVar('TikiAuthToken');
+
                         case 'TOKEN':
-                                return session_id();
+                                return $this->ajaxChat->getSessionVar('CsrfToken');
 			
 			default:
 				return $this->ajaxChat->replaceCustomTemplateTags($tagData[1], (isset($tagData[2]) ? $tagData[2] : null));

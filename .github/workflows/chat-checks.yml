@@ -1,0 +1,62 @@
+name: PHP and chat checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: mz_chat_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mysqli, mbstring
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Lint all PHP files
+        run: |
+          find chat _custom tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run PHP tests
+        run: |
+          php tests/test_mz_chat_auth.php
+          php tests/test_chat_schema.php
+          php tests/test_private_rooms.php
+          php tests/test_chat_database.php
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: mz_chat_ci
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check chat/js/chat.js
+          node --check chat/js/lang/en.js
+          node --check chat/js/lang/sk.js
+          node --check chat/js/vendor/highlight.min.js
+          node tests/test_code_blocks.js

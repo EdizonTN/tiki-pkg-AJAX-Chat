@@ -35,14 +35,10 @@ class AJAXChatEncoding {
 			return mb_convert_encoding($str, $charsetTo, $charsetFrom);
 		}
 		if(function_exists('iconv')) {
-			return iconv($charsetFrom, $charsetTo, $str);
+			$converted = @iconv($charsetFrom, $charsetTo, $str);
+			return ($converted === false) ? $str : $converted;
 		}
-		if(($charsetFrom == 'UTF-8') && ($charsetTo == 'ISO-8859-1')) {
-			return utf8_decode($str);
-		}
-		if(($charsetFrom == 'ISO-8859-1') && ($charsetTo == 'UTF-8')) {
-			return utf8_encode($str);
-		}
+		// utf8_encode()/utf8_decode() are deprecated as of PHP 8.2.
 		return $str;
 	}
 
@@ -93,20 +89,10 @@ class AJAXChatEncoding {
 	}
 
 	public static function decodeEntities($str, $encoding='UTF-8', $htmlEntitiesMap=null) {
-		// Due to PHP bug #25670, html_entity_decode does not work with UTF-8 for PHP versions < 5:
-		if(function_exists('html_entity_decode') && version_compare(phpversion(), 5, '>=')) {
-			// Replace numeric and literal entities:
-			$str = html_entity_decode($str, ENT_QUOTES, $encoding);
-			// Replace additional literal HTML entities if an HTML entities map is given:
-			if($htmlEntitiesMap) {
-				$str = strtr($str, $htmlEntitiesMap);
-			}
-		} else {
-			// Replace numeric entities:
-			$str = preg_replace('~&#([0-9]+);~e', 'AJAXChatEncoding::unicodeChar("\\1")', $str);
-			$str = preg_replace('~&#x([0-9a-f]+);~ei', 'AJAXChatEncoding::unicodeChar(hexdec("\\1"))', $str);
-			// Replace literal entities:
-			$htmlEntitiesMap = $htmlEntitiesMap ? $htmlEntitiesMap : array_flip(get_html_translation_table(HTML_ENTITIES, ENT_QUOTES));
+		// Supported PHP versions provide html_entity_decode(); the former PHP 4 fallback
+		// used the removed preg_replace /e modifier and is intentionally discarded.
+		$str = html_entity_decode($str, ENT_QUOTES, $encoding);
+		if($htmlEntitiesMap) {
 			$str = strtr($str, $htmlEntitiesMap);
 		}
 		return $str;

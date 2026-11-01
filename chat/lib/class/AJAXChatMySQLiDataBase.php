@@ -7,7 +7,7 @@
  * @link https://blueimp.net/ajax/
  */
 
-// Class to initialize the MySQL DataBase connection:
+// MySQLi adapter. Keep legacy error handling predictable on PHP 8.1+.
 class AJAXChatDataBaseMySQLi {
 
     protected
@@ -23,14 +23,25 @@ class AJAXChatDataBaseMySQLi {
 	
 	// Method to connect to the DataBase server:
 	function connect(&$dbConnectionConfig) {
-		@$this->_connectionID = new mysqli(
+		// PHP 8.1 changed the default MySQLi reporting mode to strict exceptions.
+		// This adapter uses the original return-value/error-object API.
+		mysqli_report(MYSQLI_REPORT_OFF);
+
+		$this->_connectionID = @new mysqli(
 			$dbConnectionConfig['host'],
 			$dbConnectionConfig['user'],
 			$dbConnectionConfig['pass']
 		);
-		if($this->_connectionID->connect_errno) {
-			$this->_errno = mysqli_connect_errno();
-			$this->_error = mysqli_connect_error();
+		if(!$this->_connectionID || $this->_connectionID->connect_errno) {
+			$this->_errno = $this->_connectionID ? $this->_connectionID->connect_errno : mysqli_connect_errno();
+			$this->_error = $this->_connectionID ? $this->_connectionID->connect_error : mysqli_connect_error();
+			return false;
+		}
+
+		// Match the utf8mb4 table schema and make escaping charset-aware.
+		if(!$this->_connectionID->set_charset('utf8mb4')) {
+			$this->_errno = $this->_connectionID->errno;
+			$this->_error = $this->_connectionID->error;
 			return false;
 		}
 		return true;

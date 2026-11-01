@@ -121,6 +121,7 @@ var ajaxChat = {
 
 	initConfig: function(config) {
 		this.token					= config["token"];
+		this.authToken				= config["authToken"];
 		this.loginChannelID			= config['loginChannelID'];
 		this.loginChannelName		= config['loginChannelName'];
 		this.timerRate				= config['timerRate'];
@@ -866,6 +867,12 @@ var ajaxChat = {
 			self.retryTimer = setTimeout(ajaxChat.forceNewRequest, ajaxChat.retryTimerDelay);
 
 			self.getHttpRequest(identifier).open(method, url, true);
+			if(self.token) {
+				self.getHttpRequest(identifier).setRequestHeader('X-CSRF-Token', self.token);
+			}
+			if(self.authToken) {
+				self.getHttpRequest(identifier).setRequestHeader('X-MZ-Auth-Token', self.authToken);
+			}
 			self.getHttpRequest(identifier).onreadystatechange = function() {
 				try {
 					ajaxChat.handleResponse(identifier);
@@ -1252,7 +1259,10 @@ var ajaxChat = {
 					+ this.lang['userMenuNick']
 					+ '</a></li>';
 			if(this.userRole === '1' || this.userRole === '2' || this.userRole === '3') {
-				menu	+= '<li><a href="javascript:ajaxChat.sendMessageWrapper(\'/join\');">'
+				menu	+= '<li><a href="javascript:ajaxChat.insertMessageWrapper(\'/room create \');">'
+						+ this.lang['userMenuCreatePrivateRoom']
+						+ '</a></li>'
+						+ '<li><a href="javascript:ajaxChat.sendMessageWrapper(\'/join\');">'
 						+ this.lang['userMenuEnterPrivateRoom']
 						+ '</a></li>';
 				if(this.userRole === '2' || this.userRole === '3') {
@@ -1488,6 +1498,7 @@ var ajaxChat = {
 	},
 
 	updateChatlistView: function() {
+		this.highlightCodeBlocks();
 		if(this.dom['chatList'].childNodes && this.settings['maxMessages']) {
 			while(this.dom['chatList'].childNodes.length > this.settings['maxMessages']) {
 				this.dom['chatList'].removeChild(this.dom['chatList'].firstChild);
@@ -1497,6 +1508,20 @@ var ajaxChat = {
 		if(this.settings['autoScroll']) {
 			var self = this;
 			setTimeout(function() { self.scrollChatList(); }, 50);
+		}
+	},
+
+	highlightCodeBlocks: function() {
+		if(typeof hljs === 'undefined' || !this.dom['chatList'] || !this.dom['chatList'].querySelectorAll) {
+			return;
+		}
+		var codeElements = this.dom['chatList'].querySelectorAll('pre.mz-chat-code code:not([data-highlighted])');
+		for(var i = 0; i < codeElements.length; i++) {
+			try {
+				hljs.highlightElement(codeElements[i]);
+			} catch(e) {
+				this.debugMessage('highlightCodeBlocks', e);
+			}
 		}
 	},
 
@@ -2045,7 +2070,7 @@ var ajaxChat = {
 	logout: function() {
 		clearTimeout(this.timer);
 		var message = 'logout=true';
-		this.makeRequest(this.ajaxURL+"&token="+this.token,'POST',message);
+		this.makeRequest(this.ajaxURL,'POST',message);
 	},
 
 	handleLogout: function(url) {
@@ -2124,6 +2149,15 @@ var ajaxChat = {
 				else
 					this.dom['inputField'].focus();
 				break;
+			case 'code':
+				var language = prompt(this.lang['codeLanguageDialog'] || 'Code language (php, javascript, python, c, cpp, sql, json, html, css, xml, yaml, bash; use auto for automatic detection):', 'auto');
+				if(language === null) {
+					this.dom['inputField'].focus();
+					break;
+				}
+				language = language.replace(/^\s+|\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
+				this.insert('[code' + (language && language !== 'auto' ? '=' + language : '') + ']', '[/code]');
+				break;
 			default:
 				this.insert('[' + bbCode + ']', '[/' + bbCode + ']');
 		}
@@ -2179,13 +2213,27 @@ var ajaxChat = {
 
 	replaceText: function(text) {
 		try{
-			text = this.replaceLineBreaks(text);
 			if(text.charAt(0) === '/') {
 				text = this.replaceCommands(text);
 			} else {
 				text = this.replaceBBCode(text);
+				// Protect rendered code blocks from line-break conversion, URL linking,
+				// emoticons and custom text replacements.
+				var codeBlocks = [];
+				text = text.replace(/<pre class="mz-chat-code"[\s\S]*?<\/pre>/g, function(codeBlock) {
+					var placeholder = '\uE000' + codeBlocks.length.toString(36) + '\uE001';
+					codeBlocks.push({placeholder: placeholder, html: codeBlock});
+					return placeholder;
+				});
+				text = this.replaceLineBreaks(text);
 				text = this.replaceHyperLinks(text);
 				text = this.replaceEmoticons(text);
+				text = this.breakLongWords(text);
+				text = this.replaceCustomText(text);
+				for(var i = 0; i < codeBlocks.length; i++) {
+					text = text.replace(codeBlocks[i].placeholder, codeBlocks[i].html);
+				}
+				return text;
 			}
 			text = this.breakLongWords(text);
 			text = this.replaceCustomText(text);
@@ -2669,11 +2717,11 @@ var ajaxChat = {
 	replaceBBCode: function(text) {
 		if(!this.settings['bbCode']) {
 			// If BBCode is disabled, just strip the text from BBCode tags:
-			return text.replace(/\[(?:\/)?(\w+)(?:=([^<>]*?))?\]/, '');
+			return text.replace(/\[(?:\/)?(\w+)(?:=([^<>]*?))?\]/g, '');
 		}
 		// Remove the BBCode tags:
 		return text.replace(
-			/\[(\w+)(?:=([^<>]*?))?\](.+?)\[\/\1\]/gm,
+			/\[(\w+)(?:=([^<>]*?))?\]([\s\S]+?)\[\/\1\]/gm,
 			this.replaceBBCodeCallback
 		);
 	},
@@ -2683,8 +2731,8 @@ var ajaxChat = {
 		if(!ajaxChat.inArray(ajaxChat.bbCodeTags, p1)) {
 			return str;
 		}
-		// Avoid invalid XHTML (unclosed tags):
-		if(ajaxChat.containsUnclosedTags(p3)) {
+		// Code is escaped as literal text below, so HTML-like source must not block it.
+		if(p1 !== 'code' && ajaxChat.containsUnclosedTags(p3)) {
 			return str;
 		}
 		switch(p1) {
@@ -2697,7 +2745,7 @@ var ajaxChat = {
 			case 'quote':
 				return ajaxChat.replaceBBCodeQuote(p3, p2);
 			case 'code':
-				return ajaxChat.replaceBBCodeCode(p3);
+				return ajaxChat.replaceBBCodeCode(p3, p2);
 			case 'u':
 				return ajaxChat.replaceBBCodeUnderline(p3);
 			default:
@@ -2784,11 +2832,20 @@ var ajaxChat = {
 				+ '</q></span>';
 	},
 
-	replaceBBCodeCode: function(content) {
-		// Replace vertical tabs and multiple spaces with two non-breaking space characters:
-		return 	'<code>'
-				+ this.replaceBBCode(content.replace(/\t|(?:  )/gm, '&#160;&#160;'))
-				+ '</code>';
+	replaceBBCodeCode: function(content, language) {
+		var languageClass = '';
+		language = (language || '').replace(/^\s+|\s+$/g, '').toLowerCase().replace(/[^a-z0-9+#.-]/g, '');
+		if(language === 'auto') {
+			language = '';
+		} else if(language && typeof hljs !== 'undefined' && !hljs.getLanguage(language)) {
+			language = 'plaintext';
+		}
+		if(language) {
+			languageClass = ' class="language-' + language + '"';
+		}
+		// Code is literal text: escape HTML and do not recursively parse BBCode inside it.
+		var code = this.encodeSpecialChars(this.decodeSpecialChars(content).replace(/\t/g, '    '));
+		return '<pre class="mz-chat-code" data-language="' + this.encodeSpecialChars(language || 'auto') + '"><code' + languageClass + '>' + code + '</code></pre>';
 	},
 
 	replaceBBCodeUnderline: function(content) {
@@ -3029,11 +3086,54 @@ var ajaxChat = {
 	// Override to add custom initialization code
 	// This method is called on page load
 	customInitialize: function() {
+		if(this.token) {
+			this.startMZAuthRefresh();
+		}
+	},
+
+	startMZAuthRefresh: function() {
+		var self = this;
+		this.refreshMZAuthToken();
+		this.authRefreshTimer = setInterval(function() {
+			self.refreshMZAuthToken();
+		}, 45000);
+	},
+
+	refreshMZAuthToken: function() {
+		var self = this;
+		var request = new XMLHttpRequest();
+		request.open('GET', 'tiki-auth.php', true);
+		request.withCredentials = true;
+		request.setRequestHeader('Accept', 'application/json');
+		request.onreadystatechange = function() {
+			if(request.readyState === 4) {
+				if(request.status === 200) {
+					try {
+						var response = JSON.parse(request.responseText);
+						if(response && response.ok && response.token) {
+							self.authToken = response.token;
+							return;
+						}
+					} catch(e) {
+						self.debugMessage('refreshMZAuthToken::parse', e);
+					}
+				} else if(request.status === 401) {
+					if(self.authRefreshTimer) {
+						clearInterval(self.authRefreshTimer);
+					}
+					self.logout();
+				}
+			}
+		};
+		request.send(null);
 	},
 
 	// Override to add custom finalization code
 	// This method is called on page unload
 	customFinalize: function() {
+		if(this.authRefreshTimer) {
+			clearInterval(this.authRefreshTimer);
+		}
 	},
 
 	// Override to add custom user menu items:

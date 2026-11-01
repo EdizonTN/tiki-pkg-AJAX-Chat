@@ -13,15 +13,55 @@
 	<script type="text/javascript">
 		// <![CDATA[
 			function initializeLoginPage() {
-				document.getElementById('userNameField').focus();
+				var statusNode = document.getElementById('authStatus');
 				if(!ajaxChat.isCookieEnabled()) {
-					var node = document.createElement('div'),
-						text = document.createTextNode(ajaxChatLang['errorCookiesRequired']);
-					node.appendChild(text);
-					document.getElementById('errorContainer').appendChild(node);
+					statusNode.textContent = ajaxChatLang['errorCookiesRequired'];
+					return;
 				}
+				statusNode.textContent = 'Overujem prihlásenie do Mikrozone...';
+				var request = new XMLHttpRequest();
+				request.open('GET', 'tiki-auth.php', true);
+				request.withCredentials = true;
+				request.setRequestHeader('Accept', 'application/json');
+				request.onreadystatechange = function() {
+					if(request.readyState !== 4) {
+						return;
+					}
+					if(request.status === 401) {
+						statusNode.textContent = 'Najprv sa prihláste do Mikrozone a potom obnovte túto stránku.';
+						return;
+					}
+					if(request.status !== 200) {
+						statusNode.textContent = 'Chat sa nepodarilo pripojiť k TikiWiki. Skontrolujte konfiguráciu a kontaktujte správcu.';
+						return;
+					}
+					try {
+						var response = JSON.parse(request.responseText);
+						if(!response || !response.ok || !response.token) {
+							throw new Error('Invalid authentication response');
+						}
+						var form = document.createElement('form');
+						form.method = 'post';
+						form.action = '[LOGIN_URL/]';
+						form.style.display = 'none';
+						var fields = {login: 'login', authToken: response.token};
+						for(var key in fields) {
+							if(fields.hasOwnProperty(key)) {
+								var input = document.createElement('input');
+								input.type = 'hidden';
+								input.name = key;
+								input.value = fields[key];
+								form.appendChild(input);
+							}
+						}
+						document.body.appendChild(form);
+						form.submit();
+					} catch(e) {
+						statusNode.textContent = 'Prihlásenie do chatu sa nepodarilo. Obnovte stránku.';
+					}
+				};
+				request.send(null);
 			}
-			
 			ajaxChatConfig.sessionName = '[SESSION_NAME/]';
 			ajaxChatConfig.cookieExpiration = parseInt('[COOKIE_EXPIRATION/]');
 			ajaxChatConfig.cookiePath = '[COOKIE_PATH/]';
@@ -34,22 +74,9 @@
 </head>
 <body class="ajax-chat" onload="initializeLoginPage();">
 	<div id="loginContent">
-		<h1 id="loginHeadline">[LANG]title[/LANG]</h1>
+		<h1 id="loginHeadline">Mikrozone chat</h1>
 		<div id="errorContainer">[ERROR_MESSAGES/]<noscript><div>[LANG]requiresJavaScript[/LANG]</div></noscript></div>
-		<form id="loginForm" action="[LOGIN_URL/]" method="post" enctype="application/x-www-form-urlencoded">
-			<input type="hidden" name="login" id="loginField" value="login"/>
-			<input type="hidden" name="redirect" id="redirectField" value="[REDIRECT_URL/]"/>
-			<div><label for="userNameField">[LANG]userName[/LANG]:</label><br />
-			<input type="text" name="userName" id="userNameField" maxlength="[USER_NAME_MAX_LENGTH/]"/></div>
-			<div><label for="passwordField">[LANG]password[/LANG]*:</label><br />
-			<input type="password" name="password" id="passwordField"/></div>
-			<div><label for="channelField">[LANG]channel[/LANG]:</label><br />
-			<select name="channelName" id="channelField">[CHANNEL_OPTIONS/]</select></div>
-			<div><label for="languageSelection">[LANG]language[/LANG]:</label><br />
-			<select id="languageSelection" name="lang" onchange="ajaxChat.switchLanguage(this.value);">[LANGUAGE_OPTIONS/]</select></div>
-			<div><input type="submit" name="submit" id="loginButton" value="[LANG]login[/LANG]"/></div>
-			<div id="loginRegisteredUsers">* [LANG]registeredUsers[/LANG]</div>
-		</form>
+		<p id="authStatus">Pripájam sa k účtu Mikrozone...</p>
 		<!--
 			Please retain the full copyright notice below including the link to blueimp.net.
 			This not only gives respect to the amount of time given freely by the developer
