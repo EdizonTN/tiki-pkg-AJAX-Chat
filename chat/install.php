@@ -474,9 +474,11 @@ if (isset($_SESSION['mz_chat_installer_flash']) && is_array($_SESSION['mz_chat_i
 	$resultClass = isset($flash['class']) ? $flash['class'] : '';
 }
 
-// Disable the public installer URL after a successful setup.
+// Disable the public installer URL only on the post-redirect request that
+// displays a successful installation result. A normal GET must not rename it.
+$installerRenameAttempted = ($resultClass === 'success');
 $installerRenamed = false;
-if ($resultClass === 'success') {
+if ($installerRenameAttempted) {
 	$renamedInstallerPath = __FILE__.'_';
 	if (is_file($renamedInstallerPath)) {
 		$resultDetail = trim($resultDetail."\n").' Premenovanie sa nevykonalo: install.php_ už existuje.';
@@ -515,7 +517,7 @@ echo '<form method="post"><input type="hidden" name="csrf_token" value="'.$token
 echo '<button type="submit">'.($schemaStatus === 'complete' ? 'Overiť existujúcu inštaláciu' : 'Vytvoriť / overiť databázové tabuľky').'</button></form>';
 if ($installerRenamed) {
 	echo '<p><strong>Bezpečnostné opatrenie:</strong> po úspešnej konfigurácii bol inštalátor automaticky premenovaný na <code>install.php_</code>. Pôvodná URL <code>install.php</code> už nie je dostupná.</p>';
-} else {
+} elseif ($installerRenameAttempted) {
 	echo '<p><strong>Bezpečnostné opatrenie:</strong> inštalátor sa nepodarilo automaticky premenovať. Ručne premenujte <code>install.php</code> na <code>install.php_</code> a overte, že pôvodná URL už nie je dostupná.</p>';
 }
 echo '<p>Databázovému používateľovi odoberte oprávnenie <code>CREATE</code>; chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
