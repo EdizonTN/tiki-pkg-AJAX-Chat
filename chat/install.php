@@ -428,9 +428,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		}
 		$installer = new CustomAJAXChatInstaller();
 		if ($installer->createDataBaseTables()) {
-			$resultMessage = 'Hotovo. Chýbajúce chatové tabuľky boli vytvorené. Existujúce tabuľky ani dáta neboli odstránené.';
+			$resultMessage = 'Chat je úspešne nakonfigurovaný a pripravený na testovanie. Chýbajúce databázové tabuľky boli vytvorené; existujúce tabuľky ani dáta neboli odstránené.';
 		} else {
-			$resultMessage = 'Chatová databázová schéma už existuje. Cesty a konfigurácia bridge boli aktualizované; tabuľky sa nemenili.';
+			$resultMessage = 'Chat je úspešne nakonfigurovaný a pripravený na testovanie. Databázová schéma už existovala; cesty a konfigurácia bridge boli aktualizované, tabuľky sa nemenili.';
 		}
 		$resultClass = 'success';
 	} catch (Throwable $e) {
@@ -481,7 +481,7 @@ echo '<title>Mikrozone chat – inštalátor</title></head><body><main style="ma
 echo '<h1>Mikrozone chat – inštalátor</h1>';
 echo '<p>Prihlásený administrátor TikiWiki: <strong>'.htmlspecialchars((string)$user, ENT_QUOTES, 'UTF-8').'</strong></p>';
 if ($schemaStatus === 'complete') {
-	echo '<p role="status" style="padding:1rem;border:1px solid #39834a;">Databázová schéma je kompletná: všetkých šesť chatových tabuliek existuje. Inštalácia databázy už bola vykonaná.</p>';
+	echo '<p role="status" style="padding:1rem;border:1px solid #39834a;"><strong>Chat je nakonfigurovaný.</strong> Databázová schéma je kompletná: všetkých šesť chatových tabuliek existuje. Konfigurácia ciest a Tiki bridge je uložená.</p><p>Chat je pripravený na funkčné testovanie; prihlásenie používateľa a odosielanie správ ešte treba overiť.</p>';
 } elseif ($schemaStatus === 'partial') {
 	echo '<p role="status" style="padding:1rem;border:1px solid #a33;">Databázová schéma je neúplná. Niektoré chatové tabuľky chýbajú.</p>';
 } elseif ($schemaStatus === 'unknown') {
@@ -500,5 +500,5 @@ if ($resultMessage !== '') {
 }
 echo '<form method="post"><input type="hidden" name="csrf_token" value="'.$token.'">';
 echo '<button type="submit">'.($schemaStatus === 'complete' ? 'Overiť existujúcu inštaláciu' : 'Vytvoriť / overiť databázové tabuľky').'</button></form>';
-echo '<p><strong>Po úspešnej inštalácii:</strong> odoberte databázovému používateľovi oprávnenie <code>CREATE</code>. Inštalátor môžete ponechať: prístup majú iba administrátori TikiWiki a CSRF token chráni POST. Pri presunutí chatu ho spustite znova, aby sa aktualizovali uložené cesty. Ak ho z bezpečnostných dôvodov odstránite, pred budúcou zmenou umiestnenia ho obnovte z distribúcie.</p><p>Chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
+echo '<p><strong>Po úspešnej konfigurácii:</strong> inštalátor už na bežnú prevádzku nie je potrebný. Odporúčame ho odstrániť z webového priestoru alebo jeho prístup zablokovať. Pred budúcou zmenou umiestnenia ho môžete obnoviť z distribúcie a znovu spustiť. Databázovému používateľovi odoberte oprávnenie <code>CREATE</code>; chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
 echo '</main></body></html>';
