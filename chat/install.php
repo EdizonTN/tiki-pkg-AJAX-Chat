@@ -474,6 +474,19 @@ if (isset($_SESSION['mz_chat_installer_flash']) && is_array($_SESSION['mz_chat_i
 	$resultClass = isset($flash['class']) ? $flash['class'] : '';
 }
 
+// Disable the public installer URL after a successful setup.
+$installerRenamed = false;
+if ($resultClass === 'success') {
+	$renamedInstallerPath = __FILE__.'_';
+	if (is_file($renamedInstallerPath)) {
+		$resultDetail = trim($resultDetail."\n").' Premenovanie sa nevykonalo: install.php_ už existuje.';
+	} elseif (@rename(__FILE__, $renamedInstallerPath)) {
+		$installerRenamed = true;
+	} else {
+		$resultDetail = trim($resultDetail."\n").' UPOZORNENIE: install.php sa nepodarilo automaticky premenovať na install.php_. Vykonajte to ručne.';
+	}
+}
+
 $schemaStatus = mzInstallerSchemaStatus($chatDbConfig);
 $token = htmlspecialchars($_SESSION['mz_chat_installer_token'], ENT_QUOTES, 'UTF-8');
 echo '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
@@ -500,5 +513,10 @@ if ($resultMessage !== '') {
 }
 echo '<form method="post"><input type="hidden" name="csrf_token" value="'.$token.'">';
 echo '<button type="submit">'.($schemaStatus === 'complete' ? 'Overiť existujúcu inštaláciu' : 'Vytvoriť / overiť databázové tabuľky').'</button></form>';
-echo '<p><strong>Po úspešnej konfigurácii:</strong> inštalátor už na bežnú prevádzku nie je potrebný. Odporúčame ho odstrániť z webového priestoru alebo jeho prístup zablokovať. Pred budúcou zmenou umiestnenia ho môžete obnoviť z distribúcie a znovu spustiť. Databázovému používateľovi odoberte oprávnenie <code>CREATE</code>; chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
+if ($installerRenamed) {
+	echo '<p><strong>Bezpečnostné opatrenie:</strong> po úspešnej konfigurácii bol inštalátor automaticky premenovaný na <code>install.php_</code>. Pôvodná URL <code>install.php</code> už nie je dostupná.</p>';
+} else {
+	echo '<p><strong>Bezpečnostné opatrenie:</strong> inštalátor sa nepodarilo automaticky premenovať. Ručne premenujte <code>install.php</code> na <code>install.php_</code> a overte, že pôvodná URL už nie je dostupná.</p>';
+}
+echo '<p>Databázovému používateľovi odoberte oprávnenie <code>CREATE</code>; chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
 echo '</main></body></html>';
