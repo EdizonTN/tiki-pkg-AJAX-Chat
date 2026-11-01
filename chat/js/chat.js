@@ -1262,7 +1262,7 @@ var ajaxChat = {
 				menu	+= '<li><a href="javascript:ajaxChat.insertMessageWrapper(\'/room create \');">'
 						+ this.lang['userMenuCreatePrivateRoom']
 						+ '</a></li>'
-						+ '<li><a href="javascript:ajaxChat.sendMessageWrapper(\'/join\');">
+						+ '<li><a href="javascript:ajaxChat.sendMessageWrapper(\'/join\');">'
 						+ this.lang['userMenuEnterPrivateRoom']
 						+ '</a></li>';
 				if(this.userRole === '2' || this.userRole === '3') {
