@@ -49,6 +49,7 @@ var ajaxChatLang = {
 	userMenuAction: 'Popísať akciu',
 	userMenuRoll: 'Hodiť kocku',
 	userMenuNick: 'Zmeniť používateľské meno',
+	userMenuCreatePrivateRoom: 'Vytvoriť súkromnú miestnosť',
 	userMenuEnterPrivateRoom: 'Vstúpiť do súkromnej miestnosti',
 	userMenuSendPrivateMessage: 'Poslať súkromnú správu',
 	userMenuDescribe: 'Poslať súkromnú akciu',
