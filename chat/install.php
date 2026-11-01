@@ -92,7 +92,7 @@ function mzWriteBridgeConfig($file, array $values) {
 		return false;
 	}
 	$tempFile = $file.'.tmp.'.bin2hex(random_bytes(6));
-	$contents = "<?php\\n// Tiki-managed Mikrozone chat bridge settings.\\nreturn ".var_export($values, true).";\\n";
+	$contents = "<?php\n// Tiki-managed Mikrozone chat bridge settings.\nreturn ".var_export($values, true).";\n";
 	if (file_put_contents($tempFile, $contents, LOCK_EX) === false) {
 		return false;
 	}
