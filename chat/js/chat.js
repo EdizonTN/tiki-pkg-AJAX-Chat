@@ -1259,7 +1259,10 @@ var ajaxChat = {
 					+ this.lang['userMenuNick']
 					+ '</a></li>';
 			if(this.userRole === '1' || this.userRole === '2' || this.userRole === '3') {
-				menu	+= '<li><a href="javascript:ajaxChat.sendMessageWrapper(\'/join\');">'
+				menu	+= '<li><a href="javascript:ajaxChat.insertMessageWrapper(\'/room create \');">'
+						+ this.lang['userMenuCreatePrivateRoom']
+						+ '</a></li>'
+						+ '<li><a href="javascript:ajaxChat.sendMessageWrapper(\'/join\');">
 						+ this.lang['userMenuEnterPrivateRoom']
 						+ '</a></li>';
 				if(this.userRole === '2' || this.userRole === '3') {
@@ -2714,7 +2717,7 @@ var ajaxChat = {
 	replaceBBCode: function(text) {
 		if(!this.settings['bbCode']) {
 			// If BBCode is disabled, just strip the text from BBCode tags:
-			return text.replace(/\[(?:\/)?(\w+)(?:=([^<>]*?))?\]/, '');
+			return text.replace(/\[(?:\/)?(\w+)(?:=([^<>]*?))?\]/g, '');
 		}
 		// Remove the BBCode tags:
 		return text.replace(
