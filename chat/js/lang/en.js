@@ -47,6 +47,7 @@ var ajaxChatLang = {
 	userMenuAction: 'Describe action',
 	userMenuRoll: 'Roll dice',
 	userMenuNick: 'Change username',
+	userMenuCreatePrivateRoom: 'Create private room',
 	userMenuEnterPrivateRoom: 'Enter private room',
 	userMenuSendPrivateMessage: 'Send private message',
 	userMenuDescribe: 'Send private action',
