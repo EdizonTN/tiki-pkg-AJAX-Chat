@@ -43,6 +43,43 @@ function mzFindTikiRoot($startDirectory) {
 	}
 }
 
+function mzInstallerSchemaStatus(array $db) {
+	$tables = array(
+		'mz_chat_online',
+		'mz_chat_messages',
+		'mz_chat_bans',
+		'mz_chat_invitations',
+		'mz_chat_rooms',
+		'mz_chat_room_members'
+	);
+	try {
+		$connection = @new mysqli($db['host'], $db['user'], $db['pass'], $db['name']);
+		if ($connection->connect_errno) {
+			return 'unknown';
+		}
+		$found = 0;
+		foreach ($tables as $table) {
+			$escapedTable = $connection->real_escape_string($table);
+			$result = $connection->query("SHOW TABLES LIKE '".$escapedTable."'");
+			if ($result === false) {
+				$connection->close();
+				return 'unknown';
+			}
+			if ($result->num_rows > 0) {
+				$found++;
+			}
+			$result->free();
+		}
+		$connection->close();
+		if ($found === count($tables)) {
+			return 'complete';
+		}
+		return $found > 0 ? 'partial' : 'missing';
+	} catch (Throwable $e) {
+		return 'unknown';
+	}
+}
+
 function mzWritePhpConfig($file, array $values) {
 	// The installer is allowed to update the existing config file, but must not
 	// require write access to lib/ itself. Keep its root:www-data ownership and
@@ -205,10 +242,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	unset($_SESSION['mz_chat_installer_token']);
 
 	if ($submittedToken === '' || !hash_equals($expectedToken, $submittedToken)) {
-		mzInstallerStop(403, 'Neplatný alebo expirovaný bezpečnostný token. Obnovte stránku a skúste znova.');
-	}
-
-	require(AJAX_CHAT_PATH.'lib/custom.php');
+		$resultMessage = 'Formulár už bol odoslaný alebo bezpečnostný token expiroval. Stav inštalácie bol znovu načítaný.';
+		$resultDetail = '';
+		$resultClass = 'error';
+	} else {
+		require(AJAX_CHAT_PATH.'lib/custom.php');
 	require(AJAX_CHAT_PATH.'lib/classes.php');
 
 	class CustomAJAXChatInstaller extends CustomAJAXChatInterface {
@@ -410,19 +448,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$resultClass = 'error';
 	}
 
-	// A fresh one-time token is generated for the next page load.
+	}
+
+	// Post/Redirect/Get prevents browser refresh from replaying the form.
 	try {
 		$_SESSION['mz_chat_installer_token'] = bin2hex(random_bytes(32));
 	} catch (Throwable $e) {
 		mzInstallerStop(500, 'Nepodarilo sa obnoviť bezpečnostný token.');
 	}
+	$_SESSION['mz_chat_installer_flash'] = array(
+		'message' => $resultMessage,
+		'detail' => $resultDetail,
+		'class' => $resultClass
+	);
+	header('Location: '.$_SERVER['SCRIPT_NAME'], true, 303);
+	exit;
 }
 
+if (isset($_SESSION['mz_chat_installer_flash']) && is_array($_SESSION['mz_chat_installer_flash'])) {
+	$flash = $_SESSION['mz_chat_installer_flash'];
+	unset($_SESSION['mz_chat_installer_flash']);
+	$resultMessage = isset($flash['message']) ? $flash['message'] : '';
+	$resultDetail = isset($flash['detail']) ? $flash['detail'] : '';
+	$resultClass = isset($flash['class']) ? $flash['class'] : '';
+}
+
+$schemaStatus = mzInstallerSchemaStatus($db);
 $token = htmlspecialchars($_SESSION['mz_chat_installer_token'], ENT_QUOTES, 'UTF-8');
 echo '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
 echo '<title>Mikrozone chat – inštalátor</title></head><body><main style="max-width:48rem;margin:3rem auto;padding:1.5rem;font:16px/1.5 sans-serif">';
 echo '<h1>Mikrozone chat – inštalátor</h1>';
 echo '<p>Prihlásený administrátor TikiWiki: <strong>'.htmlspecialchars((string)$user, ENT_QUOTES, 'UTF-8').'</strong></p>';
+if ($schemaStatus === 'complete') {
+	echo '<p role="status" style="padding:1rem;border:1px solid #39834a;">Databázová schéma je kompletná: všetkých šesť chatových tabuliek existuje. Inštalácia databázy už bola vykonaná.</p>';
+} elseif ($schemaStatus === 'partial') {
+	echo '<p role="status" style="padding:1rem;border:1px solid #a33;">Databázová schéma je neúplná. Niektoré chatové tabuľky chýbajú.</p>';
+} elseif ($schemaStatus === 'unknown') {
+	echo '<p role="status">Stav databázovej schémy sa nepodarilo automaticky overiť.</p>';
+}
 echo '<p>Inštalátor zistí a uloží cesty k TikiWiki, chatu a Bridge-config.php. Potom vytvorí alebo overí šesť tabuliek v samostatnej databáze. Detekcia ciest sa vykonáva iba pri spustení inštalátora.</p>';
 echo '<dl><dt>Chat filesystem</dt><dd><code>'.htmlspecialchars(rtrim($chatRootReal, '/\\'), ENT_QUOTES, 'UTF-8').'</code></dd>';
 echo '<dt>Chat URL</dt><dd><code>'.htmlspecialchars($chatUrlPath, ENT_QUOTES, 'UTF-8').'</code></dd>';
@@ -435,6 +498,6 @@ if ($resultMessage !== '') {
 	}
 }
 echo '<form method="post"><input type="hidden" name="csrf_token" value="'.$token.'">';
-echo '<button type="submit">Vytvoriť / overiť databázové tabuľky</button></form>';
+echo '<button type="submit">'.($schemaStatus === 'complete' ? 'Overiť existujúcu inštaláciu' : 'Vytvoriť / overiť databázové tabuľky').'</button></form>';
 echo '<p><strong>Po úspešnej inštalácii:</strong> odoberte databázovému používateľovi oprávnenie <code>CREATE</code>. Inštalátor môžete ponechať: prístup majú iba administrátori TikiWiki a CSRF token chráni POST. Pri presunutí chatu ho spustite znova, aby sa aktualizovali uložené cesty. Ak ho z bezpečnostných dôvodov odstránite, pred budúcou zmenou umiestnenia ho obnovte z distribúcie.</p><p>Chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
 echo '</main></body></html>';
