@@ -43,7 +43,7 @@ function mzFindTikiRoot($startDirectory) {
 	}
 }
 
-function mzInstallerSchemaStatus(array $db) {
+function mzInstallerSchemaStatus(array $chatDbConfig) {
 	$tables = array(
 		'mz_chat_online',
 		'mz_chat_messages',
@@ -53,7 +53,7 @@ function mzInstallerSchemaStatus(array $db) {
 		'mz_chat_room_members'
 	);
 	try {
-		$connection = @new mysqli($db['host'], $db['user'], $db['pass'], $db['name']);
+		$connection = @new mysqli($chatDbConfig['host'], $chatDbConfig['user'], $chatDbConfig['pass'], $chatDbConfig['name']);
 		if ($connection->connect_errno) {
 			return 'unknown';
 		}
@@ -150,15 +150,15 @@ if (!is_array($mzChatInstallerConfig)) {
 	mzInstallerStop(500, 'Chat-config.php musí vracať konfiguračné pole.');
 }
 
-$db = isset($mzChatInstallerConfig['dbConnection']) && is_array($mzChatInstallerConfig['dbConnection'])
+$chatDbConfig = isset($mzChatInstallerConfig['dbConnection']) && is_array($mzChatInstallerConfig['dbConnection'])
 	? $mzChatInstallerConfig['dbConnection'] : array();
 foreach (array('host', 'user', 'pass', 'name') as $key) {
-	if (!isset($db[$key]) || !is_string($db[$key]) || trim($db[$key]) === ''
-		|| strpos($db[$key], 'REPLACE_WITH_') === 0) {
+	if (!isset($chatDbConfig[$key]) || !is_string($chatDbConfig[$key]) || trim($chatDbConfig[$key]) === ''
+		|| strpos($chatDbConfig[$key], 'REPLACE_WITH_') === 0) {
 		mzInstallerStop(500, 'Neplatná databázová konfigurácia. Skontrolujte host, user, pass a name v Chat-config.php.');
 	}
 }
-if (!isset($db['type']) || $db['type'] !== 'mysqli') {
+if (!isset($chatDbConfig['type']) || $chatDbConfig['type'] !== 'mysqli') {
 	mzInstallerStop(500, 'Databázový typ musí byť mysqli.');
 }
 $secret = isset($mzChatInstallerConfig['mzChatSharedSecret']) ? $mzChatInstallerConfig['mzChatSharedSecret'] : '';
@@ -437,7 +437,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$resultMessage = 'Inštalácia zlyhala.';
 		$errorDetail = get_class($e).': '.$e->getMessage().' ('.basename($e->getFile()).':'.$e->getLine().')';
 		foreach (array(
-			isset($db['pass']) ? $db['pass'] : '',
+			isset($chatDbConfig['pass']) ? $chatDbConfig['pass'] : '',
 			isset($mzChatInstallerConfig['mzChatSharedSecret']) ? $mzChatInstallerConfig['mzChatSharedSecret'] : ''
 		) as $sensitiveValue) {
 			if (is_string($sensitiveValue) && $sensitiveValue !== '') {
@@ -473,7 +473,7 @@ if (isset($_SESSION['mz_chat_installer_flash']) && is_array($_SESSION['mz_chat_i
 	$resultClass = isset($flash['class']) ? $flash['class'] : '';
 }
 
-$schemaStatus = mzInstallerSchemaStatus($db);
+$schemaStatus = mzInstallerSchemaStatus($chatDbConfig);
 $token = htmlspecialchars($_SESSION['mz_chat_installer_token'], ENT_QUOTES, 'UTF-8');
 echo '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
 echo '<title>Mikrozone chat – inštalátor</title></head><body><main style="max-width:48rem;margin:3rem auto;padding:1.5rem;font:16px/1.5 sans-serif">';
