@@ -181,6 +181,7 @@ $scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', $_SERVER['
 if ($scriptName === '' || substr($scriptName, -strlen('/install.php')) !== '/install.php') {
 	mzInstallerStop(500, 'Web server neposkytol platnú URL cestu inštalátora.');
 }
+$installerScriptName = $scriptName;
 $chatUrlPath = rtrim(dirname($scriptName), '/').'/';
 $relativeChatPath = substr($chatRootReal, strlen($tikiRootReal));
 $relativeParts = array_values(array_filter(explode(DIRECTORY_SEPARATOR, trim($relativeChatPath, DIRECTORY_SEPARATOR)), 'strlen'));
@@ -461,7 +462,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		'detail' => $resultDetail,
 		'class' => $resultClass
 	);
-	header('Location: '.$_SERVER['SCRIPT_NAME'], true, 303);
+	header('Location: '.$installerScriptName, true, 303);
 	exit;
 }
 
