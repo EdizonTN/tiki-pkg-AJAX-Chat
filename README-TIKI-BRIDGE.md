@@ -1,118 +1,93 @@
-# Mikrozone AJAX Chat – TikiWiki 30 bridge
+# AJAX-Chat-MZ – TikiWiki integration
 
-This branch adds a Tiki-backed authentication bridge and private-room administration controls. TikiWiki remains the authority for
-user identities and roles; the chat has no independent passwords or demo accounts.
+**Slovensky / English**
 
-## Authentication design
+> **Stav / Status:** TikiWiki integration is under development. The package source and TikiDb adapter are initial implementations and have not yet been validated on a live TikiWiki 30.1 installation. Do not deploy this development branch to production.
 
-- The chat login page calls `tiki-auth.php` relative to the chat URL, using the browser's existing Tiki session.
-- The endpoint loads Tiki's `tiki-setup.php`, reads the authenticated Tiki user and groups,
-  and issues a short-lived HMAC-SHA256 token.
-- The token contains the Tiki user ID, unique Tiki login, chat role, issue/expiry times and nonce.
-- The chat verifies the signature locally. It does not load Tiki on every 2-second chat poll.
-- The browser refreshes the Tiki token every 45 seconds. Tokens expire after 120 seconds.
-  A Tiki logout or account switch therefore invalidates the chat session within the refresh window.
-- Tiki user ID is used as the chat user ID. The Tiki `Admins` group (or global
-  `tiki_p_admin` permission) maps to chat administrator.
-- Moderator groups are read from the Tiki-managed `_custom/shared/Bridge-config.php` file
-  (`moderatorGroups`). The installer creates it with an empty default list.
-- Tiki administrators can access every private room, even without an invitation or membership.
-  Moderators retain global message-deletion rights, but do not automatically gain private-room access.
-- The optional `adminStealthInPrivateRooms` setting hides an administrator's presence in a private
-  room when that administrator is neither its owner nor a member. It also suppresses channel
-  enter/leave and logout notices for that hidden visit. It defaults to `false`.
+## Slovensky
 
-## Deployment and configuration
+### Architektúra
 
-1. Copy the repository's `chat/` directory to any web-accessible directory **inside the TikiWiki filesystem root**. The directory does not need to be named `_CHAT`; its URL and filesystem paths are detected by the installer.
-2. Copy `lib/Chat-config.php.example` to `lib/Chat-config.php`.
-3. Configure the MySQLi connection and the dedicated chat database. Do not use the Tiki database or its database user.
-4. Set `mzChatSharedSecret` to a random secret of at least 32 characters
-   (64 hexadecimal characters recommended). Generate one with `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`.
-   Keep it private; it is never sent to JavaScript.
-5. Sign in to Tiki as an administrator and open the chat's `install.php` URL. The installer walks up the filesystem hierarchy **once during installation** to locate `tiki-setup.php`, derives the corresponding URL paths, creates the bridge configuration if needed, and saves all detected paths into `Chat-config.php`.
-6. Edit `_custom/shared/Bridge-config.php` to set the exact Tiki group names that should be chat moderators.
-   Tiki administrators are chat administrators automatically. The file also contains
-   `adminStealthInPrivateRooms`; set it to `true` to enable hidden administrator visits to
-   private rooms, or leave it `false` (the default) to show normal presence. Example:
+- TikiWiki spravuje používateľov, prihlasovanie, skupiny, oprávnenia a nastavenia rozšírenia.
+- Chatové jadro bude nasadené v adresári `_CHAT/` v koreňovom adresári TikiWiki.
+- Zdrojový kód Tiki Extension Package je v `tiki-bridge/package/`. Cieľové umiestnenie po inštalácii je `vendor_custom/mikrozone/ajax_chat/`.
+- Package definuje vlastné preferencie Tiki a wiki plugin `mzchat`. Na wiki stránke sa používa syntax:
+  
+  ```text
+  {package package="mikrozone/ajax_chat" plugin="mzchat"}
+  ```
 
-   ```php
-   return array(
-       'moderatorGroups' => array('Moderators'),
-       'adminStealthInPrivateRooms' => false
-   );
-   ```
+- Composer metadata sú súčasťou zdrojového balíka, ale Composer nebude požiadavkou na produkčnom serveri. Plánovaný webový inštalátor uloží súbory balíka na správne miesto a umožní jeho aktiváciu cez Tiki Packages.
+- Chat používa existujúce databázové pripojenie TikiWiki cez `TikiDb`; neotvára vlastné databázové pripojenie a nevyžaduje samostatnú databázu ani DB používateľa.
+- Chatové tabuľky používajú prefix `tikiwiki_ext_ajax_chat_`.
+- Nastavenia chat_enabled, moderator_groups a admin_stealth_in_private_rooms sú definované ako Tiki Extension Preferences.
 
-The saved path configuration contains:
+### Inštalácia a aktualizácia
 
-- `chatRootPath` and `chatUrlPath`
-- `tikiRootPath` and `tikiUrlPath`
-- `bridgeConfigPath`
+Cieľový postup:
+1. Zálohovať súbory a databázu TikiWiki.
+2. Jednorazovo sprístupniť bootstrap inštalátor cez Tiki admin alebo FTP/správcu súborov.
+3. Spustiť inštaláciu ako Tiki administrátor.
+4. Nasadiť package do `vendor_custom/mikrozone/ajax_chat/` a chatové jadro do `_CHAT/`.
+5. Aktivovať package cez Tiki Packages.
+6. Inštalátor overí databázovú schému a vytvorí chýbajúce vlastné tabuľky bez zásahu do existujúcich tabuliek TikiWiki.
+7. Nastaviť skupiny moderátorov a ostatné možnosti v Admin → Packages → Extensions Preferences.
 
-Normal chat requests and the authentication endpoint read these stored values. They do not search parent directories or re-detect installation paths. If the chat is moved, run the installer again to update the saved paths; it preserves the database settings and HMAC secret.
+Aktualizáciu spúšťa administrátor ručne. Pred výmenou súborov sa vytvorí záloha. Zmeny databázovej schémy budú samostatné, s upozornením a potvrdením administrátora.
 
-The bridge settings file is separate from the chat's private configuration. Tiki-side integration owns `Bridge-config.php`; database credentials and the HMAC secret remain only in `Chat-config.php`. The installer validates required database credentials and the HMAC secret before attempting schema operations. Direct HTTP access to `Chat-config.php` is denied by the chat directory's `.htaccess`. The chat URL is generated from the installer-saved root-relative path, not the request's Host header.
+**Bootstrap inštalátor a plný aktualizačný proces ešte nie sú implementované.** Taktiež nebola vykonaná integračná skúška na TikiWiki 30.1. Tento dokument opisuje cieľovú architektúru.
 
-## Database installation
+### Databáza
 
-The schema uses the isolated `mz_chat_*` prefix and contains no destructive DROP statements.
-Create the separate `mz_chat` database first. Configure a dedicated database user with
-`SELECT, INSERT, UPDATE, DELETE, CREATE` privileges only on `mz_chat.*`; do not use the
-Tiki database or its database user.
+Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú vlastné tabuľky s prefixom `tikiwiki_ext_ajax_chat_`. TikiDb adapter prekladá API databázovej vrstvy AJAX Chat na TikiDb query/result API. Každá zmena schémy musí byť verzovaná a musí mať vlastnú kontrolu; všeobecný Tiki database checker nemusí poznať štruktúru rozšírenia.
 
-After copying the chat and creating `lib/Chat-config.php`, sign in to Tiki as an administrator
-and open the chat's `install.php` URL. The web installer:
-- requires an authenticated Tiki administrator;
-- uses a session-bound CSRF token and accepts POST only for installation;
-- creates/verifies the six expected tables in the configured chat database, checks the required columns and requires InnoDB storage engines;
-- detects an already complete schema and leaves its tables and data untouched, while still updating the saved installation paths.
+### Oprávnenia
 
-It does not create the database or database account. After successful installation, revoke
-the database user's `CREATE` privilege. The installer may remain in place: only Tiki
-administrators can use it, and CSRF protection is required for POST. If the chat is moved,
-run it again to refresh the saved paths. When the complete schema already exists, this path
-refresh requires no `CREATE` privilege. Runtime access needs only `SELECT, INSERT, UPDATE,
-DELETE`. All six chat tables use InnoDB so private-room deletion is transactional. Direct web access to `chat.sql` and `Chat-config.php` is denied by `.htaccess`. Database errors are written to the server error log; SQL diagnostics are not sent to chat clients.
+- Administrátori TikiWiki majú vždy najvyššiu rolu.
+- Moderátorské skupiny sa zadávajú ako presné názvy skupín TikiWiki, oddelené čiarkami.
+- Moderátorská rola sama osebe neudeľuje prístup do súkromných miestností.
+- Skrytie administrátora v súkromnej miestnosti je voliteľná preferencia.
 
-## Tiki page embedding
+## English
 
-Tiki page embedding and the wiki plugin are intentionally deferred to a later integration phase.
-The Phase 6 wiki plugin still contains the old `/_CHAT/` URL and must not be used when testing a relocated chat directory. For Phase 8, open the chat directly through its detected URL.
+### Architecture
 
-## Current limitations to resolve before production
+- TikiWiki manages users, authentication, groups, permissions and extension settings.
+- The chat engine will be deployed in `_CHAT/` under the TikiWiki document root.
+- Tiki Extension Package source is in `tiki-bridge/package/`; the intended installed location is `vendor_custom/mikrozone/ajax_chat/`.
+- The package defines Tiki preferences and the `mzchat` wiki plugin. Use it on a wiki page as follows:
 
-- Multiple named private rooms are now supported. The schema installer now creates two additional tables (`mz_chat_rooms` and `mz_chat_room_members`) without dropping existing data. Create a room with `/room create nazov`,
-  list accessible rooms with `/room list` (admins can use `/room list all`), leave a member room with `/room leave`, and
-  delete an owned room with `/room delete nazov`. The owner invites online users with
-  `/invite login` and removes them with `/uninvite login`. Membership is persistent.
-  Room names appear as `~nazov~`; each user may own up to 10 rooms by default.
-- Invitations currently target users who are online in the chat; offline Tiki-user lookup
-  is not implemented yet.
-- File upload is not implemented.
-- The optional Ruby socket server is not used by this deployment. It is AGPL-licensed;
-  keep `socketServerEnabled = false` and omit `socket/` from the deployed copy.
-  The main chat core and other bundled assets have separate license notices in
-  `THIRD-PARTY-NOTICES.md`.
-- Multiline code messages support `[code=php]...[/code]` and language selection from the Code toolbar button; `auto` enables automatic detection. The code is escaped before rendering. highlight.js 11.12.0 is bundled locally under BSD-3-Clause; see `THIRD-PARTY-NOTICES.md`.
-- The Tiki moderator group mapping in `_custom/shared/Bridge-config.php` must be set to the site's actual group name. The optional administrator stealth setting is disabled by default.
-- The bridge and chat must be tested together on the Tiki 30.1 + PHP + MariaDB stack
-  before deployment. No runtime test against the user's hosting environment has been performed.
+  ```text
+  {package package="mikrozone/ajax_chat" plugin="mzchat"}
+  ```
 
-## Local validation before deployment
+- Composer metadata is included in the source package, but Composer will not be required on the production server. The planned web installer will place the package files and make it available through Tiki Packages.
+- The chat reuses TikiWiki's existing database connection through `TikiDb`. It does not open a separate database connection and does not require a separate database or DB user.
+- Chat tables use the `tikiwiki_ext_ajax_chat_` prefix.
+- `chat_enabled`, `moderator_groups` and `admin_stealth_in_private_rooms` are defined as Tiki Extension Preferences.
 
-Use the same PHP major/minor version as the web PHP-FPM runtime:
+### Installation and updates
 
-```sh
-find chat _custom tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-php tests/test_mz_chat_auth.php
-php tests/test_chat_schema.php
-php tests/test_private_rooms.php
-# Requires a local MariaDB 11.4 test database (see CI workflow)
-php tests/test_chat_database.php
-node --check chat/js/chat.js
-node tests/test_code_blocks.js
-php -r 'echo extension_loaded("mysqli") ? "mysqli OK" : "mysqli MISSING";'
-```
+Target workflow:
+1. Back up TikiWiki files and database.
+2. Make the bootstrap installer available once through Tiki administration or FTP/file manager.
+3. Run the installer as a Tiki administrator.
+4. Deploy the package to `vendor_custom/mikrozone/ajax_chat/` and the chat engine to `_CHAT/`.
+5. Enable the package through Tiki Packages.
+6. The installer checks the schema and creates missing extension tables without modifying existing TikiWiki tables.
+7. Configure moderator groups and other options under Admin → Packages → Extensions Preferences.
 
-The token unit tests run without Tiki or a database. The bridge still needs an integration
-test with the actual Tiki 30.1 installation and its PHP-FPM session configuration.
+Updates are started manually by an administrator. Files are backed up before replacement. Database schema migrations are separate operations and require an explicit warning and confirmation.
+
+**The bootstrap installer and complete update workflow are not implemented yet.** Integration testing against TikiWiki 30.1 has not been completed. This document describes the target architecture.
+
+### Database
+
+All chat data lives in the same database as TikiWiki, in dedicated tables prefixed with `tikiwiki_ext_ajax_chat_`. The TikiDb adapter maps the AJAX Chat database API to TikiDb's query/result API. Every schema change must be versioned and checked by the extension; Tiki's general database checker may not understand the extension schema.
+
+### Permissions
+
+- TikiWiki administrators always have the highest chat role.
+- Moderator groups are entered as exact TikiWiki group names, separated by commas.
+- Moderator status alone does not grant access to private rooms.
+- Hiding administrators in private rooms is an optional preference.

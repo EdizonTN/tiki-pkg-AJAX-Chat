@@ -43,39 +43,33 @@ function mzFindTikiRoot($startDirectory) {
 	}
 }
 
-function mzInstallerSchemaStatus(array $chatDbConfig) {
+function mzInstallerSchemaStatus() {
 	$tables = array(
-		'mz_chat_online',
-		'mz_chat_messages',
-		'mz_chat_bans',
-		'mz_chat_invitations',
-		'mz_chat_rooms',
-		'mz_chat_room_members'
+		'tikiwiki_ext_ajax_chat_online',
+		'tikiwiki_ext_ajax_chat_messages',
+		'tikiwiki_ext_ajax_chat_bans',
+		'tikiwiki_ext_ajax_chat_invitations',
+		'tikiwiki_ext_ajax_chat_rooms',
+		'tikiwiki_ext_ajax_chat_room_members'
 	);
 	try {
-		$connection = @new mysqli($chatDbConfig['host'], $chatDbConfig['user'], $chatDbConfig['pass'], $chatDbConfig['name']);
-		if ($connection->connect_errno) {
+		if (!class_exists('TikiDb') || !TikiDb::isAvailable()) {
 			return 'unknown';
 		}
+		$db = TikiDb::get();
 		$found = 0;
 		foreach ($tables as $table) {
-			$escapedTable = $connection->real_escape_string($table);
-			$result = $connection->query("SHOW TABLES LIKE '".$escapedTable."'");
-			if ($result === false) {
-				$connection->close();
-				return 'unknown';
-			}
-			if ($result->num_rows > 0) {
+			$result = $db->query("SHOW TABLES LIKE ".$db->qstr($table), array(), -1, -1, TikiDb::ERR_EXCEPTION);
+			if ($result && $result->fetchRow()) {
 				$found++;
 			}
-			$result->free();
 		}
-		$connection->close();
 		if ($found === count($tables)) {
 			return 'complete';
 		}
 		return $found > 0 ? 'partial' : 'missing';
 	} catch (Throwable $e) {
+		error_log('Mikrozone chat schema check: '.$e->getMessage());
 		return 'unknown';
 	}
 }
@@ -123,27 +117,9 @@ function mzWritePhpConfig($file, array $values) {
 	return $success;
 }
 
-function mzWriteBridgeConfig($file, array $values) {
-	$directory = dirname($file);
-	if (!is_dir($directory) || !is_writable($directory)) {
-		return false;
-	}
-	$tempFile = $file.'.tmp.'.bin2hex(random_bytes(6));
-	$contents = "<?php\n// Tiki-managed Mikrozone chat bridge settings.\nreturn ".var_export($values, true).";\n";
-	if (file_put_contents($tempFile, $contents, LOCK_EX) === false) {
-		return false;
-	}
-	@chmod($tempFile, 0640);
-	if (!@rename($tempFile, $file)) {
-		@unlink($tempFile);
-		return false;
-	}
-	return true;
-}
-
 $configFile = AJAX_CHAT_PATH.'lib/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
-	mzInstallerStop(500, 'Chýba alebo nie je čitateľný súbor lib/Chat-config.php. Najprv skopírujte Chat-config.php.example na Chat-config.php a doplňte databázové údaje a HMAC secret.');
+	mzInstallerStop(500, 'Chýba alebo nie je čitateľný súbor lib/Chat-config.php. Najprv skopírujte Chat-config.php.example na Chat-config.php a nastavte jedinečný HMAC secret. Databázové údaje sa preberajú z TikiWiki.');
 }
 $mzChatInstallerConfig = require($configFile);
 if (!is_array($mzChatInstallerConfig)) {
@@ -152,14 +128,8 @@ if (!is_array($mzChatInstallerConfig)) {
 
 $chatDbConfig = isset($mzChatInstallerConfig['dbConnection']) && is_array($mzChatInstallerConfig['dbConnection'])
 	? $mzChatInstallerConfig['dbConnection'] : array();
-foreach (array('host', 'user', 'pass', 'name') as $key) {
-	if (!isset($chatDbConfig[$key]) || !is_string($chatDbConfig[$key]) || trim($chatDbConfig[$key]) === ''
-		|| strpos($chatDbConfig[$key], 'REPLACE_WITH_') === 0) {
-		mzInstallerStop(500, 'Neplatná databázová konfigurácia. Skontrolujte host, user, pass a name v Chat-config.php.');
-	}
-}
-if (!isset($chatDbConfig['type']) || $chatDbConfig['type'] !== 'mysqli') {
-	mzInstallerStop(500, 'Databázový typ musí byť mysqli.');
+if (!isset($chatDbConfig['type']) || $chatDbConfig['type'] !== 'tikidb') {
+	mzInstallerStop(500, 'Chat musí používať databázové pripojenie TikiWiki (type=tikidb).');
 }
 $secret = isset($mzChatInstallerConfig['mzChatSharedSecret']) ? $mzChatInstallerConfig['mzChatSharedSecret'] : '';
 if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH_') === 0) {
@@ -208,6 +178,10 @@ $_SERVER['REQUEST_URI'] = $tikiIndexPath;
 $_SERVER['SCRIPT_FILENAME'] = $tikiRootReal.DIRECTORY_SEPARATOR.'index.php';
 
 require_once($tikiRootReal.DIRECTORY_SEPARATOR.'tiki-setup.php');
+
+if (!class_exists('TikiDb') || !TikiDb::isAvailable()) {
+	mzInstallerStop(500, 'Databázové pripojenie TikiWiki nie je dostupné.');
+}
 
 global $user, $tiki_p_admin;
 if (empty($user) || $user === 'Anonymous') {
@@ -330,12 +304,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		function createDataBaseTables() {
 			$expectedTables = array(
-				'online' => 'mz_chat_online',
-				'messages' => 'mz_chat_messages',
-				'bans' => 'mz_chat_bans',
-				'invitations' => 'mz_chat_invitations',
-				'rooms' => 'mz_chat_rooms',
-				'roomMembers' => 'mz_chat_room_members'
+				'online' => 'tikiwiki_ext_ajax_chat_online',
+				'messages' => 'tikiwiki_ext_ajax_chat_messages',
+				'bans' => 'tikiwiki_ext_ajax_chat_bans',
+				'invitations' => 'tikiwiki_ext_ajax_chat_invitations',
+				'rooms' => 'tikiwiki_ext_ajax_chat_rooms',
+				'roomMembers' => 'tikiwiki_ext_ajax_chat_room_members'
 			);
 			foreach ($expectedTables as $key => $tableName) {
 				if ($this->getConfig('dbTableNames', $key) !== $tableName) {
@@ -372,57 +346,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	}
 
 	try {
-		$bridgeDirectory = $tikiRootReal.DIRECTORY_SEPARATOR.'_custom'.DIRECTORY_SEPARATOR.'shared';
-		if (!is_dir($bridgeDirectory) && !@mkdir($bridgeDirectory, 0750, true) && !is_dir($bridgeDirectory)) {
-			throw new RuntimeException('Nepodarilo sa vytvoriť adresár _custom/shared.');
-		}
-		$bridgeConfigPath = $bridgeDirectory.DIRECTORY_SEPARATOR.'Bridge-config.php';
-		$bridgeConfig = array(
-			'moderatorGroups' => array(),
-			'adminStealthInPrivateRooms' => false
-		);
-		$bridgeConfigNeedsWrite = !is_file($bridgeConfigPath);
-		if (is_file($bridgeConfigPath)) {
-			$existingBridgeConfig = require($bridgeConfigPath);
-			if (!is_array($existingBridgeConfig)) {
-				throw new RuntimeException('Bridge-config.php musí vracať konfiguračné pole.');
-			}
-			if (!array_key_exists('moderatorGroups', $existingBridgeConfig)
-				|| !array_key_exists('adminStealthInPrivateRooms', $existingBridgeConfig)) {
-				$bridgeConfigNeedsWrite = true;
-			}
-			$bridgeConfig = array_merge($bridgeConfig, $existingBridgeConfig);
-		}
-		if (!isset($bridgeConfig['moderatorGroups']) || !is_array($bridgeConfig['moderatorGroups'])) {
-			throw new RuntimeException('Bridge-config.php: moderatorGroups musí byť pole.');
-		}
-		if (!isset($bridgeConfig['adminStealthInPrivateRooms'])
-			|| !is_bool($bridgeConfig['adminStealthInPrivateRooms'])) {
-			$bridgeConfig['adminStealthInPrivateRooms'] = false;
-			$bridgeConfigNeedsWrite = true;
-		}
-		if ($bridgeConfigNeedsWrite && !mzWriteBridgeConfig($bridgeConfigPath, $bridgeConfig)) {
-			throw new RuntimeException('Nepodarilo sa bezpečne uložiť Bridge-config.php.');
-		}
-		$sharedHtaccess = $bridgeDirectory.DIRECTORY_SEPARATOR.'.htaccess';
-		$denyBridgeRule = "<Files \"Bridge-config.php\">\n    Require all denied\n</Files>";
-		$htaccessContent = is_file($sharedHtaccess) ? file_get_contents($sharedHtaccess) : '';
-		if ($htaccessContent === false) {
-			throw new RuntimeException('Nepodarilo sa prečítať _custom/shared/.htaccess.');
-		}
-		if (strpos($htaccessContent, 'Bridge-config.php') === false) {
-			$htaccessContent = rtrim($htaccessContent)."\n\n".$denyBridgeRule."\n";
-			if (file_put_contents($sharedHtaccess, $htaccessContent, LOCK_EX) === false) {
-				throw new RuntimeException('Nepodarilo sa zabezpečiť Bridge-config.php pomocou .htaccess.');
-			}
-		}
-		$mzChatInstallerConfig['paths'] = array(
-			'chatRootPath' => rtrim($chatRootReal, '/\\').DIRECTORY_SEPARATOR,
-			'chatUrlPath' => $chatUrlPath,
-			'tikiRootPath' => $tikiRoot,
-			'tikiUrlPath' => $tikiUrlPath,
-			'bridgeConfigPath' => $bridgeConfigPath
-		);
+        $mzChatInstallerConfig['paths'] = array(
+            'chatRootPath' => rtrim($chatRootReal, '/\\').DIRECTORY_SEPARATOR,
+            'chatUrlPath' => $chatUrlPath,
+            'tikiRootPath' => $tikiRoot,
+            'tikiUrlPath' => $tikiUrlPath
+        );
 		if (!mzWritePhpConfig($configFile, $mzChatInstallerConfig)) {
 			throw new RuntimeException('Nepodarilo sa bezpečne uložiť Chat-config.php.');
 		}
@@ -489,7 +418,7 @@ if ($installerRenameAttempted) {
 	}
 }
 
-$schemaStatus = mzInstallerSchemaStatus($chatDbConfig);
+$schemaStatus = mzInstallerSchemaStatus();
 $token = htmlspecialchars($_SESSION['mz_chat_installer_token'], ENT_QUOTES, 'UTF-8');
 echo '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
 echo '<title>Mikrozone chat – inštalátor</title></head><body><main style="max-width:48rem;margin:3rem auto;padding:1.5rem;font:16px/1.5 sans-serif">';
@@ -502,7 +431,7 @@ if ($schemaStatus === 'complete') {
 } elseif ($schemaStatus === 'unknown') {
 	echo '<p role="status">Stav databázovej schémy sa nepodarilo automaticky overiť.</p>';
 }
-echo '<p>Inštalátor zistí a uloží cesty k TikiWiki, chatu a Bridge-config.php. Potom vytvorí alebo overí šesť tabuliek v samostatnej databáze. Detekcia ciest sa vykonáva iba pri spustení inštalátora.</p>';
+echo '<p>Inštalátor zistí a uloží cesty k TikiWiki a chatu. Použije už aktívne databázové pripojenie TikiWiki a vytvorí alebo overí šesť vlastných tabuliek s prefixom <code>tikiwiki_ext_ajax_chat_</code>. Detekcia ciest sa vykonáva iba pri spustení inštalátora.</p>';
 echo '<dl><dt>Chat filesystem</dt><dd><code>'.htmlspecialchars(rtrim($chatRootReal, '/\\'), ENT_QUOTES, 'UTF-8').'</code></dd>';
 echo '<dt>Chat URL</dt><dd><code>'.htmlspecialchars($chatUrlPath, ENT_QUOTES, 'UTF-8').'</code></dd>';
 echo '<dt>Tiki filesystem</dt><dd><code>'.htmlspecialchars($tikiRoot, ENT_QUOTES, 'UTF-8').'</code></dd>';
@@ -520,5 +449,5 @@ if ($installerRenamed) {
 } elseif ($installerRenameAttempted) {
 	echo '<p><strong>Bezpečnostné opatrenie:</strong> inštalátor sa nepodarilo automaticky premenovať. Ručne premenujte <code>install.php</code> na <code>install.php_</code> a overte, že pôvodná URL už nie je dostupná.</p>';
 }
-echo '<p>Databázovému používateľovi odoberte oprávnenie <code>CREATE</code>; chat na bežnú prevádzku potrebuje iba SELECT, INSERT, UPDATE a DELETE.</p>';
+
 echo '</main></body></html>';

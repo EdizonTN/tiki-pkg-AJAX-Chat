@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS mz_chat_online (
+CREATE TABLE IF NOT EXISTS tikiwiki_ext_ajax_chat_online (
 	userID INT(10) UNSIGNED NOT NULL,
 	userName VARCHAR(64) NOT NULL,
 	userRole INT(1) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_online (
 	INDEX (userName)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS mz_chat_messages (
+CREATE TABLE IF NOT EXISTS tikiwiki_ext_ajax_chat_messages (
 	id INT(11) NOT NULL AUTO_INCREMENT,
 	userID INT(10) UNSIGNED NOT NULL,
 	userName VARCHAR(64) NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_messages (
 	INDEX (dateTime)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS mz_chat_bans (
+CREATE TABLE IF NOT EXISTS tikiwiki_ext_ajax_chat_bans (
 	userID INT(10) UNSIGNED NOT NULL,
 	userName VARCHAR(64) NOT NULL,
 	dateTime DATETIME NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_bans (
 	INDEX (dateTime)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS mz_chat_invitations (
+CREATE TABLE IF NOT EXISTS tikiwiki_ext_ajax_chat_invitations (
 	userID INT(10) UNSIGNED NOT NULL,
 	channel INT(10) UNSIGNED NOT NULL,
 	dateTime DATETIME NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_invitations (
 	INDEX (dateTime)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS mz_chat_rooms (
+CREATE TABLE IF NOT EXISTS tikiwiki_ext_ajax_chat_rooms (
 	id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	ownerID INT(10) UNSIGNED NOT NULL,
 	name VARCHAR(48) NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS mz_chat_rooms (
 	INDEX (dateTime)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS mz_chat_room_members (
+CREATE TABLE IF NOT EXISTS tikiwiki_ext_ajax_chat_room_members (
 	roomID INT(10) UNSIGNED NOT NULL,
 	userID INT(10) UNSIGNED NOT NULL,
 	userName VARCHAR(48) NOT NULL,

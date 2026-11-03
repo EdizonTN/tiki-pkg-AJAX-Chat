@@ -19,28 +19,19 @@ define('AJAX_CHAT_GUEST',		0);
 // AJAX Chat config parameters:
 $config = array();
 
-// Database connection values:
-$config['dbConnection'] = array();
-// Database hostname:
-$config['dbConnection']['host'] = 'localhost';
-// Database username:
-$config['dbConnection']['user'] = 'mz_chat_user';
-// Database password:
-$config['dbConnection']['pass'] = 'REPLACE_WITH_DATABASE_PASSWORD';
-// Database name:
-$config['dbConnection']['name'] = 'mz_chat';
-// Database type:
-$config['dbConnection']['type'] = 'mysqli';
-// Database link:
-$config['dbConnection']['link'] = null;
+// Tiki integration uses the active TikiDb connection; no separate DB credentials.
+$config['dbConnection'] = array(
+    'type' => 'tikidb',
+    'link' => null,
+    'name' => ''
+);
 
-// Installation paths are detected and saved by install.php. Do not edit manually.
+// Installation paths are detected and saved by the installer. Do not edit manually.
 $config['paths'] = array(
 	'chatRootPath' => '',
 	'chatUrlPath' => '',
 	'tikiRootPath' => '',
 	'tikiUrlPath' => '',
-	'bridgeConfigPath' => ''
 );
 // Shared secret used to sign Tiki -> chat authentication tokens.
 // Generate a unique random value of at least 32 characters and keep it private.
@@ -52,14 +43,14 @@ $config['privateRoomMaxNameLength'] = 40;
 $config['privateRoomPrefix'] = '~';
 $config['privateRoomSuffix'] = '~';
 
-// Database table names:
+// Dedicated extension tables in the existing TikiWiki database.
 $config['dbTableNames'] = array();
-$config['dbTableNames']['online']		= 'mz_chat_online';
-$config['dbTableNames']['messages']		= 'mz_chat_messages';
-$config['dbTableNames']['bans']			= 'mz_chat_bans';
-$config['dbTableNames']['invitations']	= 'mz_chat_invitations';
-$config['dbTableNames']['rooms']		= 'mz_chat_rooms';
-$config['dbTableNames']['roomMembers']	= 'mz_chat_room_members';
+$config['dbTableNames']['online']       = 'tikiwiki_ext_ajax_chat_online';
+$config['dbTableNames']['messages']     = 'tikiwiki_ext_ajax_chat_messages';
+$config['dbTableNames']['bans']         = 'tikiwiki_ext_ajax_chat_bans';
+$config['dbTableNames']['invitations']  = 'tikiwiki_ext_ajax_chat_invitations';
+$config['dbTableNames']['rooms']        = 'tikiwiki_ext_ajax_chat_rooms';
+$config['dbTableNames']['roomMembers']  = 'tikiwiki_ext_ajax_chat_room_members';
 
 // Available languages:
 $config['langAvailable'] = array(

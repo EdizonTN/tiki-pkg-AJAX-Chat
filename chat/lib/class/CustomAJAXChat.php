@@ -20,23 +20,13 @@ class CustomAJAXChat extends AJAXChat {
 	);
 
 	function initCustomConfig() {
-		$paths = isset($this->_config['paths']) && is_array($this->_config['paths']) ? $this->_config['paths'] : array();
-		$configPath = isset($paths['bridgeConfigPath']) ? $paths['bridgeConfigPath'] : '';
-		if (!is_string($configPath) || $configPath === '' || !is_file($configPath) || !is_readable($configPath)) {
-			return;
-		}
-		try {
-			$bridgeConfig = require($configPath);
-			if (is_array($bridgeConfig)) {
-				$this->_mzBridgeConfig = array_merge($this->_mzBridgeConfig, $bridgeConfig);
-			}
-		} catch (Throwable $e) {
-			error_log('Mikrozone chat bridge config: '.$e->getMessage());
-		}
-		$this->_mzBridgeConfig['adminStealthInPrivateRooms'] =
-			isset($this->_mzBridgeConfig['adminStealthInPrivateRooms'])
-			&& $this->_mzBridgeConfig['adminStealthInPrivateRooms'] === true;
-	}
+        // Tiki preferences are conveyed in the short-lived signed auth token.
+        // No separate Bridge-config.php file is used.
+        $this->_mzBridgeConfig = array(
+            'moderatorGroups' => array(),
+            'adminStealthInPrivateRooms' => false
+        );
+    }
 
 	function databaseError($context, $result) {
 		$details = is_object($result) && method_exists($result, 'getError') ? $result->getError() : 'Unknown database error';
@@ -210,6 +200,10 @@ class CustomAJAXChat extends AJAXChat {
 		if($claims && $claims['uid'] >= (int)$this->getConfig('privateChannelDiff')) {
 			return false;
 		}
+        if ($claims) {
+            $this->_mzBridgeConfig['adminStealthInPrivateRooms'] =
+                !empty($claims['adminStealth']) && (int)$claims['role'] === AJAX_CHAT_ADMIN;
+        }
 		return $claims;
 	}
 

@@ -33,31 +33,13 @@ if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH
 }
 
 $paths = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : array();
-$tikiRoot = isset($paths['tikiRootPath']) ? $paths['tikiRootPath'] : '';
-$tikiUrlPath = isset($paths['tikiUrlPath']) ? $paths['tikiUrlPath'] : '';
-if (!is_string($tikiRoot) || $tikiRoot === '' || !is_string($tikiUrlPath) || $tikiUrlPath === '') {
-	mz_chat_auth_error(500, 'chat_paths_not_configured');
+require_once(__DIR__.'/lib/tiki-bootstrap.php');
+try {
+    mzChatBootstrapTiki($config);
+} catch (Throwable $e) {
+    error_log('Mikrozone chat auth Tiki bootstrap: '.$e->getMessage());
+    mz_chat_auth_error(500, 'tiki_database_unavailable');
 }
-$tikiRoot = rtrim($tikiRoot, '/\\').DIRECTORY_SEPARATOR;
-$tikiSetup = $tikiRoot.'tiki-setup.php';
-if (!is_file($tikiSetup)) {
-	mz_chat_auth_error(500, 'tiki_setup_not_found');
-}
-
-// Use the paths saved by the installer. No directory or URL autodetection at runtime.
-if (!chdir($tikiRoot)) {
-	mz_chat_auth_error(500, 'tiki_root_unavailable');
-}
-$tikiIndexPath = rtrim($tikiUrlPath, '/').'/index.php';
-if ($tikiIndexPath === 'index.php') {
-	$tikiIndexPath = '/index.php';
-}
-$_SERVER['SCRIPT_NAME'] = $tikiIndexPath;
-$_SERVER['PHP_SELF'] = $tikiIndexPath;
-$_SERVER['REQUEST_URI'] = $tikiIndexPath;
-$_SERVER['SCRIPT_FILENAME'] = $tikiRoot.'index.php';
-
-require_once($tikiSetup);
 
 global $user, $tiki_p_admin;
 if (empty($user) || $user === 'Anonymous') {
@@ -74,17 +56,17 @@ if (!is_array($userInfo) || $userId < 1 || !empty($userInfo['userBanned']) || !e
 
 $groups = $tikiLib->get_user_groups($user);
 $isAdmin = in_array('Admins', $groups, true) || (isset($tiki_p_admin) && $tiki_p_admin === 'y');
-$bridgeConfigPath = isset($paths['bridgeConfigPath']) ? $paths['bridgeConfigPath'] : '';
-if (!is_string($bridgeConfigPath) || $bridgeConfigPath === '' || !is_file($bridgeConfigPath) || !is_readable($bridgeConfigPath)) {
-	mz_chat_auth_error(500, 'bridge_config_missing');
+global $prefs;
+$moderatorGroupsRaw = isset($prefs['tp_mikrozone__ajax_chat__moderator_groups'])
+    ? (string) $prefs['tp_mikrozone__ajax_chat__moderator_groups'] : '';
+$moderatorGroups = array_values(array_filter(array_map('trim', explode(',', $moderatorGroupsRaw)), 'strlen'));
+$chatEnabled = !isset($prefs['tp_mikrozone__ajax_chat__chat_enabled'])
+    || $prefs['tp_mikrozone__ajax_chat__chat_enabled'] === 'y';
+if (!$chatEnabled) {
+    mz_chat_auth_error(403, 'chat_disabled');
 }
-$bridgeConfig = require($bridgeConfigPath);
-if (!is_array($bridgeConfig)) {
-	mz_chat_auth_error(500, 'bridge_config_invalid');
-}
-$moderatorGroups = isset($bridgeConfig['moderatorGroups']) && is_array($bridgeConfig['moderatorGroups'])
-	? $bridgeConfig['moderatorGroups']
-	: array();
+$adminStealth = isset($prefs['tp_mikrozone__ajax_chat__admin_stealth_in_private_rooms'])
+    && $prefs['tp_mikrozone__ajax_chat__admin_stealth_in_private_rooms'] === 'y';
 $isModerator = count(array_intersect($moderatorGroups, $groups)) > 0;
 
 if ($isAdmin) {
@@ -103,6 +85,7 @@ $claims = array(
 	'login' => (string)$user,
 	'name' => $displayName,
 	'role' => $chatRole,
+    'adminStealth' => $isAdmin && $adminStealth,
 	'iat' => $now,
 	'exp' => $now + 120,
 	'nonce' => bin2hex(random_bytes(16))

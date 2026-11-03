@@ -38,12 +38,13 @@ jobs:
 
       - name: Lint all PHP files
         run: |
-          find chat _custom tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          find chat tiki-bridge/package tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Run PHP tests
         run: |
           php tests/test_mz_chat_auth.php
           php tests/test_chat_schema.php
+          php tests/test_tiki_database_adapter.php
           php tests/test_private_rooms.php
           php tests/test_chat_database.php
         env:
