@@ -5,7 +5,8 @@
 
 ## Základné informácie
 
-- Fork: https://github.com/PetoJanis/AJAX-Chat-MZ
+- Hlavný súkromný repozitár: https://github.com/PetoJanis/tiki-AJAX-Chat
+- Pôvodný verejný fork/archív: https://github.com/PetoJanis/AJAX-Chat-MZ
 - Pôvodný projekt: AJAX-Chat (JavaScript + PHP + MySQL/MariaDB).
 - Cieľ: modernizovaný, bezpečný, samostatne testovateľný chat pre Mikrozone, neskôr integrovaný s TikiWiki.
 - Hostingový cieľ: Active24 shared hosting; riešenie nesmie vyžadovať vlastný VPS ani samostatnú socket server infraštruktúru.
@@ -40,6 +41,17 @@
 
 ## Stav vývoja — vetvy a míľniky
 
+### Presun do súkromného repozitára (2026-11-04)
+
+- Vytvorený súkromný hlavný repozitár `PetoJanis/tiki-AJAX-Chat`.
+- Úspešne vykonaný `git push --mirror` z lokálnej mirror kópie pôvodného `AJAX-Chat-MZ`.
+- Overené cez GitHub: v novom repozitári existuje 11 vývojových vetiev vrátane `master`, všetkých vetiev `mz/phase-*` a `mz/tiki-admin-integration`.
+- Prenos Git objektov a histórie bol úspešný. Interné GitHub `refs/pull/*` sa neprenášajú; GitHub ich spravuje samostatne.
+- Nový repozitár je private. Pôvodný verejný fork zostáva ako archív; ďalší vývoj pokračuje v `tiki-AJAX-Chat`.
+- **Dôležité nastavenie:** po mirror push GitHub uvádzal ako default branch `mz/phase-1-safe-db-installer`. Pred ďalšou prácou treba v Settings → General → Default branch nastaviť `master`.
+- Autentifikácia pri prenose: Personal Access Token s oprávneniami umožňujúcimi zápis obsahu a workflow súborov (`.github/workflows/chat-checks.yml`). Token sa nesmie ukladať do repozitára ani projektovej dokumentácie.
+
+
 V predchádzajúcich pracovných reláciách boli zaznamenané tieto vetvy:
 
 - `mz/phase-1-safe-db-installer`
@@ -47,7 +59,11 @@ V predchádzajúcich pracovných reláciách boli zaznamenané tieto vetvy:
 - `mz/phase-3-security`
 - `mz/phase-4-tiki-auth`
 - `mz/phase-5-private-rooms`
+- `mz/phase-6-web-installer-chat-dir`
 - `mz/phase-7-relocatable-config`
+- `mz/phase-8-security-admin`
+- `mz/phase-8-tw-ajax-chat-identity`
+- `mz/tiki-admin-integration`
 
 Zaznamenané commity:
 - `d9e007b` — “Document MariaDB integration test”
