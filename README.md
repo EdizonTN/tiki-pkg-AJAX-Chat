@@ -39,7 +39,7 @@ TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/
 TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/src/
 ```
 
-The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The installer stores the chat filesystem path and URL, as well as the Tiki root path and URL, in the protected `src/lib/Chat-config.php` configuration file.
+The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The installer stores the chat filesystem path and URL, as well as the Tiki root path and URL, in the protected `src/lib/Chat-config.php` configuration file. During first-time setup it also registers a small package-owned dispatcher in Tiki's supported `_custom/shared/custom.php` bootstrap hook. The dispatcher reads the `Standalone chat URL` preference on each request, so the path can be changed later without rerunning the installer.
 
 ## Tiki package metadata
 
@@ -82,6 +82,6 @@ Generated configuration, secrets, and chat data must remain package-local and mu
 
 Keep `composer.json` and `tiki-package.json` at the package root so Tiki can identify it as an Extension Package. Use the package discovery and activation mechanism supported by the installed Tiki version.
 
-The Tiki preference overlay and database administration page are implemented on the `feature/tiki-admin-settings` development branch. They still require validation against the target Tiki 30.1 installation. Back up Tiki files and the database before testing.
+The standalone chat URL defaults to `/chat`. Set it under **Admin → Packages → Extension Preferences**. The URL is relative to the Tiki installation and requires Tiki SEF URLs / the normal web-server rewrite rules to be enabled. No wiki page, Custom Route, or Tiki core modification is required. The first-time web installer registers the dispatcher in `_custom/shared/custom.php`; if that file already exists, the installer adds a clearly marked include without replacing the existing custom code.
 
 See `README-TIKI-BRIDGE.md` and `PROJECT-STATUS.md` for development notes.
