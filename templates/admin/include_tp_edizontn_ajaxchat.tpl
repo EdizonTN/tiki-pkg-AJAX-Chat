@@ -1,4 +1,33 @@
-<h1>{tr}AJAX Chat administration{/tr}</h1>
+<h1>{tr}Ajax Chat settings{/tr}</h1>
+
+<p>{tr}Configure the AJAX Chat runtime options. These settings are stored in the package-owned database table and remain available when the package is temporarily disabled.{/tr}</p>
+
+<form method="post" action="{$ajax_chat_admin_url|escape}">
+    {ticket}
+    <input type="hidden" name="redirect" value="0">
+    <input type="hidden" name="ajax_chat_action" value="save_settings">
+    {foreach from=$ajax_chat_settings item=setting}
+        <div class="form-group">
+            <label for="ajax-chat-setting-{$setting.key|escape}">{$setting.name|escape}</label>
+            {if $setting.type eq 'flag'}
+                <select class="form-control" id="ajax-chat-setting-{$setting.key|escape}" name="ajax_chat_settings[{$setting.key|escape}]">
+                    <option value="y" {if $setting.value eq 'y'}selected="selected"{/if}>{tr}Yes{/tr}</option>
+                    <option value="n" {if $setting.value eq 'n'}selected="selected"{/if}>{tr}No{/tr}</option>
+                </select>
+            {else}
+                <input class="form-control" type="text" id="ajax-chat-setting-{$setting.key|escape}" name="ajax_chat_settings[{$setting.key|escape}]" value="{$setting.value|escape}">
+            {/if}
+            {if $setting.description}
+                <p class="help-block">{$setting.description|escape}</p>
+            {/if}
+        </div>
+    {/foreach}
+    <button type="submit" class="btn btn-primary">{tr}Save AJAX Chat settings{/tr}</button>
+</form>
+
+<hr>
+
+<h2>{tr}Installation and maintenance{/tr}</h2>
 
 <p>{tr}Manage the AJAX Chat database, generated configuration and standalone entry point from Tiki. No manual file creation is required.{/tr}</p>
 
