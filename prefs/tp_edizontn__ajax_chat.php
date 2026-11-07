@@ -17,6 +17,13 @@ function prefs_tp_edizontn__ajax_chat_list()
             'type' => 'flag',
             'default' => 'y',
         ],
+        'tp_edizontn__ajax_chat__chat_url' => [
+            'name' => tra('Standalone chat URL'),
+            'description' => tra('Clean URL path for the standalone chat, relative to the Tiki installation (default: /chat). Requires Tiki SEF URLs / URL rewriting. No wiki page or Custom Route is needed.'),
+            'tags' => ['basic'],
+            'type' => 'text',
+            'default' => '/chat',
+        ],
         'tp_edizontn__ajax_chat__moderator_groups' => [
             'name' => tra('Ajax Chat moderator groups'),
             'description' => tra('Comma-separated exact Tiki group names. Tiki administrators always retain the highest chat role.'),
