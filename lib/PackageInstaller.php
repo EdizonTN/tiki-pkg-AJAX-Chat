@@ -275,7 +275,7 @@ class AjaxChatPackageInstaller
         if (is_file($file) && strpos((string) file_get_contents($file), $marker) === false) {
             throw new RuntimeException('/chat/tiki-auth.php already exists and was not overwritten.');
         }
-        $source = "<?php\\n// " . $marker . "\\nrequire " . var_export($this->package . '/src/tiki-auth.php', true) . ";\\n";
+        $source = "<?php\n// " . $marker . "\nrequire " . var_export($this->package . '/src/tiki-auth.php', true) . ";\n";
         if (file_put_contents($file, $source, LOCK_EX) === false) {
             throw new RuntimeException('Could not create /chat/tiki-auth.php.');
         }
