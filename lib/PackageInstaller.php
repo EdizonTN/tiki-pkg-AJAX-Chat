@@ -23,20 +23,38 @@ class AjaxChatPackageInstaller
         $this->config = $this->root . '/temp/ajax-chat/Chat-config.php';
     }
 
+    private function getStoredPreferencesWithPrefix($prefix)
+    {
+        $db = TikiDb::get();
+        $result = $db->query(
+            'SELECT name, value FROM tiki_preferences WHERE LEFT(name, ?) = ?',
+            array(strlen($prefix), $prefix),
+            -1,
+            -1,
+            TikiDb::ERR_EXCEPTION
+        );
+        $preferences = array();
+        while ($row = $result->fetchRow()) {
+            if (isset($row['name'])) {
+                $preferences[$row['name']] = $row['value'];
+            }
+        }
+        return $preferences;
+    }
+
     public function migrateLegacyPreferences()
     {
         $tikilib = TikiLib::lib('tiki');
-        $legacy = $tikilib->get_preferences('tp_edizontn__ajax_chat__%');
-        if (!is_array($legacy) || !$legacy) {
+        $legacyPrefix = 'tp_edizontn__ajax_chat__';
+        $currentPrefix = 'tp_edizontn__ajaxchat__';
+        $legacy = $this->getStoredPreferencesWithPrefix($legacyPrefix);
+        if (!$legacy) {
             return 0;
         }
-        $current = $tikilib->get_preferences('tp_edizontn__ajaxchat__%');
-        if (!is_array($current)) {
-            $current = array();
-        }
+        $current = $this->getStoredPreferencesWithPrefix($currentPrefix);
         $migrated = 0;
         foreach ($legacy as $oldName => $value) {
-            $newName = 'tp_edizontn__ajaxchat__' . substr($oldName, strlen('tp_edizontn__ajax_chat__'));
+            $newName = $currentPrefix . substr($oldName, strlen($legacyPrefix));
             if (!array_key_exists($newName, $current)) {
                 if (!$tikilib->set_preference($newName, $value)) {
                     throw new RuntimeException('Could not migrate legacy AJAX Chat preference ' . $oldName . '.');
