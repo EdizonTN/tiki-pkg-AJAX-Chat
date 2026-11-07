@@ -16,6 +16,7 @@ tiki-AJAX-Chat/
 └── src/                 # AJAX Chat engine and Tiki bridge
     ├── index.php
     ├── install.php
+    ├── admin.php
     ├── tiki-auth.php
     ├── chat.sql
     ├── lib/
@@ -60,7 +61,7 @@ Optional iframe height:
 {package package="edizontn/ajax_chat" plugin="ajaxchat" height="520"}
 ```
 
-The package provides preferences for enabling chat, moderator group mapping, and optional administrator stealth in private rooms. Tiki administrators retain the highest chat role; moderator status does not grant membership in private rooms.
+The package exposes the configurable, runtime-safe AJAX Chat options through **Settings → Packages → Extension Preferences**. This includes language and style, public/private rooms and private messages, guest and nickname policies, opening hours, message/history limits, moderation defaults, log retention/access, IP checks and optional socket-server settings. Moderator group mapping and administrator stealth are Tiki bridge settings. Tiki administrators retain the highest chat role; moderator status does not grant membership in private rooms.\n\nDatabase management is provided by the package-local `src/admin.php` page (linked in the chat-enabled preference description). It is restricted to Tiki administrators and supports schema installation/repair and explicit, confirmed removal of the six chat tables. The uninstall operation deletes chat data but does not remove package files or modify Tiki tables.
 
 ## Database
 
@@ -79,6 +80,6 @@ Generated configuration, secrets, and chat data must remain package-local and mu
 
 Keep `composer.json` and `tiki-package.json` at the package root so Tiki can identify it as an Extension Package. Use the package discovery and activation mechanism supported by the installed Tiki version.
 
-The web bootstrap/upgrade workflow and full runtime validation are still in progress. Back up Tiki files and the database before testing.
+The Tiki preference overlay and database administration page are implemented on the `feature/tiki-admin-settings` development branch. They still require validation against the target Tiki 30.1 installation. Back up Tiki files and the database before testing.
 
 See `README-TIKI-BRIDGE.md` and `PROJECT-STATUS.md` for development notes.
