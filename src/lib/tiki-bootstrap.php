@@ -64,9 +64,6 @@ function AjaxChatApplyTikiPreferences(array $config)
         'allow_private_messages' => 'allowPrivateMessages',
         'show_channel_messages' => 'showChannelMessages',
         'chat_closed' => 'chatClosed',
-        'allow_guest_logins' => 'allowGuestLogins',
-        'allow_guest_write' => 'allowGuestWrite',
-        'allow_guest_user_name' => 'allowGuestUserName',
         'allow_nick_change' => 'allowNickChange',
         'allow_user_message_delete' => 'allowUserMessageDelete',
         'request_messages_prior_channel_enter' => 'requestMessagesPriorChannelEnter',
@@ -91,12 +88,9 @@ function AjaxChatApplyTikiPreferences(array $config)
         'private_room_suffix' => 'privateRoomSuffix',
         'private_channel_prefix' => 'privateChannelPrefix',
         'private_channel_suffix' => 'privateChannelSuffix',
-        'guest_user_prefix' => 'guestUserPrefix',
-        'guest_user_suffix' => 'guestUserSuffix',
         'changed_nick_prefix' => 'changedNickPrefix',
         'changed_nick_suffix' => 'changedNickSuffix',
         'chatbot_name' => 'chatBotName',
-        'logout_data' => 'logoutData',
         'socket_server_host' => 'socketServerHost',
         'socket_server_ip' => 'socketServerIP',
     );
@@ -141,6 +135,7 @@ function AjaxChatApplyTikiPreferences(array $config)
         'logs_request_messages_limit' => array('logsRequestMessagesLimit', 1, 500),
         'logs_first_year' => array('logsFirstYear', 2000, (int) date('Y')),
         'logs_purge_time_diff' => array('logsPurgeTimeDiff', 1, 36500),
+        'session_cookie_lifetime' => array('sessionCookieLifeTime', 0, 3650),
         'socket_server_port' => array('socketServerPort', 1, 65535),
         'socket_server_chat_id' => array('socketServerChatID', 0, 2147483647),
     );
@@ -148,6 +143,28 @@ function AjaxChatApplyTikiPreferences(array $config)
         $name = $prefix . $pref;
         if (isset($prefs[$name]) && $prefs[$name] !== '' && is_numeric($prefs[$name])) {
             $config[$rule[0]] = max($rule[1], min($rule[2], (int) $prefs[$name]));
+        }
+    }
+
+    $channelListMap = array(
+        'limit_channel_list' => 'limitChannelList',
+        'request_messages_prior_channel_enter_list' => 'requestMessagesPriorChannelEnterList',
+        'logs_user_access_channel_list' => 'logsUserAccessChannelList',
+    );
+    foreach ($channelListMap as $pref => $key) {
+        $name = $prefix . $pref;
+        if (isset($prefs[$name])) {
+            $ids = array();
+            foreach (explode(',', (string) $prefs[$name]) as $id) {
+                $id = trim($id);
+                if ($id !== '' && ctype_digit($id)) {
+                    $id = (int) $id;
+                    if ($id < (int) $config['privateChannelDiff'] && !in_array($id, $ids, true)) {
+                        $ids[] = $id;
+                    }
+                }
+            }
+            $config[$key] = $ids ? $ids : null;
         }
     }
 
