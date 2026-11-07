@@ -23,6 +23,32 @@ class AjaxChatPackageInstaller
         $this->config = $this->root . '/temp/ajax-chat/Chat-config.php';
     }
 
+    public function migrateLegacyPreferences()
+    {
+        $tikilib = TikiLib::lib('tiki');
+        $legacy = $tikilib->get_preferences('tp_edizontn__ajax_chat__%');
+        if (!is_array($legacy) || !$legacy) {
+            return 0;
+        }
+        $current = $tikilib->get_preferences('tp_edizontn__ajaxchat__%');
+        if (!is_array($current)) {
+            $current = array();
+        }
+        $migrated = 0;
+        foreach ($legacy as $oldName => $value) {
+            $newName = 'tp_edizontn__ajaxchat__' . substr($oldName, strlen('tp_edizontn__ajax_chat__'));
+            if (!array_key_exists($newName, $current)) {
+                if (!$tikilib->set_preference($newName, $value)) {
+                    throw new RuntimeException('Could not migrate legacy AJAX Chat preference ' . $oldName . '.');
+                }
+                $current[$newName] = $value;
+                $migrated++;
+            }
+            $tikilib->delete_preference($oldName);
+        }
+        return $migrated;
+    }
+
     public function status()
     {
         $db = TikiDb::get();
