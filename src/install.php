@@ -84,7 +84,7 @@ function ajaxChatRegisterStandaloneRouter($tikiRoot, $chatRoot) {
 		if ($updatedContents === $contents) {
 			return true;
 		}
-		$contents = $updatedContents;
+		$newContents = $updatedContents;
 	} else {
 		if (!preg_match('/\\A(\\s*<\\?php\\s*(?:declare\\s*\\(\\s*strict_types\\s*=\\s*1\\s*\\)\\s*;\\s*)?)/', $contents, $match)) {
 		throw new RuntimeException('_custom/shared/custom.php nemá očakávaný PHP začiatok; súbor nebol zmenený.');
