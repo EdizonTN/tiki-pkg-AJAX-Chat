@@ -76,10 +76,14 @@ class AjaxChatPackageInstaller
         }
         chmod($this->config, 0640);
         if (!is_file($dir . '/.htaccess')) {
-            if (file_put_contents($dir . '/.htaccess', "# EdizonTN AJAX Chat protected config directory\nRequire all denied\n", LOCK_EX) === false) {\n                throw new RuntimeException('Could not protect the generated configuration directory.');\n            }
+            if (file_put_contents($dir . '/.htaccess', "# EdizonTN AJAX Chat protected config directory\nRequire all denied\n", LOCK_EX) === false) {
+                throw new RuntimeException('Could not protect the generated configuration directory.');
+            }
         }
         if (!is_file($dir . '/index.php')) {
-            if (file_put_contents($dir . '/index.php', "<?php\n// EdizonTN AJAX Chat protected config directory\nhttp_response_code(404);\nexit;\n", LOCK_EX) === false) {\n                throw new RuntimeException('Could not protect the generated configuration directory.');\n            }
+            if (file_put_contents($dir . '/index.php', "<?php\n// EdizonTN AJAX Chat protected config directory\nhttp_response_code(404);\nexit;\n", LOCK_EX) === false) {
+                throw new RuntimeException('Could not protect the generated configuration directory.');
+            }
         }
     }
 
