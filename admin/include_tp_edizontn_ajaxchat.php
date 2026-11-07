@@ -43,4 +43,6 @@ try {
     $smarty->assign('ajax_chat_schema_status', 'unknown');
 }
 $smarty->assign('ajax_chat_admin_url', 'tiki-admin.php?page=tp_edizontn_ajaxchat');
+$smarty->assign('ajax_chat_chat_url', TikiLib::tikiUrl('chat/'));
+$smarty->assign('ajax_chat_chat_ready', $ajaxChatInstaller->isReady());
 $smarty->assign('ajax_chat_uninstall_confirmation', 'DELETE AJAX CHAT DATA');
