@@ -47,6 +47,15 @@ function AjaxChatBootstrapTiki(array $config)
         throw new RuntimeException('Tiki database connection is not available.');
     }
 
+    $packageRoot = dirname(rtrim($paths['chatRootPath'], '/\\\\'));
+    $settingsStoreFile = $packageRoot . '/lib/SettingsStore.php';
+    if (!is_file($settingsStoreFile)) {
+        throw new RuntimeException('AJAX Chat settings store is missing.');
+    }
+    require_once $settingsStoreFile;
+    $settingsStore = new AjaxChatSettingsStore();
+    $settingsStore->loadIntoPreferences();
+
     return $tikiRoot;
 }
 
