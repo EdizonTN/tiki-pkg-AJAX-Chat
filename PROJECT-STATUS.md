@@ -111,7 +111,7 @@ Tieto body sú požiadavky/plán, nie automaticky potvrdený stav implementácie
 Vetva: `feature/tiki-admin-settings`
 
 Implementované v tejto vetve:
-- `prefs/tp_edizontn__ajax_chat.php` definuje Tiki Extension Preferences pre bezpečné runtime nastavenia AJAX Chatu.
+- `prefs/tp_edizontn__ajaxchat.php` definuje Tiki Extension Preferences pre bezpečné runtime nastavenia AJAX Chatu.
 - `src/lib/tiki-bootstrap.php` prenáša a validuje tieto preferencie do konfigurácie AJAX Chat. Základné ovládacie prvky (`chat_enabled`, `moderator_groups`, `admin_stealth_in_private_rooms`) sú označené ako základné preferencie.
 - Preferencia `chat_enabled` používa podporovaný Tiki atribút `urladmin` a poskytuje kontextový odkaz na `vendor_custom/tiki-pkg-ajax-chat/src/admin.php`. Balík nepridáva vlastnú položku do Tiki administračného menu a nemení Tiki core.
 - Ak ešte neexistuje `src/lib/Chat-config.php`, `src/admin.php` presmeruje GET požiadavku na webový inštalátor `src/install.php`. Inštalátor následne vykonáva vlastnú kontrolu Tiki administrátora a CSRF ochranu.
