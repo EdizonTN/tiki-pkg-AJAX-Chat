@@ -22,7 +22,7 @@ class CustomAJAXChat extends AJAXChat {
 	function initCustomConfig() {
         // Tiki preferences are conveyed in the short-lived signed auth token.
         // No separate Bridge-config.php file is used.
-        $this->_mzBridgeConfig = array(
+        $this->_ajaxChatBridgeConfig = array(
             'moderatorGroups' => array(),
             'adminStealthInPrivateRooms' => false
         );
@@ -37,8 +37,8 @@ class CustomAJAXChat extends AJAXChat {
 
 	function getOnlineUsersData($channelIDs = null, $key = null, $value = null) {
 		$onlineUsersData = parent::getOnlineUsersData(null, null, null);
-		if (!empty($this->_mzBridgeConfig['adminStealthInPrivateRooms']) && $onlineUsersData) {
-			if ($this->_mzHiddenAdminPresence === null) {
+		if (!empty($this->_ajaxChatBridgeConfig['adminStealthInPrivateRooms']) && $onlineUsersData) {
+			if ($this->_ajaxChatHiddenAdminPresence === null) {
 				$roomDiff = (int)$this->getConfig('roomChannelDiff');
 			$sql = 'SELECT o.userID, o.channel
 				FROM '.$this->getDataBaseTable('online').' o
@@ -58,9 +58,9 @@ class CustomAJAXChat extends AJAXChat {
 				$hidden[(int)$row['channel'].':'.(int)$row['userID']] = true;
 			}
 				$result->free();
-				$this->_mzHiddenAdminPresence = $hidden;
+				$this->_ajaxChatHiddenAdminPresence = $hidden;
 			}
-			$hidden = $this->_mzHiddenAdminPresence;
+			$hidden = $this->_ajaxChatHiddenAdminPresence;
 			$onlineUsersData = array_values(array_filter($onlineUsersData, function($userData) use ($hidden) {
 				$key = (int)$userData['channel'].':'.(int)$userData['userID'];
 				return !isset($hidden[$key]);
@@ -94,7 +94,7 @@ class CustomAJAXChat extends AJAXChat {
 	}
 
 	function isStealthAdminInPrivateRoom($channelID) {
-		if (empty($this->_mzBridgeConfig['adminStealthInPrivateRooms'])
+		if (empty($this->_ajaxChatBridgeConfig['adminStealthInPrivateRooms'])
 			|| $this->getUserRole() != AJAX_CHAT_ADMIN) {
 			return false;
 		}
@@ -201,7 +201,7 @@ class CustomAJAXChat extends AJAXChat {
 			return false;
 		}
         if ($claims) {
-            $this->_mzBridgeConfig['adminStealthInPrivateRooms'] =
+            $this->_ajaxChatBridgeConfig['adminStealthInPrivateRooms'] =
                 !empty($claims['adminStealth']) && (int)$claims['role'] === AJAX_CHAT_ADMIN;
         }
 		return $claims;

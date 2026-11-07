@@ -89,7 +89,7 @@ require_once(AJAX_CHAT_PATH.'lib/class/CustomAJAXChat.php');
 
 class TestableCustomAJAXChat extends CustomAJAXChat {
 	function setAdminStealth($enabled) {
-		$this->_mzBridgeConfig['adminStealthInPrivateRooms'] = (bool)$enabled;
+		$this->_ajaxChatBridgeConfig['adminStealthInPrivateRooms'] = (bool)$enabled;
 	}
 }
 
