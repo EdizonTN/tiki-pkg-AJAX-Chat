@@ -15,38 +15,38 @@
 - Package definuje vlastné preferencie Tiki a wiki plugin `ajaxchat`. Na wiki stránke sa používa syntax:
 
   ```text
-  {package package="edizontn/ajax_chat" plugin="ajaxchat"}
+  {package package="edizontn/ajax-chat" plugin="ajaxchat"}
   ```
 
 - Composer metadata sú súčasťou koreňa balíka. Composer nebude požiadavkou na produkčnom serveri.
 - Chat používa existujúce databázové pripojenie TikiWiki cez `TikiDb`; neotvára vlastné databázové pripojenie a nevyžaduje samostatnú databázu ani DB používateľa.
 - Chatové tabuľky používajú prefix `tiki_ajaxchat_`.
-- Nastavenia `chat_enabled`, `chat_url`, `moderator_groups` a `admin_stealth_in_private_rooms` sú definované ako Tiki Extension Preferences.
-- Samostatná čistá URL je predvolene `/chat`. Pri prvom spustení inštalátora sa zaregistruje dispatcher cez podporovaný Tiki 30.1 hook `_custom/shared/custom.php`. Cesta sa číta z preferencie pri každej požiadavke; nie je potrebná wiki stránka ani Custom Route. Vyžaduje sa štandardné Tiki SEF URL / rewrite pravidlo.
+- Nastavenia `chat_enabled`, `moderator_groups` a `admin_stealth_in_private_rooms` sú definované ako Tiki Extension Preferences.
+- Samostatná URL `/chat` vzniká ako fyzický adresár s `index.php`, ktorý vytvorí Tiki administračná stránka. Nie je potrebné zachytávať požiadavku v `_custom/shared/custom.php`, vytvárať Custom Route ani meniť Tiki core.
 
 ### Administrácia
 
-- Konfigurácia chatu je v `Settings → Packages → Extension Preferences` (Tiki môže túto kartu zobrazovať pod názvom `Extension Preferences`).
-- Pri preferencii `Enable Ajax Chat` je kontextový administračný odkaz `urladmin`, ktorý otvorí `vendor_custom/tiki-pkg-ajax-chat/src/admin.php`. Ak ešte neexistuje `Chat-config.php`, stránka presmeruje na chránený webový inštalátor `src/install.php`. Balík tým nepridáva vlastnú položku do Tiki administračného menu ani nemení jadro Tiki.
-- Stránka správy databázy je dostupná iba prihláseným administrátorom TikiWiki a všetky POST operácie sú chránené jednorazovým CSRF tokenom.
-- Inštalácia vytvára/overuje presne šesť tabuliek `tiki_ajaxchat_*`; existujúce tabuľky a dáta zachováva. Odinštalácia vyžaduje najprv vypnúť chat a zadať potvrdzovaciu frázu; odstráni iba týchto šesť tabuliek.
-- Preferencie sprístupňujú runtime nastavenia AJAX Chatu, ktoré sú bezpečné a zmysluplné v režime Tiki SSO. Databázové údaje, tajný kľúč, cesty, rezervované ID rozsahy a samostatné guest prihlasovanie zostávajú mimo UI, pretože ich riadi Tiki alebo sú štrukturálnymi bezpečnostnými hodnotami.
+- Administrácia balíka je natívna Tiki Extension Admin Page: `tiki-admin.php?page=tp_edizontn_ajax-chat`. Odkaz na ňu je dostupný pri preferencii `Enable Ajax Chat`.
+- Inštalácia/oprava sa vykonáva tlačidlom **Install / repair AJAX Chat**. Tiki automaticky vytvorí chránenú konfiguráciu a náhodný HMAC secret v `TIKI_ROOT/temp/ajax-chat/`, šesť databázových tabuliek a fyzický vstupný bod `TIKI_ROOT/chat/index.php`.
+- Pri existujúcom `/chat/index.php`, ktorý nepatrí balíku, sa inštalácia zastaví a súbor neprepíše.
+- Odinštalácia vyžaduje vypnutý chat a potvrdzovaciu frázu. Odstráni iba šesť tabuliek AJAX Chatu a súbory označené ako vytvorené balíkom. Cudzie súbory a Tiki dáta zostanú nedotknuté.
+- Všetky mutačné POST akcie používajú Tiki CSRF ticket a kontrolu oprávnenia administrátora.
+
+
 
 ### Inštalácia a aktualizácia
 
-Cieľové umiestnenie kompletného repozitára je `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`. Chat sa spúšťa priamo z jeho podadresára `src/`.
+Cieľové umiestnenie kompletného repozitára je `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 
-Cieľový postup:
-1. Zálohovať súbory a databázu TikiWiki.
-2. Nasadiť kompletný balík do `vendor_custom/tiki-pkg-ajax-chat/`.
-3. Aktivovať package cez Tiki Packages.
-4. Spustiť webový inštalátor ako Tiki administrátor. Okrem databázovej schémy zaregistruje dispatcher čistej URL v `_custom/shared/custom.php`.
-5. Inštalátor overí databázovú schému a vytvorí chýbajúce vlastné tabuľky bez zásahu do existujúcich tabuliek TikiWiki.
-6. V **Admin → Packages → Extension Preferences** nastaviť `Standalone chat URL` (predvolene `/chat`), skupiny moderátorov a ostatné možnosti.
+1. Nasadiť kompletný balík do `vendor_custom/tiki-pkg-ajax-chat/`.
+2. Aktivovať balík cez Tiki Packages.
+3. Otvoriť Admin → Packages → Extension Preferences a cez kontextový odkaz prejsť do administrácie AJAX Chatu.
+4. Stlačiť **Install / repair AJAX Chat**. Tiki vytvorí konfiguráciu, secret, databázové tabuľky a URL `/chat`.
+5. Otestovať `/chat` aj vložený chat cez wiki plugin.
 
-Aktualizáciu spúšťa administrátor ručne. Pred výmenou súborov sa vytvorí záloha. Zmeny databázovej schémy budú samostatné, s upozornením a potvrdením administrátora.
+Aktualizačný proces pre zmeny databázovej schémy ešte nie je plne verzovaný. Pred nasadením na produkciu treba vykonať integračný test na TikiWiki 30.1 a zálohovať súbory aj databázu.
 
-**Plný aktualizačný proces ešte nie je implementovaný.** Taktiež nebola vykonaná integračná skúška na TikiWiki 30.1. Tento dokument opisuje cieľovú architektúru.
+
 
 ### Databáza
 
@@ -70,38 +70,38 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú šes
 - The package defines Tiki preferences and the `ajaxchat` wiki plugin. Use it on a wiki page as follows:
 
   ```text
-  {package package="edizontn/ajax_chat" plugin="ajaxchat"}
+  {package package="edizontn/ajax-chat" plugin="ajaxchat"}
   ```
 
 - Composer metadata is included at the package root, but Composer will not be required on the production server.
 - The chat reuses TikiWiki's existing database connection through `TikiDb`. It does not open a separate database connection and does not require a separate database or DB user.
 - Chat tables use the `tiki_ajaxchat_` prefix.
-- `chat_enabled`, `chat_url`, `moderator_groups` and `admin_stealth_in_private_rooms` are defined as Tiki Extension Preferences.
+- `chat_enabled`, `moderator_groups` and `admin_stealth_in_private_rooms` are defined as Tiki Extension Preferences.
 - The standalone clean URL defaults to `/chat`. The first run of the web installer registers a dispatcher through Tiki 30.1's supported `_custom/shared/custom.php` hook. The path is read from the preference on every request; no wiki page or Custom Route is needed. Standard Tiki SEF URL / rewrite support is required.
 
 ### Administration
 
-- Chat configuration is available under `Settings → Packages → Extension Preferences` (the tab may be labelled `Extension Preferences`).
-- The `Enable Ajax Chat` preference provides a contextual `urladmin` link to `vendor_custom/tiki-pkg-ajax-chat/src/admin.php`. If `Chat-config.php` does not exist yet, the page redirects to the protected web installer at `src/install.php`. The package does not add a custom Tiki administration menu entry or modify Tiki core.
-- The database administration page is restricted to authenticated TikiWiki administrators, and all POST operations use a one-time CSRF token.
-- Installation creates/verifies exactly six `tiki_ajaxchat_*` tables and preserves existing tables and data. Uninstallation requires the chat to be disabled first and an explicit confirmation phrase; it drops only those six tables.
-- Preferences expose the AJAX Chat runtime settings that are safe and meaningful in Tiki SSO mode. Database credentials, the shared secret, filesystem paths, reserved ID ranges and standalone guest login remain outside the UI because they are controlled by Tiki or are structural security values.
+- The package uses Tiki's native extension admin page: `tiki-admin.php?page=tp_edizontn_ajax-chat`. The contextual link is available beside the `Enable Ajax Chat` preference.
+- **Install / repair AJAX Chat** creates the protected configuration and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, the six database tables, and a physical `TIKI_ROOT/chat/index.php` entry point.
+- If an existing `/chat/index.php` is not owned by this package, installation stops without overwriting it.
+- Uninstall requires the chat to be disabled and an explicit confirmation phrase. It removes only the six AJAX Chat tables and files marked as package-owned. Unrelated files and Tiki data remain untouched.
+- Mutating POST actions use Tiki's CSRF ticket and administrator permission check.
+
+
 
 ### Installation and updates
 
-Deploy the complete repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`. The chat engine runs directly from its `src/` subdirectory.
+Deploy the complete repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 
-Target workflow:
-1. Back up TikiWiki files and database.
-2. Deploy the complete package to `vendor_custom/tiki-pkg-ajax-chat/`.
-3. Enable the package through Tiki Packages.
-4. Run the web installer as a Tiki administrator. In addition to the database schema, it registers the clean-URL dispatcher in `_custom/shared/custom.php`.
-5. The installer checks the schema and creates missing extension tables without modifying existing TikiWiki tables.
-6. Under **Admin → Packages → Extension Preferences**, set `Standalone chat URL` (default `/chat`), moderator groups and other options.
+1. Deploy the package to `vendor_custom/tiki-pkg-ajax-chat/`.
+2. Enable it through Tiki Packages.
+3. Open Admin → Packages → Extension Preferences and follow the contextual AJAX Chat administration link.
+4. Click **Install / repair AJAX Chat**. Tiki creates the configuration, secret, database tables and `/chat` URL entry point.
+5. Test both `/chat` and the embedded wiki plugin.
 
-Updates are started manually by an administrator. Files are backed up before replacement. Database schema migrations are separate operations and require an explicit warning and confirmation.
+Database schema migrations are not yet fully versioned. Before production deployment, perform integration testing on TikiWiki 30.1 and back up files and the database.
 
-**The complete update workflow is not implemented yet.** Integration testing against TikiWiki 30.1 has not been completed. This document describes the target architecture.
+
 
 ### Database
 
