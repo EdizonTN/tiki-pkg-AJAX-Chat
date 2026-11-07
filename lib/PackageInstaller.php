@@ -118,9 +118,15 @@ class AjaxChatPackageInstaller
             throw new RuntimeException('Could not write generated chat configuration.');
         }
         chmod($this->config, 0640);
-        if (!is_file($dir . '/.htaccess')) {
-            if (file_put_contents($dir . '/.htaccess', "# EdizonTN AJAX Chat protected config directory\nRequire all denied\n", LOCK_EX) === false) {
+        $htaccess = $dir . '/.htaccess';
+        if (!is_file($htaccess)) {
+            if (file_put_contents($htaccess, "# EdizonTN AJAX Chat protected config directory\nRequire all denied\n", LOCK_EX) === false) {
                 throw new RuntimeException('Could not protect the generated configuration directory.');
+            }
+        } else {
+            $rules = (string) file_get_contents($htaccess);
+            if (stripos($rules, 'require all denied') === false && stripos($rules, 'deny from all') === false) {
+                throw new RuntimeException('The existing temp/ajax-chat/.htaccess does not deny web access; the configuration was not exposed.');
             }
         }
         if (!is_file($dir . '/index.php')) {
