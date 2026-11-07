@@ -98,6 +98,17 @@ class AjaxChatPackageInstaller
         }
     }
 
+    private function assertCleanUrlAvailable()
+    {
+        $entry = $this->root . '/chat/index.php';
+        if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') === false) {
+            throw new RuntimeException('/chat/index.php already exists and belongs to another application.');
+        }
+        if (file_exists($entry) && !is_file($entry)) {
+            throw new RuntimeException('/chat/index.php exists but is not a regular file.');
+        }
+    }
+
     private function writeCleanUrl()
     {
         $dir = $this->root . '/chat';
@@ -117,6 +128,7 @@ class AjaxChatPackageInstaller
 
     public function install()
     {
+        $this->assertCleanUrlAvailable();
         $this->writeConfig();
         $sql = file_get_contents($this->package . '/src/chat.sql');
         if (!is_string($sql) || preg_match('/\\bDROP\\s+TABLE\\b/i', $sql)) {
