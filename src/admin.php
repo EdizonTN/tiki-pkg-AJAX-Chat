@@ -139,6 +139,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'All six AJAX Chat tables are installed. Existing tables and their data were preserved.';
                 $messageType = 'success';
             } elseif ($action === 'uninstall') {
+                global $prefs;
+                if (isset($prefs['tp_edizontn__ajax_chat__chat_enabled']) && $prefs['tp_edizontn__ajax_chat__chat_enabled'] === 'y') {
+                    throw new RuntimeException('Disable Ajax Chat in Extension Preferences before uninstalling its database tables.');
+                }
                 $confirmation = isset($_POST['confirmation']) ? trim((string) $_POST['confirmation']) : '';
                 if ($confirmation !== 'DELETE AJAX CHAT DATA') {
                     throw new RuntimeException('Uninstall confirmation text did not match. No tables were removed.');
@@ -199,7 +203,7 @@ foreach ($tables as $table) {
 echo '</ul>';
 echo '<h2>Install or repair</h2><p>Creates missing AJAX Chat tables using CREATE TABLE IF NOT EXISTS. Existing chat data is not deleted.</p>';
 echo '<form method="post"><input type="hidden" name="csrf_token" value="' . $token . '"><input type="hidden" name="action" value="install"><button type="submit">Install / verify tables</button></form>';
-echo '<h2>Uninstall</h2><p><strong>Irreversible:</strong> this permanently deletes all chat messages, rooms, room memberships, bans, invitations and online status. It does not modify TikiWiki tables or package files.</p>';
+echo '<h2>Uninstall</h2><p>Disable Ajax Chat first in Settings → Packages → Extension Preferences. <strong>Irreversible:</strong> this permanently deletes all chat messages, rooms, room memberships, bans, invitations and online status. It does not modify TikiWiki tables or package files.</p>';
 echo '<form method="post" onsubmit="return confirm(\'This permanently deletes all AJAX Chat data. Continue?\');">';
 echo '<input type="hidden" name="csrf_token" value="' . $token . '"><input type="hidden" name="action" value="uninstall">';
 echo '<label>Type <code>DELETE AJAX CHAT DATA</code> to confirm: <input type="text" name="confirmation" required autocomplete="off"></label> ';
