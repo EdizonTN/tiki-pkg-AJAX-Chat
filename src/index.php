@@ -30,6 +30,8 @@ define('AJAX_CHAT_URL', $chatConfig['paths']['chatUrlPath']);
 require_once(AJAX_CHAT_PATH.'lib/tiki-bootstrap.php');
 try {
     AjaxChatBootstrapTiki($chatConfig);
+    $chatConfig = AjaxChatApplyTikiPreferences($chatConfig);
+    $GLOBALS['ajaxChatConfig'] = $chatConfig;
 } catch (Throwable $e) {
     error_log('Ajax Chat Tiki bootstrap: '.$e->getMessage());
     http_response_code(500);
