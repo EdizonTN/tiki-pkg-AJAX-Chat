@@ -1,0 +1,16 @@
+{
+    "name": "edizontn/ajax_chat",
+    "description": "EdizonTN AJAX Chat integration package for TikiWiki",
+    "type": "tiki-package",
+    "license": "MIT",
+    "version": "0.1.0",
+    "homepage": "https://github.com/PetoJanis/tiki-AJAX-Chat",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "EdizonTN\\AjaxChat\\": "lib/"
+        }
+    }
+}

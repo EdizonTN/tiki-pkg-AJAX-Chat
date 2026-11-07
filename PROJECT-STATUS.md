@@ -1,6 +1,6 @@
-# PROJECT-STATUS.md — AJAX-Chat-MZ
+# PROJECT-STATUS.md — AJAX Chat
 
-> Pracovný stav samostatného chat enginu AJAX-Chat-MZ a jeho budúcej integrácie do TikiWiki. Tento dokument slúži ako handoff pre ďalšie pracovné relácie.
+> Pracovný stav AJAX Chat enginu a jeho integrácie do TikiWiki. Tento dokument slúži ako handoff pre ďalšie pracovné relácie.
 > TikiWiki core, jeho migrácia a všeobecná konfigurácia sú evidované v repozitári [New-MZ-tikiwiki](https://github.com/PetoJanis/New-MZ-tikiwiki).
 
 ## Základné informácie
@@ -8,7 +8,7 @@
 - Hlavný súkromný repozitár: https://github.com/PetoJanis/tiki-AJAX-Chat
 - Pôvodný verejný fork/archív: https://github.com/PetoJanis/AJAX-Chat-MZ
 - Pôvodný projekt: AJAX-Chat (JavaScript + PHP + MySQL/MariaDB).
-- Cieľ: modernizovaný, bezpečný, samostatne testovateľný chat pre Mikrozone, neskôr integrovaný s TikiWiki.
+- Cieľ: modernizovaný, bezpečný, samostatne testovateľný chat pre TikiWiki, neskôr integrovaný s TikiWiki.
 - Hostingový cieľ: Active24 shared hosting; riešenie nesmie vyžadovať vlastný VPS ani samostatnú socket server infraštruktúru.
 - Preferované testovanie: najprv lokálne Debian prostredie, až potom nasadenie na hosting.
 
@@ -80,11 +80,6 @@ Zaznamenané lokálne Debian testovacie prostredie:
 - MariaDB 10.11.19.
 - TikiWiki má čerstvú lokálnu inštaláciu na účely neskoršej integrácie.
 
-Produkčné/hostingové prostredie Mikrozone:
-- Active24 shared hosting.
-- Historicky PHP 5.6.40 FPM pre pôvodný e107; cieľová dostupná PHP verzia pre chat/Tiki treba vždy overiť pred nasadením.
-- MariaDB 11.4 (zaznamenaný stav hostingu).
-
 ## Súkromné miestnosti a oprávnenia
 
 Požiadavky:
@@ -99,13 +94,15 @@ Požiadavky:
 Tiki integrácia sa eviduje v repozitári https://github.com/PetoJanis/New-MZ-tikiwiki.
 
 Známy plán:
-- Tiki package ID: `edizontn/tw-ajax-chat`.
-- Plánovaný adresár balíka: `vendor_custom/tw-ajax-chat/`.
-- Chat core má byť umiestnený pod `vendor_custom/tw-ajax-chat/chat/`.
+- Tiki/Composer package ID: `edizontn/ajax_chat`.
+- Tiki package namespace: `EdizonTN\\AjaxChat`.
+- Package root: repository root; package metadata, wiki plugin and preferences are stored at repository root.
+- Adresár balíka: `vendor_custom/tiki-pkg-ajax-chat/`.
+- Chat engine runs from `vendor_custom/tiki-pkg-ajax-chat/src/`; do not extract it into Tiki root or `_CHAT/`.
 - Chat má používať Tiki autentifikáciu/identitu namiesto samostatného prihlasovania, keď bude bridge dokončený.
 - Konfigurácia bridge a mapovanie Tiki skupín/rolí majú byť spravovateľné z Tiki administrácie, ak to architektúra umožní.
 - Chat sa má dať vložiť do spodnej časti stránok Tiki a zároveň otvoriť samostatne.
-- Pred plnou migráciou Mikrozone obsahu musí byť chat bridge samostatne otestovaný.
+- Pred plnou migráciou obsahu musí byť chat bridge samostatne otestovaný.
 
 Tieto body sú požiadavky/plán, nie automaticky potvrdený stav implementácie. Pri ďalšej práci ich overiť voči aktuálnemu kódu.
 

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="[CONTENT_ENCODING/]"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="[LANG_CODE/]" lang="[LANG_CODE/]" dir="[BASE_DIRECTION/]">
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta http-equiv="Content-Type" content="[CONTENT_TYPE/]" />
+	<title>[LANG]title[/LANG]</title>
+	[STYLE_SHEETS/]
+	<script src="js/chat.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/lang/[LANG_CODE/].js" type="text/javascript" charset="UTF-8"></script>
+	<script src="js/config.js" type="text/javascript" charset="UTF-8"></script>
+	<script type="text/javascript">
+		// <![CDATA[
+			function initializeLoginPage() {
+				var statusNode = document.getElementById('authStatus');
+				if(!ajaxChat.isCookieEnabled()) {
+					statusNode.textContent = ajaxChatLang['errorCookiesRequired'];
+					return;
+				}
+				statusNode.textContent = 'Overujem prihlásenie do systému...';
+				var request = new XMLHttpRequest();
+				request.open('GET', 'tiki-auth.php', true);
+				request.withCredentials = true;
+				request.setRequestHeader('Accept', 'application/json');
+				request.onreadystatechange = function() {
+					if(request.readyState !== 4) {
+						return;
+					}
+					if(request.status === 401) {
+						statusNode.textContent = 'Najprv sa prihláste do systému a potom obnovte túto stránku.';
+						return;
+					}
+					if(request.status !== 200) {
+						statusNode.textContent = 'Chat sa nepodarilo pripojiť k TikiWiki. Skontrolujte konfiguráciu a kontaktujte správcu.';
+						return;
+					}
+					try {
+						var response = JSON.parse(request.responseText);
+						if(!response || !response.ok || !response.token) {
+							throw new Error('Invalid authentication response');
+						}
+						var form = document.createElement('form');
+						form.method = 'post';
+						form.action = '[LOGIN_URL/]';
+						form.style.display = 'none';
+						var fields = {login: 'login', authToken: response.token};
+						for(var key in fields) {
+							if(fields.hasOwnProperty(key)) {
+								var input = document.createElement('input');
+								input.type = 'hidden';
+								input.name = key;
+								input.value = fields[key];
+								form.appendChild(input);
+							}
+						}
+						document.body.appendChild(form);
+						form.submit();
+					} catch(e) {
+						statusNode.textContent = 'Prihlásenie do chatu sa nepodarilo. Obnovte stránku.';
+					}
+				};
+				request.send(null);
+			}
+			ajaxChatConfig.sessionName = '[SESSION_NAME/]';
+			ajaxChatConfig.cookieExpiration = parseInt('[COOKIE_EXPIRATION/]');
+			ajaxChatConfig.cookiePath = '[COOKIE_PATH/]';
+			ajaxChatConfig.cookieDomain = '[COOKIE_DOMAIN/]';
+			ajaxChatConfig.cookieSecure = '[COOKIE_SECURE/]';
+
+			ajaxChat.init(ajaxChatConfig, ajaxChatLang, true, true, false);
+		// ]]>
+	</script>
+</head>
+<body class="ajax-chat" onload="initializeLoginPage();">
+	<div id="loginContent">
+		<h1 id="loginHeadline">Ajax Chat</h1>
+		<div id="errorContainer">[ERROR_MESSAGES/]<noscript><div>[LANG]requiresJavaScript[/LANG]</div></noscript></div>
+		<p id="authStatus">Pripájam sa k účtu v systéme...</p>
+		<!--
+			Please retain the full copyright notice below including the link to blueimp.net.
+			This not only gives respect to the amount of time given freely by the developer
+			but also helps build interest, traffic and use of AJAX Chat.
+			Thanks,
+			Sebastian Tschan
+		//-->
+		<div id="copyright"><a href="https://blueimp.net/ajax/">AJAX Chat</a> &copy; <a href="https://blueimp.net">blueimp.net</a></div>
+	</div>
+</body>
+</html>

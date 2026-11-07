@@ -26,8 +26,8 @@ class TestTikiPdoResult
     public function numRows() { return 1; }
 }
 
-require_once(__DIR__.'/../chat/lib/class/AJAXChatTikiQuery.php');
-require_once(__DIR__.'/../chat/lib/class/AJAXChatTikiDataBase.php');
+require_once(__DIR__.'/../src/lib/class/AJAXChatTikiQuery.php');
+require_once(__DIR__.'/../src/lib/class/AJAXChatTikiDataBase.php');
 
 function check_tiki_adapter($condition, $message)
 {
@@ -52,8 +52,8 @@ check_tiki_adapter($adapter->makeSafe("O'Reilly") === "'O''Reilly'", 'string quo
 check_tiki_adapter($adapter->getName() === '', 'table names are not qualified with a second database');
 check_tiki_adapter($adapter->getLastInsertedID() === '123', 'insert ID delegates to TikiDb');
 
-$result = $adapter->sqlQuery('SELECT id FROM tikiwiki_ext_ajax_chat_rooms');
-check_tiki_adapter($db->lastSql === 'SELECT id FROM tikiwiki_ext_ajax_chat_rooms', 'queries are delegated to TikiDb');
+$result = $adapter->sqlQuery('SELECT id FROM tiki_ajaxchat_rooms');
+check_tiki_adapter($db->lastSql === 'SELECT id FROM tiki_ajaxchat_rooms', 'queries are delegated to TikiDb');
 check_tiki_adapter($result->fetch() === ['id' => 7], 'Tiki result rows are exposed through the chat adapter');
 check_tiki_adapter($result->numRows() === 1, 'result row count is exposed through the chat adapter');
 check_tiki_adapter($result->affectedRows() === 1, 'affected row count is exposed through the chat adapter');

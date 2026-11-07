@@ -22,7 +22,7 @@ var ajaxChat = {
 		else if(language && !hljs.getLanguage(language)) language = 'plaintext';
 		if(language) languageClass = ' class="language-' + language + '"';
 		var code = this.encodeSpecialChars(content.replace(/\t/g, '    '));
-		return '<pre class="mz-chat-code" data-language="' + this.encodeSpecialChars(language || 'auto') + '"><code' + languageClass + '>' + code + '</code></pre>';
+		return '<pre class="ajaxchat-code" data-language="' + this.encodeSpecialChars(language || 'auto') + '"><code' + languageClass + '>' + code + '</code></pre>';
 	},
 	replaceBBCode: function(text) {
 		return text.replace(/\[(\w+)(?:=([^<>]*?))?\]([\s\S]+?)\[\/\1\]/gm, this.replaceBBCodeCallback.bind(this));
@@ -42,7 +42,7 @@ var ajaxChat = {
 	replaceText: function(text) {
 		var codeBlocks = [];
 		text = this.replaceBBCode(text);
-		text = text.replace(/<pre class="mz-chat-code"[\s\S]*?<\/pre>/g, function(block) {
+		text = text.replace(/<pre class="ajaxchat-code"[\s\S]*?<\/pre>/g, function(block) {
 			var placeholder = '\uE000' + codeBlocks.length.toString(36) + '\uE001';
 			codeBlocks.push({placeholder: placeholder, html: block});
 			return placeholder;
@@ -67,7 +67,7 @@ function assert(condition, message) {
 		process.exit(1);
 	}
 }
-assert(rendered.indexOf('<pre class="mz-chat-code" data-language="php">') !== -1, 'language class is rendered');
+assert(rendered.indexOf('<pre class="ajaxchat-code" data-language="php">') !== -1, 'language class is rendered');
 assert(rendered.indexOf('&lt;tag&gt;') !== -1, 'HTML-like code is escaped');
 assert(rendered.indexOf('<a>https://example.com</a>') === -1, 'URLs inside code are not auto-linked');
 assert(rendered.indexOf('echo &quot;&lt;tag&gt;&quot;; // https://example.com') !== -1, 'code text and line breaks are preserved');

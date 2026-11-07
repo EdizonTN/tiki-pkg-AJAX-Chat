@@ -1,7 +1,7 @@
 <?php
 define('AJAX_CHAT_USER', 1);
 define('AJAX_CHAT_ADMIN', 3);
-define('AJAX_CHAT_PATH', dirname(__DIR__).'/chat/');
+define('AJAX_CHAT_PATH', dirname(__DIR__).'/src/');
 
 class TestResult {
 	private $rows;
@@ -18,7 +18,7 @@ class TestRoomDatabase {
 	function __construct($userID, $members) { $this->userID = $userID; $this->members = $members; }
 	function makeSafe($value) { return "'".addslashes((string)$value)."'"; }
 	function sqlQuery($sql) {
-		if(strpos($sql, 'SELECT id FROM tikiwiki_ext_ajax_chat_rooms') === 0) {
+		if(strpos($sql, 'SELECT id FROM tiki_ajaxchat_rooms') === 0) {
 			return new TestResult(array(array('id'=>1)));
 		}
 		if(strpos($sql, 'SELECT r.id') !== false) {
@@ -52,7 +52,7 @@ class AJAXChat {
 		$this->userRole = $userRole;
 		$this->db = new TestRoomDatabase($userID, $members);
 		$this->config = array(
-			'dbTableNames'=>array('rooms'=>'tikiwiki_ext_ajax_chat_rooms','roomMembers'=>'tikiwiki_ext_ajax_chat_room_members'),
+			'dbTableNames'=>array('rooms'=>'tiki_ajaxchat_rooms','roomMembers'=>'tiki_ajaxchat_room_members'),
 			'roomChannelDiff'=>1500000000,
 			'privateChannelDiff'=>500000000,
 			'privateMessageDiff'=>1000000000,
@@ -89,7 +89,7 @@ require_once(AJAX_CHAT_PATH.'lib/class/CustomAJAXChat.php');
 
 class TestableCustomAJAXChat extends CustomAJAXChat {
 	function setAdminStealth($enabled) {
-		$this->_mzBridgeConfig['adminStealthInPrivateRooms'] = (bool)$enabled;
+		$this->_ajaxChatBridgeConfig['adminStealthInPrivateRooms'] = (bool)$enabled;
 	}
 }
 
