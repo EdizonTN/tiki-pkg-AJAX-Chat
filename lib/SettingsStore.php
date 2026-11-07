@@ -81,7 +81,6 @@ class AjaxChatSettingsStore
             -1,
             TikiDb::ERR_EXCEPTION
         );
-        $stored = array();
         $rows = array();
         while ($row = $result->fetchRow()) {
             if (!isset($row['name'])) {
@@ -90,21 +89,48 @@ class AjaxChatSettingsStore
             $name = (string) $row['name'];
             $prefix = strpos($name, self::LEGACY_PREFIX) === 0 ? self::LEGACY_PREFIX : self::PREFIX;
             $suffix = substr($name, strlen($prefix));
-            if (!isset($this->definitions[self::PREFIX . $suffix])) {
+            $priority = ($prefix === self::PREFIX) ? 2 : 1;
+            if (!isset($rows[$suffix]) || $priority > $rows[$suffix]['priority']) {
+                $rows[$suffix] = array('value' => (string) $row['value'], 'priority' => $priority);
+            }
+        }
+
+        $existingResult = $db->query(
+            'SELECT name FROM \`' . self::TABLE . '\`',
+            array(),
+            -1,
+            -1,
+            TikiDb::ERR_EXCEPTION
+        );
+        $existing = array();
+        while ($row = $existingResult->fetchRow()) {
+            if (isset($row['name'])) {
+                $existing[(string) $row['name']] = true;
+            }
+        }
+
+        foreach ($rows as $suffix => $row) {
+            if (!isset($this->definitions[self::PREFIX . $suffix]) || isset($existing[$suffix])) {
                 continue;
             }
-            $rows[$name] = array('suffix' => $suffix, 'value' => (string) $row['value']);
+            $this->saveOne($suffix, $row['value']);
         }
-        $current = $this->getAll();
-        foreach ($rows as $name => $row) {
-            if ($current[$row['suffix']] === (string) $this->definitions[self::PREFIX . $row['suffix']]['default']) {
-                $current[$row['suffix']] = $row['value'];
-                $this->saveOne($row['suffix'], $row['value']);
-            }
-        }
+
+        // Remove both obsolete namespaces, including keys no longer exposed
+        // by the current package, so disabling the package cannot leave
+        // undefined preference warnings behind.
         $tikilib = TikiLib::lib('tiki');
-        foreach (array_keys($rows) as $name) {
-            $tikilib->delete_preference($name);
+        $allNames = $db->query(
+            'SELECT name FROM tiki_preferences WHERE LEFT(name, ?) = ? OR LEFT(name, ?) = ?',
+            array(strlen(self::PREFIX), self::PREFIX, strlen(self::LEGACY_PREFIX), self::LEGACY_PREFIX),
+            -1,
+            -1,
+            TikiDb::ERR_EXCEPTION
+        );
+        while ($row = $allNames->fetchRow()) {
+            if (isset($row['name'])) {
+                $tikilib->delete_preference((string) $row['name']);
+            }
         }
         return count($rows);
     }
