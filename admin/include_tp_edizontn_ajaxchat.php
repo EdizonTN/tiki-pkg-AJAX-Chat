@@ -9,6 +9,7 @@ $access->check_permission('tiki_p_admin');
 require_once dirname(__DIR__) . '/lib/PackageInstaller.php';
 
 $ajaxChatInstaller = new AjaxChatPackageInstaller(dirname(__DIR__));
+$ajaxChatInstaller->migrateLegacyPreferences();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_chat_action'])) {
     if (!$access->checkCsrf()) {
