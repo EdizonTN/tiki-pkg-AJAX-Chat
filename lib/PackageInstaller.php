@@ -361,7 +361,7 @@ class AjaxChatPackageInstaller
         $settingsStore->migratePreferences();
         $settings = $settingsStore->getAll();
         if (($settings['chat_enabled'] ?? 'y') === 'y') {
-            throw new RuntimeException('Disable AJAX Chat in Extension Preferences before uninstalling.');
+            throw new RuntimeException('Disable AJAX Chat on the Ajax Chat settings page before uninstalling.');
         }
         $db = TikiDb::get();
         foreach ($this->tables as $table) {
