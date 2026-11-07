@@ -96,7 +96,7 @@ class AjaxChatSettingsStore
         }
 
         $existingResult = $db->query(
-            'SELECT name FROM \`' . self::TABLE . '\`',
+            'SELECT name FROM `' . self::TABLE . '`',
             array(),
             -1,
             -1,
