@@ -94,7 +94,7 @@ Požiadavky:
 Tiki integrácia sa eviduje v repozitári https://github.com/PetoJanis/New-MZ-tikiwiki.
 
 Známy plán:
-- Tiki/Composer package ID: `edizontn/ajax_chat`.
+- Tiki/Composer package ID: `edizontn/ajaxchat`.
 - Tiki package namespace: `EdizonTN\AjaxChat`.
 - Package root: repository root; package metadata, wiki plugin and preferences are stored at repository root.
 - Adresár balíka: `vendor_custom/tiki-pkg-ajax-chat/`.
@@ -160,3 +160,25 @@ Táto vetva zatiaľ nie je zlúčená do `main`; pred merge treba dokončiť man
 - Pri testoch uviesť prostredie, príkazy/postup a výsledok.
 - Nezapisovať sem podrobnosti TikiWiki core migrácie; tie patria do repozitára New-MZ-tikiwiki.
 - Pred ukončením väčšej pracovnej relácie aktualizovať stav a ďalšie kroky. Automatické uloženie pri náhlom ukončení konverzácie nie je zaručené.
+
+
+## Tiki-native package administration and standalone URL (2026-11-07)
+
+Branch: `feature/standalone-chat-route` (PR #4)
+
+PR #4 has been reworked to remove the direct PHP installer/admin endpoints and the unverified `_custom/shared/custom.php` route dispatcher.
+
+Current implementation on the branch:
+- Composer package ID is `edizontn/ajaxchat`, allowing Tiki's `tp_edizontn_ajaxchat` extension admin page identifier to map unambiguously to the package ID.
+- Native Tiki admin page: `tiki-admin.php?page=tp_edizontn_ajaxchat`.
+- The package admin controller checks `tiki_p_admin` and uses Tiki's CSRF ticket validation for POST actions.
+- Install/repair creates the protected config and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, creates/verifies the six `tiki_ajaxchat_*` tables, and creates `TIKI_ROOT/chat/index.php`.
+- The physical `/chat` directory avoids attempting to intercept a Tiki route from the `_custom/shared/custom.php` hook, which Tiki loads only at the end of `tiki-setup.php`.
+- An existing unowned `/chat/index.php` is not overwritten. Uninstall requires disabling chat and confirming the deletion phrase; it drops only the six chat tables and removes files carrying package ownership markers.
+- Direct `src/install.php` and `src/admin.php` endpoints and the standalone router were removed from this branch.
+- Package preferences remain in Tiki Extension Preferences; the contextual `urladmin` link opens the native extension admin page.
+
+Validation status:
+- Code and documentation were updated through GitHub API commits.
+- No live TikiWiki 30.1 integration test has been run from this session. In particular, verify extension preference discovery, extension admin page loading, filesystem permissions for `temp/ajax-chat/` and `/chat/`, install/reinstall/uninstall, and chat access via both `/chat` and the wiki plugin.
+- Do not treat the branch as production-ready until those manual checks pass.
