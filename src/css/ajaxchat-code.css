@@ -1,4 +1,4 @@
-#chatList pre.mz-chat-code {
+#chatList pre.ajaxchat-code {
 	display: block;
 	max-width: 100%;
 	margin: 0.4em 0;
@@ -10,7 +10,7 @@
 	background: #f6f8fa;
 }
 
-#chatList pre.mz-chat-code::before {
+#chatList pre.ajaxchat-code::before {
 	content: attr(data-language);
 	display: block;
 	margin: 0 0 0.45em;
@@ -19,7 +19,7 @@
 	text-transform: uppercase;
 }
 
-#chatList pre.mz-chat-code code {
+#chatList pre.ajaxchat-code code {
 	display: block;
 	padding: 0;
 	border: 0;

@@ -1,6 +1,6 @@
-# PROJECT-STATUS.md — AJAX-Chat-MZ
+# PROJECT-STATUS.md — AJAX Chat
 
-> Pracovný stav samostatného chat enginu AJAX-Chat-MZ a jeho budúcej integrácie do TikiWiki. Tento dokument slúži ako handoff pre ďalšie pracovné relácie.
+> Pracovný stav AJAX Chat enginu a jeho integrácie do TikiWiki. Tento dokument slúži ako handoff pre ďalšie pracovné relácie.
 > TikiWiki core, jeho migrácia a všeobecná konfigurácia sú evidované v repozitári [New-MZ-tikiwiki](https://github.com/PetoJanis/New-MZ-tikiwiki).
 
 ## Základné informácie
@@ -94,9 +94,11 @@ Požiadavky:
 Tiki integrácia sa eviduje v repozitári https://github.com/PetoJanis/New-MZ-tikiwiki.
 
 Známy plán:
-- Tiki package ID: `edizontn/tw-ajax-chat`.
-- Plánovaný adresár balíka: `vendor_custom/tw-ajax-chat/`.
-- Chat core má byť umiestnený pod `vendor_custom/tw-ajax-chat/chat/`.
+- Tiki/Composer package ID: `edizontn/ajax_chat`.
+- Tiki package namespace: `EdizonTN\\AjaxChat`.
+- Package root: repository root; package metadata, wiki plugin and preferences are stored at repository root.
+- Adresár balíka: `vendor_custom/tiki-pkg-ajax-chat/`.
+- Chat engine runs from `vendor_custom/tiki-pkg-ajax-chat/src/`; do not extract it into Tiki root or `_CHAT/`.
 - Chat má používať Tiki autentifikáciu/identitu namiesto samostatného prihlasovania, keď bude bridge dokončený.
 - Konfigurácia bridge a mapovanie Tiki skupín/rolí majú byť spravovateľné z Tiki administrácie, ak to architektúra umožní.
 - Chat sa má dať vložiť do spodnej časti stránok Tiki a zároveň otvoriť samostatne.

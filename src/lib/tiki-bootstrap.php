@@ -5,7 +5,7 @@
  * TikiDb is the database authority for the integrated chat. The installer
  * stores the filesystem path and URL; runtime code never performs path discovery.
  */
-function mzChatBootstrapTiki(array $config)
+function AjaxChatBootstrapTiki(array $config)
 {
     $paths = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : array();
     $tikiRoot = isset($paths['tikiRootPath']) ? $paths['tikiRootPath'] : '';

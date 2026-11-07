@@ -2,9 +2,9 @@
 /**
  * Embed the AJAX Chat from this Tiki package's own src directory.
  *
- * Usage: {package package="edizontn/ajax_chat" plugin="mzchat"}
+ * Usage: {package package="edizontn/ajax_chat" plugin="ajaxchat"}
  */
-function mzchat_info()
+function ajaxchat_info()
 {
     return [
         'name' => tra('Ajax Chat'),
@@ -21,7 +21,7 @@ function mzchat_info()
     ];
 }
 
-function mzchat($content, $params)
+function ajaxchat($content, $params)
 {
     global $user, $prefs;
 

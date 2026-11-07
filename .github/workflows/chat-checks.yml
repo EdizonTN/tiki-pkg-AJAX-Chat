@@ -12,7 +12,7 @@ jobs:
         image: mariadb:11.4
         env:
           MARIADB_ROOT_PASSWORD: root
-          MARIADB_DATABASE: mz_chat_ci
+          MARIADB_DATABASE: tiki_ajaxchat_ci
         ports:
           - 3306:3306
         options: >-
@@ -38,11 +38,11 @@ jobs:
 
       - name: Lint all PHP files
         run: |
-          find chat tiki-bridge/package tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          find lib prefs src tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Run PHP tests
         run: |
-          php tests/test_mz_chat_auth.php
+          php tests/test_ajax_chat_auth.php
           php tests/test_chat_schema.php
           php tests/test_tiki_database_adapter.php
           php tests/test_private_rooms.php
@@ -52,12 +52,12 @@ jobs:
           DB_PORT: 3306
           DB_USER: root
           DB_PASSWORD: root
-          DB_NAME: mz_chat_ci
+          DB_NAME: tiki_ajaxchat_ci
 
       - name: Check JavaScript syntax
         run: |
-          node --check chat/js/chat.js
-          node --check chat/js/lang/en.js
-          node --check chat/js/lang/sk.js
-          node --check chat/js/vendor/highlight.min.js
+          node --check src/js/chat.js
+          node --check src/js/lang/en.js
+          node --check src/js/lang/sk.js
+          node --check src/js/vendor/highlight.min.js
           node tests/test_code_blocks.js

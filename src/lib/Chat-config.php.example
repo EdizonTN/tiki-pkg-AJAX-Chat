@@ -35,7 +35,7 @@ $config['paths'] = array(
 );
 // Shared secret used to sign Tiki -> chat authentication tokens.
 // Generate a unique random value of at least 32 characters and keep it private.
-$config['mzChatSharedSecret'] = 'REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_64_HEX_CHARACTERS';
+$config['ajaxChatSharedSecret'] = 'REPLACE_WITH_A_RANDOM_SECRET_OF_AT_LEAST_64_HEX_CHARACTERS';
 $config['roomChannelDiff'] = 1500000000;
 $config['allowPrivateRooms'] = true;
 $config['maxPrivateRoomsPerUser'] = 10;
@@ -45,12 +45,12 @@ $config['privateRoomSuffix'] = '~';
 
 // Dedicated extension tables in the existing TikiWiki database.
 $config['dbTableNames'] = array();
-$config['dbTableNames']['online']       = 'tikiwiki_ext_ajax_chat_online';
-$config['dbTableNames']['messages']     = 'tikiwiki_ext_ajax_chat_messages';
-$config['dbTableNames']['bans']         = 'tikiwiki_ext_ajax_chat_bans';
-$config['dbTableNames']['invitations']  = 'tikiwiki_ext_ajax_chat_invitations';
-$config['dbTableNames']['rooms']        = 'tikiwiki_ext_ajax_chat_rooms';
-$config['dbTableNames']['roomMembers']  = 'tikiwiki_ext_ajax_chat_room_members';
+$config['dbTableNames']['online']       = 'tiki_ajaxchat_online';
+$config['dbTableNames']['messages']     = 'tiki_ajaxchat_messages';
+$config['dbTableNames']['bans']         = 'tiki_ajaxchat_bans';
+$config['dbTableNames']['invitations']  = 'tiki_ajaxchat_invitations';
+$config['dbTableNames']['rooms']        = 'tiki_ajaxchat_rooms';
+$config['dbTableNames']['roomMembers']  = 'tiki_ajaxchat_room_members';
 
 // Available languages:
 $config['langAvailable'] = array(

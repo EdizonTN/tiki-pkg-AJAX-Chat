@@ -871,7 +871,7 @@ var ajaxChat = {
 				self.getHttpRequest(identifier).setRequestHeader('X-CSRF-Token', self.token);
 			}
 			if(self.authToken) {
-				self.getHttpRequest(identifier).setRequestHeader('X-MZ-Auth-Token', self.authToken);
+				self.getHttpRequest(identifier).setRequestHeader('X-AJAXCHAT-Auth-Token', self.authToken);
 			}
 			self.getHttpRequest(identifier).onreadystatechange = function() {
 				try {
@@ -1515,7 +1515,7 @@ var ajaxChat = {
 		if(typeof hljs === 'undefined' || !this.dom['chatList'] || !this.dom['chatList'].querySelectorAll) {
 			return;
 		}
-		var codeElements = this.dom['chatList'].querySelectorAll('pre.mz-chat-code code:not([data-highlighted])');
+		var codeElements = this.dom['chatList'].querySelectorAll('pre.ajaxchat-code code:not([data-highlighted])');
 		for(var i = 0; i < codeElements.length; i++) {
 			try {
 				hljs.highlightElement(codeElements[i]);
@@ -2220,7 +2220,7 @@ var ajaxChat = {
 				// Protect rendered code blocks from line-break conversion, URL linking,
 				// emoticons and custom text replacements.
 				var codeBlocks = [];
-				text = text.replace(/<pre class="mz-chat-code"[\s\S]*?<\/pre>/g, function(codeBlock) {
+				text = text.replace(/<pre class="ajaxchat-code"[\s\S]*?<\/pre>/g, function(codeBlock) {
 					var placeholder = '\uE000' + codeBlocks.length.toString(36) + '\uE001';
 					codeBlocks.push({placeholder: placeholder, html: codeBlock});
 					return placeholder;
@@ -2845,7 +2845,7 @@ var ajaxChat = {
 		}
 		// Code is literal text: escape HTML and do not recursively parse BBCode inside it.
 		var code = this.encodeSpecialChars(this.decodeSpecialChars(content).replace(/\t/g, '    '));
-		return '<pre class="mz-chat-code" data-language="' + this.encodeSpecialChars(language || 'auto') + '"><code' + languageClass + '>' + code + '</code></pre>';
+		return '<pre class="ajaxchat-code" data-language="' + this.encodeSpecialChars(language || 'auto') + '"><code' + languageClass + '>' + code + '</code></pre>';
 	},
 
 	replaceBBCodeUnderline: function(content) {
@@ -3087,19 +3087,19 @@ var ajaxChat = {
 	// This method is called on page load
 	customInitialize: function() {
 		if(this.token) {
-			this.startMZAuthRefresh();
+			this.startAjaxChatAuthRefresh();
 		}
 	},
 
-	startMZAuthRefresh: function() {
+	startAjaxChatAuthRefresh: function() {
 		var self = this;
-		this.refreshMZAuthToken();
+		this.refreshAjaxChatAuthToken();
 		this.authRefreshTimer = setInterval(function() {
-			self.refreshMZAuthToken();
+			self.refreshAjaxChatAuthToken();
 		}, 45000);
 	},
 
-	refreshMZAuthToken: function() {
+	refreshAjaxChatAuthToken: function() {
 		var self = this;
 		var request = new XMLHttpRequest();
 		request.open('GET', 'tiki-auth.php', true);
@@ -3115,7 +3115,7 @@ var ajaxChat = {
 							return;
 						}
 					} catch(e) {
-						self.debugMessage('refreshMZAuthToken::parse', e);
+						self.debugMessage('refreshAjaxChatAuthToken::parse', e);
 					}
 				} else if(request.status === 401) {
 					if(self.authRefreshTimer) {

@@ -11,7 +11,7 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('X-Content-Type-Options: nosniff');
 
-function mz_chat_auth_error($status, $code) {
+function ajax_chat_auth_error($status, $code) {
 	http_response_code($status);
 	echo json_encode(array('ok' => false, 'error' => $code));
 	exit;
@@ -19,17 +19,17 @@ function mz_chat_auth_error($status, $code) {
 
 $configFile = __DIR__.'/lib/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
-	mz_chat_auth_error(500, 'chat_config_missing');
+	ajax_chat_auth_error(500, 'chat_config_missing');
 }
 $config = require($configFile);
 if (!is_array($config)) {
-	mz_chat_auth_error(500, 'chat_config_invalid');
+	ajax_chat_auth_error(500, 'chat_config_invalid');
 }
 require_once(__DIR__.'/lib/class/AjaxChatAuth.php');
 
-$secret = isset($config['AjaxChatSharedSecret']) ? $config['AjaxChatSharedSecret'] : '';
+$secret = isset($config['ajaxChatSharedSecret']) ? $config['ajaxChatSharedSecret'] : '';
 if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH_') === 0) {
-	mz_chat_auth_error(500, 'chat_auth_not_configured');
+	ajax_chat_auth_error(500, 'chat_auth_not_configured');
 }
 
 $paths = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : array();
@@ -38,12 +38,12 @@ try {
     AjaxChatBootstrapTiki($config);
 } catch (Throwable $e) {
     error_log('Ajax Chat auth Tiki bootstrap: '.$e->getMessage());
-    mz_chat_auth_error(500, 'tiki_database_unavailable');
+    ajax_chat_auth_error(500, 'tiki_database_unavailable');
 }
 
 global $user, $tiki_p_admin;
 if (empty($user) || $user === 'Anonymous') {
-	mz_chat_auth_error(401, 'tiki_login_required');
+	ajax_chat_auth_error(401, 'tiki_login_required');
 }
 
 $userLib = TikiLib::lib('user');
@@ -51,7 +51,7 @@ $tikiLib = TikiLib::lib('tiki');
 $userInfo = $userLib->get_user_info($user);
 $userId = (int)$tikiLib->get_user_id($user);
 if (!is_array($userInfo) || $userId < 1 || !empty($userInfo['userBanned']) || !empty($userInfo['waiting'])) {
-	mz_chat_auth_error(401, 'tiki_user_unavailable');
+	ajax_chat_auth_error(401, 'tiki_user_unavailable');
 }
 
 $groups = $tikiLib->get_user_groups($user);
@@ -63,7 +63,7 @@ $moderatorGroups = array_values(array_filter(array_map('trim', explode(',', $mod
 $chatEnabled = !isset($prefs['tp_edizontn__ajax_chat__chat_enabled'])
     || $prefs['tp_edizontn__ajax_chat__chat_enabled'] === 'y';
 if (!$chatEnabled) {
-    mz_chat_auth_error(403, 'chat_disabled');
+    ajax_chat_auth_error(403, 'chat_disabled');
 }
 $adminStealth = isset($prefs['tp_edizontn__ajax_chat__admin_stealth_in_private_rooms'])
     && $prefs['tp_edizontn__ajax_chat__admin_stealth_in_private_rooms'] === 'y';
@@ -94,7 +94,7 @@ $claims = array(
 try {
 	$token = AjaxChatAuth::createToken($claims, $secret);
 } catch (Throwable $e) {
-	mz_chat_auth_error(500, 'token_issue_failed');
+	ajax_chat_auth_error(500, 'token_issue_failed');
 }
 
 echo json_encode(array(

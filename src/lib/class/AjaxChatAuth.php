@@ -8,11 +8,11 @@ class AjaxChatAuth {
 
 	public static function createToken(array $claims, $secret) {
 		if (!is_string($secret) || strlen($secret) < 32) {
-			throw new RuntimeException('MZ Chat shared secret must contain at least 32 characters.');
+			throw new RuntimeException('Ajax Chat shared secret must contain at least 32 characters.');
 		}
 		$json = json_encode($claims, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 		if ($json === false) {
-			throw new RuntimeException('Unable to encode MZ Chat authentication claims.');
+			throw new RuntimeException('Unable to encode Ajax Chat authentication claims.');
 		}
 		$payload = self::base64UrlEncode($json);
 		$signature = hash_hmac('sha256', $payload, $secret);

@@ -13,8 +13,8 @@
 
 class CustomAJAXChat extends AJAXChat {
 
-	protected $_mzHiddenAdminPresence = null;
-	protected $_mzBridgeConfig = array(
+	protected $_ajaxChatHiddenAdminPresence = null;
+	protected $_ajaxChatBridgeConfig = array(
 		'moderatorGroups' => array(),
 		'adminStealthInPrivateRooms' => false
 	);
@@ -195,7 +195,7 @@ class CustomAJAXChat extends AJAXChat {
 	}
 
 	function verifyTikiAuthToken($token) {
-		$claims = AjaxChatAuth::verifyToken($token, $this->getConfig('AjaxChatSharedSecret'));
+		$claims = AjaxChatAuth::verifyToken($token, $this->getConfig('ajaxChatSharedSecret'));
 		// AJAX Chat reserves ID ranges above this value for private channels/messages.
 		if($claims && $claims['uid'] >= (int)$this->getConfig('privateChannelDiff')) {
 			return false;

@@ -22,7 +22,7 @@ if (!is_array($chatConfig) || empty($chatConfig['paths']['chatRootPath']) || emp
 	http_response_code(500);
 	exit('Chat paths are not configured. Run install.php first.');
 }
-$GLOBALS['AjaxChatConfig'] = $chatConfig;
+$GLOBALS['ajaxChatConfig'] = $chatConfig;
 define('AJAX_CHAT_PATH', rtrim($chatConfig['paths']['chatRootPath'], '/\\').DIRECTORY_SEPARATOR);
 // Use the installer-saved root-relative path; do not trust the request Host header.
 define('AJAX_CHAT_URL', $chatConfig['paths']['chatUrlPath']);

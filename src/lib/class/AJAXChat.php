@@ -62,8 +62,8 @@ class AJAXChat {
 			echo('<strong>Error:</strong> Could not find a readable Chat-config.php file in "'.AJAX_CHAT_PATH.'lib/".');
 			die();
 		}
-		$config = (isset($GLOBALS['mzChatConfig']) && is_array($GLOBALS['mzChatConfig']))
-			? $GLOBALS['mzChatConfig']
+		$config = (isset($GLOBALS['ajaxChatConfig']) && is_array($GLOBALS['ajaxChatConfig']))
+			? $GLOBALS['ajaxChatConfig']
 			: require($configFile);
 		if (!is_array($config)) {
 			echo('<strong>Error:</strong> Chat-config.php must return a configuration array.');
@@ -97,7 +97,7 @@ class AJAXChat {
 		$this->_requestVars['getInfos']		= isset($_REQUEST['getInfos'])		? $_REQUEST['getInfos']			: null;
 		$this->_requestVars['lang']			= isset($_REQUEST['lang'])			? $_REQUEST['lang']				: null;
 		$this->_requestVars['delete']		= isset($_REQUEST['delete'])		? (int)$_REQUEST['delete']		: null;
-		$this->_requestVars['authToken']	= isset($_SERVER['HTTP_X_MZ_AUTH_TOKEN']) ? $_SERVER['HTTP_X_MZ_AUTH_TOKEN'] : (isset($_POST['authToken']) ? $_POST['authToken'] : null);
+		$this->_requestVars['authToken']	= isset($_SERVER['HTTP_X_AJAXCHAT_AUTH_TOKEN']) ? $_SERVER['HTTP_X_AJAXCHAT_AUTH_TOKEN'] : (isset($_POST['authToken']) ? $_POST['authToken'] : null);
 		
 		// Initialize custom request variables:
 		$this->initCustomRequestVars();

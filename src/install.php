@@ -19,14 +19,14 @@ header('X-Frame-Options: DENY');
 
 define('AJAX_CHAT_PATH', __DIR__.'/');
 
-function mzInstallerStop($status, $message) {
+function ajaxChatInstallerStop($status, $message) {
 	http_response_code($status);
 	echo '<!doctype html><html lang="sk"><meta charset="utf-8"><title>Ajax Chat installer</title>';
 	echo '<body><main><h1>Ajax Chat – inštalátor</h1><p>'.htmlspecialchars($message, ENT_QUOTES, 'UTF-8').'</p></main></body></html>';
 	exit;
 }
 
-function mzFindTikiRoot($startDirectory) {
+function ajaxChatFindTikiRoot($startDirectory) {
 	$current = realpath($startDirectory);
 	if ($current === false) {
 		return false;
@@ -43,14 +43,14 @@ function mzFindTikiRoot($startDirectory) {
 	}
 }
 
-function mzInstallerSchemaStatus() {
+function ajaxChatInstallerSchemaStatus() {
 	$tables = array(
-		'tikiwiki_ext_ajax_chat_online',
-		'tikiwiki_ext_ajax_chat_messages',
-		'tikiwiki_ext_ajax_chat_bans',
-		'tikiwiki_ext_ajax_chat_invitations',
-		'tikiwiki_ext_ajax_chat_rooms',
-		'tikiwiki_ext_ajax_chat_room_members'
+		'tiki_ajaxchat_online',
+		'tiki_ajaxchat_messages',
+		'tiki_ajaxchat_bans',
+		'tiki_ajaxchat_invitations',
+		'tiki_ajaxchat_rooms',
+		'tiki_ajaxchat_room_members'
 	);
 	try {
 		if (!class_exists('TikiDb') || !TikiDb::isAvailable()) {
@@ -74,7 +74,7 @@ function mzInstallerSchemaStatus() {
 	}
 }
 
-function mzWritePhpConfig($file, array $values) {
+function ajaxChatWritePhpConfig($file, array $values) {
 	// The installer is allowed to update the existing config file, but must not
 	// require write access to lib/ itself. Keep its root:www-data ownership and
 	// permissions by writing to the existing inode instead of temp+rename.
@@ -119,37 +119,37 @@ function mzWritePhpConfig($file, array $values) {
 
 $configFile = AJAX_CHAT_PATH.'lib/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
-	mzInstallerStop(500, 'Chýba alebo nie je čitateľný súbor lib/Chat-config.php. Najprv skopírujte Chat-config.php.example na Chat-config.php a nastavte jedinečný HMAC secret. Databázové údaje sa preberajú z TikiWiki.');
+	ajaxChatInstallerStop(500, 'Chýba alebo nie je čitateľný súbor lib/Chat-config.php. Najprv skopírujte Chat-config.php.example na Chat-config.php a nastavte jedinečný HMAC secret. Databázové údaje sa preberajú z TikiWiki.');
 }
-$AjaxChatInstallerConfig = require($configFile);
-if (!is_array($AjaxChatInstallerConfig)) {
-	mzInstallerStop(500, 'Chat-config.php musí vracať konfiguračné pole.');
+$ajaxChatInstallerConfig = require($configFile);
+if (!is_array($ajaxChatInstallerConfig)) {
+	ajaxChatInstallerStop(500, 'Chat-config.php musí vracať konfiguračné pole.');
 }
 
-$chatDbConfig = isset($AjaxChatInstallerConfig['dbConnection']) && is_array($AjaxChatInstallerConfig['dbConnection'])
-	? $AjaxChatInstallerConfig['dbConnection'] : array();
+$chatDbConfig = isset($ajaxChatInstallerConfig['dbConnection']) && is_array($ajaxChatInstallerConfig['dbConnection'])
+	? $ajaxChatInstallerConfig['dbConnection'] : array();
 if (!isset($chatDbConfig['type']) || $chatDbConfig['type'] !== 'tikidb') {
-	mzInstallerStop(500, 'Chat musí používať databázové pripojenie TikiWiki (type=tikidb).');
+	ajaxChatInstallerStop(500, 'Chat musí používať databázové pripojenie TikiWiki (type=tikidb).');
 }
-$secret = isset($AjaxChatInstallerConfig['AjaxChatSharedSecret']) ? $AjaxChatInstallerConfig['AjaxChatSharedSecret'] : '';
+$secret = isset($ajaxChatInstallerConfig['ajaxChatSharedSecret']) ? $ajaxChatInstallerConfig['ajaxChatSharedSecret'] : '';
 if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH_') === 0) {
-	mzInstallerStop(500, 'HMAC secret musí byť jedinečný náhodný reťazec s dĺžkou aspoň 32 znakov.');
+	ajaxChatInstallerStop(500, 'HMAC secret musí byť jedinečný náhodný reťazec s dĺžkou aspoň 32 znakov.');
 }
 
 // Path detection is deliberately performed only by this installer.
 $chatRootReal = realpath(__DIR__);
-$tikiRoot = mzFindTikiRoot(__DIR__);
+$tikiRoot = ajaxChatFindTikiRoot(__DIR__);
 if ($chatRootReal === false || $tikiRoot === false) {
-	mzInstallerStop(500, 'TikiWiki nebolo nájdené v nadradených adresároch chatu. Chat musí byť umiestnený v adresárovej štruktúre TikiWiki.');
+	ajaxChatInstallerStop(500, 'TikiWiki nebolo nájdené v nadradených adresároch chatu. Chat musí byť umiestnený v adresárovej štruktúre TikiWiki.');
 }
 $tikiRootReal = rtrim($tikiRoot, '/\\');
 if (strpos($chatRootReal, $tikiRootReal.DIRECTORY_SEPARATOR) !== 0) {
-	mzInstallerStop(500, 'Adresár chatu sa nenachádza pod koreňovým adresárom TikiWiki.');
+	ajaxChatInstallerStop(500, 'Adresár chatu sa nenachádza pod koreňovým adresárom TikiWiki.');
 }
 
 $scriptName = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', $_SERVER['SCRIPT_NAME']) : '';
 if ($scriptName === '' || substr($scriptName, -strlen('/install.php')) !== '/install.php') {
-	mzInstallerStop(500, 'Web server neposkytol platnú URL cestu inštalátora.');
+	ajaxChatInstallerStop(500, 'Web server neposkytol platnú URL cestu inštalátora.');
 }
 $installerScriptName = $scriptName;
 $chatUrlPath = rtrim(dirname($scriptName), '/').'/';
@@ -166,7 +166,7 @@ if ($tikiUrlPath === '.' || $tikiUrlPath === '') {
 }
 
 if (!chdir($tikiRootReal)) {
-	mzInstallerStop(500, 'Koreňový adresár TikiWiki nie je dostupný.');
+	ajaxChatInstallerStop(500, 'Koreňový adresár TikiWiki nie je dostupný.');
 }
 $tikiIndexPath = rtrim($tikiUrlPath, '/').'/index.php';
 if ($tikiIndexPath === 'index.php') {
@@ -180,30 +180,30 @@ $_SERVER['SCRIPT_FILENAME'] = $tikiRootReal.DIRECTORY_SEPARATOR.'index.php';
 require_once($tikiRootReal.DIRECTORY_SEPARATOR.'tiki-setup.php');
 
 if (!class_exists('TikiDb') || !TikiDb::isAvailable()) {
-	mzInstallerStop(500, 'Databázové pripojenie TikiWiki nie je dostupné.');
+	ajaxChatInstallerStop(500, 'Databázové pripojenie TikiWiki nie je dostupné.');
 }
 
 global $user, $tiki_p_admin;
 if (empty($user) || $user === 'Anonymous') {
-	mzInstallerStop(401, 'Najprv sa prihláste do TikiWiki.');
+	ajaxChatInstallerStop(401, 'Najprv sa prihláste do TikiWiki.');
 }
 
 $tikiLib = TikiLib::lib('tiki');
 $groups = $tikiLib->get_user_groups($user);
 $isTikiAdmin = (isset($tiki_p_admin) && $tiki_p_admin === 'y') || in_array('Admins', $groups, true);
 if (!$isTikiAdmin) {
-	mzInstallerStop(403, 'Inštalátor je dostupný iba administrátorom TikiWiki.');
+	ajaxChatInstallerStop(403, 'Inštalátor je dostupný iba administrátorom TikiWiki.');
 }
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
-	mzInstallerStop(500, 'Tiki session nie je aktívna; inštaláciu nemožno bezpečne spustiť.');
+	ajaxChatInstallerStop(500, 'Tiki session nie je aktívna; inštaláciu nemožno bezpečne spustiť.');
 }
 
-if (empty($_SESSION['mz_chat_installer_token']) || !is_string($_SESSION['mz_chat_installer_token'])) {
+if (empty($_SESSION['ajax_chat_installer_token']) || !is_string($_SESSION['ajax_chat_installer_token'])) {
 	try {
-		$_SESSION['mz_chat_installer_token'] = bin2hex(random_bytes(32));
+		$_SESSION['ajax_chat_installer_token'] = bin2hex(random_bytes(32));
 	} catch (Throwable $e) {
-		mzInstallerStop(500, 'Nepodarilo sa vytvoriť bezpečnostný token.');
+		ajaxChatInstallerStop(500, 'Nepodarilo sa vytvoriť bezpečnostný token.');
 	}
 }
 
@@ -213,8 +213,8 @@ $resultClass = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$submittedToken = isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-	$expectedToken = $_SESSION['mz_chat_installer_token'];
-	unset($_SESSION['mz_chat_installer_token']);
+	$expectedToken = $_SESSION['ajax_chat_installer_token'];
+	unset($_SESSION['ajax_chat_installer_token']);
 
 	if ($submittedToken === '' || !hash_equals($expectedToken, $submittedToken)) {
 		$resultMessage = 'Formulár už bol odoslaný alebo bezpečnostný token expiroval. Stav inštalácie bol znovu načítaný.';
@@ -228,8 +228,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		// The config was already loaded before Tiki bootstrap; avoid including it twice
 		// (which would redefine the AJAX_CHAT_* constants).
 		function initConfig() {
-			global $AjaxChatInstallerConfig;
-			$this->_config = $AjaxChatInstallerConfig;
+			global $ajaxChatInstallerConfig;
+			$this->_config = $ajaxChatInstallerConfig;
 			$this->initCustomConfig();
 		}
 
@@ -304,12 +304,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 		function createDataBaseTables() {
 			$expectedTables = array(
-				'online' => 'tikiwiki_ext_ajax_chat_online',
-				'messages' => 'tikiwiki_ext_ajax_chat_messages',
-				'bans' => 'tikiwiki_ext_ajax_chat_bans',
-				'invitations' => 'tikiwiki_ext_ajax_chat_invitations',
-				'rooms' => 'tikiwiki_ext_ajax_chat_rooms',
-				'roomMembers' => 'tikiwiki_ext_ajax_chat_room_members'
+				'online' => 'tiki_ajaxchat_online',
+				'messages' => 'tiki_ajaxchat_messages',
+				'bans' => 'tiki_ajaxchat_bans',
+				'invitations' => 'tiki_ajaxchat_invitations',
+				'rooms' => 'tiki_ajaxchat_rooms',
+				'roomMembers' => 'tiki_ajaxchat_room_members'
 			);
 			foreach ($expectedTables as $key => $tableName) {
 				if ($this->getConfig('dbTableNames', $key) !== $tableName) {
@@ -346,13 +346,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	}
 
 	try {
-        $AjaxChatInstallerConfig['paths'] = array(
+        $ajaxChatInstallerConfig['paths'] = array(
             'chatRootPath' => rtrim($chatRootReal, '/\\').DIRECTORY_SEPARATOR,
             'chatUrlPath' => $chatUrlPath,
             'tikiRootPath' => $tikiRoot,
             'tikiUrlPath' => $tikiUrlPath
         );
-		if (!mzWritePhpConfig($configFile, $AjaxChatInstallerConfig)) {
+		if (!ajaxChatWritePhpConfig($configFile, $ajaxChatInstallerConfig)) {
 			throw new RuntimeException('Nepodarilo sa bezpečne uložiť Chat-config.php.');
 		}
 		$installer = new CustomAJAXChatInstaller();
@@ -368,7 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$errorDetail = get_class($e).': '.$e->getMessage().' ('.basename($e->getFile()).':'.$e->getLine().')';
 		foreach (array(
 			isset($chatDbConfig['pass']) ? $chatDbConfig['pass'] : '',
-			isset($AjaxChatInstallerConfig['AjaxChatSharedSecret']) ? $AjaxChatInstallerConfig['AjaxChatSharedSecret'] : ''
+			isset($ajaxChatInstallerConfig['ajaxChatSharedSecret']) ? $ajaxChatInstallerConfig['ajaxChatSharedSecret'] : ''
 		) as $sensitiveValue) {
 			if (is_string($sensitiveValue) && $sensitiveValue !== '') {
 				$errorDetail = str_replace($sensitiveValue, '[REDACTED]', $errorDetail);
@@ -382,11 +382,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	// Post/Redirect/Get prevents browser refresh from replaying the form.
 	try {
-		$_SESSION['mz_chat_installer_token'] = bin2hex(random_bytes(32));
+		$_SESSION['ajax_chat_installer_token'] = bin2hex(random_bytes(32));
 	} catch (Throwable $e) {
-		mzInstallerStop(500, 'Nepodarilo sa obnoviť bezpečnostný token.');
+		ajaxChatInstallerStop(500, 'Nepodarilo sa obnoviť bezpečnostný token.');
 	}
-	$_SESSION['mz_chat_installer_flash'] = array(
+	$_SESSION['ajax_chat_installer_flash'] = array(
 		'message' => $resultMessage,
 		'detail' => $resultDetail,
 		'class' => $resultClass
@@ -395,9 +395,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	exit;
 }
 
-if (isset($_SESSION['mz_chat_installer_flash']) && is_array($_SESSION['mz_chat_installer_flash'])) {
-	$flash = $_SESSION['mz_chat_installer_flash'];
-	unset($_SESSION['mz_chat_installer_flash']);
+if (isset($_SESSION['ajax_chat_installer_flash']) && is_array($_SESSION['ajax_chat_installer_flash'])) {
+	$flash = $_SESSION['ajax_chat_installer_flash'];
+	unset($_SESSION['ajax_chat_installer_flash']);
 	$resultMessage = isset($flash['message']) ? $flash['message'] : '';
 	$resultDetail = isset($flash['detail']) ? $flash['detail'] : '';
 	$resultClass = isset($flash['class']) ? $flash['class'] : '';
@@ -418,8 +418,8 @@ if ($installerRenameAttempted) {
 	}
 }
 
-$schemaStatus = mzInstallerSchemaStatus();
-$token = htmlspecialchars($_SESSION['mz_chat_installer_token'], ENT_QUOTES, 'UTF-8');
+$schemaStatus = ajaxChatInstallerSchemaStatus();
+$token = htmlspecialchars($_SESSION['ajax_chat_installer_token'], ENT_QUOTES, 'UTF-8');
 echo '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
 echo '<title>Ajax Chat – inštalátor</title></head><body><main style="max-width:48rem;margin:3rem auto;padding:1.5rem;font:16px/1.5 sans-serif">';
 echo '<h1>Ajax Chat – inštalátor</h1>';
@@ -431,7 +431,7 @@ if ($schemaStatus === 'complete') {
 } elseif ($schemaStatus === 'unknown') {
 	echo '<p role="status">Stav databázovej schémy sa nepodarilo automaticky overiť.</p>';
 }
-echo '<p>Inštalátor zistí a uloží cesty k TikiWiki a chatu. Použije už aktívne databázové pripojenie TikiWiki a vytvorí alebo overí šesť vlastných tabuliek s prefixom <code>tikiwiki_ext_ajax_chat_</code>. Detekcia ciest sa vykonáva iba pri spustení inštalátora.</p>';
+echo '<p>Inštalátor zistí a uloží cesty k TikiWiki a chatu. Použije už aktívne databázové pripojenie TikiWiki a vytvorí alebo overí šesť vlastných tabuliek s prefixom <code>tiki_ajaxchat_</code>. Detekcia ciest sa vykonáva iba pri spustení inštalátora.</p>';
 echo '<dl><dt>Chat filesystem</dt><dd><code>'.htmlspecialchars(rtrim($chatRootReal, '/\\'), ENT_QUOTES, 'UTF-8').'</code></dd>';
 echo '<dt>Chat URL</dt><dd><code>'.htmlspecialchars($chatUrlPath, ENT_QUOTES, 'UTF-8').'</code></dd>';
 echo '<dt>Tiki filesystem</dt><dd><code>'.htmlspecialchars($tikiRoot, ENT_QUOTES, 'UTF-8').'</code></dd>';
