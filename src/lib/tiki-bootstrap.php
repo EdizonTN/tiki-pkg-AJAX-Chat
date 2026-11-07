@@ -114,6 +114,8 @@ function AjaxChatApplyTikiPreferences(array $config)
                 }
             } elseif ($key === 'socketServerHost' && $value === '') {
                 $config[$key] = null;
+            } elseif (in_array($key, array('privateRoomPrefix', 'privateRoomSuffix', 'privateChannelPrefix', 'privateChannelSuffix', 'guestUserPrefix', 'guestUserSuffix', 'changedNickPrefix', 'changedNickSuffix'), true) && strlen($value) <= 16) {
+                $config[$key] = $value;
             } elseif ($value !== '' && strlen($value) <= 255) {
                 $config[$key] = $value;
             }
@@ -154,6 +156,12 @@ function AjaxChatApplyTikiPreferences(array $config)
         $config['timeZoneOffset'] = max(-43200, min(43200, (int) $prefs[$offsetName]));
     } elseif (isset($prefs[$offsetName]) && $prefs[$offsetName] === '') {
         $config['timeZoneOffset'] = null;
+    }
+
+    if ((int) $config['openingHour'] >= (int) $config['closingHour']) {
+        // Avoid an invalid or ambiguous opening-hours interval.
+        $config['openingHour'] = 0;
+        $config['closingHour'] = 24;
     }
 
     $daysName = $prefix . 'opening_week_days';
