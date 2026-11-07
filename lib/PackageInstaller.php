@@ -218,7 +218,7 @@ class AjaxChatPackageInstaller
     public function uninstall()
     {
         global $prefs;
-        if (($prefs['tp_edizontn__ajax_chat__chat_enabled'] ?? 'y') === 'y') {
+        if (($prefs['tp_edizontn__ajaxchat__chat_enabled'] ?? 'y') === 'y') {
             throw new RuntimeException('Disable AJAX Chat in Extension Preferences before uninstalling.');
         }
         $db = TikiDb::get();
