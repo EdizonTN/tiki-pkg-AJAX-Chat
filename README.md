@@ -12,7 +12,7 @@ tiki-AJAX-Chat/
 │   └── wiki-plugins/
 │       └── ajaxchat.php
 ├── prefs/
-│   └── tp_edizontn__ajax_chat.php
+│   └── tp_edizontn__ajaxchat.php
 └── src/                 # AJAX Chat engine and Tiki bridge
     ├── index.php
     ├── tiki-auth.php
