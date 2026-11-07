@@ -27,7 +27,7 @@
 ### Administrácia
 
 - Administrácia balíka je natívna Tiki Extension Admin Page: `tiki-admin.php?page=tp_edizontn_ajaxchat`. Odkaz na ňu je dostupný pri preferencii `Enable Ajax Chat`.
-- Inštalácia/oprava sa vykonáva tlačidlom **Install / repair AJAX Chat**. Tiki automaticky vytvorí chránenú konfiguráciu a náhodný HMAC secret v `TIKI_ROOT/temp/ajax-chat/`, šesť databázových tabuliek a fyzický vstupný bod `TIKI_ROOT/chat/index.php`.
+- Inštalácia/oprava/preinštalovanie sa vykonáva tlačidlom **Install / reinstall / repair AJAX Chat**. Po úspešnej inštalácii sa zobrazí tlačidlo **Open Chat**, ktoré otvorí samostatnú URL `/chat/` v novom okne. Tiki automaticky vytvorí chránenú konfiguráciu a náhodný HMAC secret v `TIKI_ROOT/temp/ajax-chat/`, šesť databázových tabuliek a fyzický vstupný bod `TIKI_ROOT/chat/index.php`.
 - Pri existujúcom `/chat/index.php`, ktorý nepatrí balíku, sa inštalácia zastaví a súbor neprepíše.
 - Odinštalácia vyžaduje vypnutý chat a potvrdzovaciu frázu. Odstráni iba šesť tabuliek AJAX Chatu a súbory označené ako vytvorené balíkom. Cudzie súbory a Tiki dáta zostanú nedotknuté.
 - Všetky mutačné POST akcie používajú Tiki CSRF ticket a kontrolu oprávnenia administrátora.
@@ -82,7 +82,7 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú šes
 ### Administration
 
 - The package uses Tiki's native extension admin page: `tiki-admin.php?page=tp_edizontn_ajaxchat`. The contextual link is available beside the `Enable Ajax Chat` preference.
-- **Install / repair AJAX Chat** creates the protected configuration and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, the six database tables, and a physical `TIKI_ROOT/chat/index.php` entry point.
+- **Install / reinstall / repair AJAX Chat** creates/verifies the protected configuration and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, the six database tables, and a physical `TIKI_ROOT/chat/index.php` entry point. Once all three are ready, the admin page displays an **Open Chat** button that opens `/chat/` in a new tab.
 - If an existing `/chat/index.php` is not owned by this package, installation stops without overwriting it.
 - Uninstall requires the chat to be disabled and an explicit confirmation phrase. It removes only the six AJAX Chat tables and files marked as package-owned. Unrelated files and Tiki data remain untouched.
 - Mutating POST actions use Tiki's CSRF ticket and administrator permission check.
