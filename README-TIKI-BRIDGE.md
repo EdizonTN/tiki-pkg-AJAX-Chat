@@ -15,7 +15,7 @@
 - Package definuje vlastné preferencie Tiki a wiki plugin `ajaxchat`. Na wiki stránke sa používa syntax:
 
   ```text
-  {package package="edizontn/ajax-chat" plugin="ajaxchat"}
+  {package package="edizontn/ajaxchat" plugin="ajaxchat"}
   ```
 
 - Composer metadata sú súčasťou koreňa balíka. Composer nebude požiadavkou na produkčnom serveri.
@@ -26,7 +26,7 @@
 
 ### Administrácia
 
-- Administrácia balíka je natívna Tiki Extension Admin Page: `tiki-admin.php?page=tp_edizontn_ajax-chat`. Odkaz na ňu je dostupný pri preferencii `Enable Ajax Chat`.
+- Administrácia balíka je natívna Tiki Extension Admin Page: `tiki-admin.php?page=tp_edizontn_ajaxchat`. Odkaz na ňu je dostupný pri preferencii `Enable Ajax Chat`.
 - Inštalácia/oprava sa vykonáva tlačidlom **Install / repair AJAX Chat**. Tiki automaticky vytvorí chránenú konfiguráciu a náhodný HMAC secret v `TIKI_ROOT/temp/ajax-chat/`, šesť databázových tabuliek a fyzický vstupný bod `TIKI_ROOT/chat/index.php`.
 - Pri existujúcom `/chat/index.php`, ktorý nepatrí balíku, sa inštalácia zastaví a súbor neprepíše.
 - Odinštalácia vyžaduje vypnutý chat a potvrdzovaciu frázu. Odstráni iba šesť tabuliek AJAX Chatu a súbory označené ako vytvorené balíkom. Cudzie súbory a Tiki dáta zostanú nedotknuté.
@@ -70,7 +70,7 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú šes
 - The package defines Tiki preferences and the `ajaxchat` wiki plugin. Use it on a wiki page as follows:
 
   ```text
-  {package package="edizontn/ajax-chat" plugin="ajaxchat"}
+  {package package="edizontn/ajaxchat" plugin="ajaxchat"}
   ```
 
 - Composer metadata is included at the package root, but Composer will not be required on the production server.
@@ -81,7 +81,7 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú šes
 
 ### Administration
 
-- The package uses Tiki's native extension admin page: `tiki-admin.php?page=tp_edizontn_ajax-chat`. The contextual link is available beside the `Enable Ajax Chat` preference.
+- The package uses Tiki's native extension admin page: `tiki-admin.php?page=tp_edizontn_ajaxchat`. The contextual link is available beside the `Enable Ajax Chat` preference.
 - **Install / repair AJAX Chat** creates the protected configuration and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, the six database tables, and a physical `TIKI_ROOT/chat/index.php` entry point.
 - If an existing `/chat/index.php` is not owned by this package, installation stops without overwriting it.
 - Uninstall requires the chat to be disabled and an explicit confirmation phrase. It removes only the six AJAX Chat tables and files marked as package-owned. Unrelated files and Tiki data remain untouched.
