@@ -47,6 +47,38 @@ class AjaxChatPackageInstaller
         return $count === count($this->tables) ? 'complete' : ($count ? 'partial' : 'missing');
     }
 
+    private function validateSchema()
+    {
+        $expected = array(
+            'tiki_ajaxchat_online' => array('userID', 'userName', 'userRole', 'channel', 'dateTime', 'ip'),
+            'tiki_ajaxchat_messages' => array('id', 'userID', 'userName', 'userRole', 'channel', 'dateTime', 'ip', 'text'),
+            'tiki_ajaxchat_bans' => array('userID', 'userName', 'dateTime', 'ip'),
+            'tiki_ajaxchat_invitations' => array('userID', 'channel', 'dateTime'),
+            'tiki_ajaxchat_rooms' => array('id', 'ownerID', 'name', 'dateTime'),
+            'tiki_ajaxchat_room_members' => array('roomID', 'userID', 'userName', 'dateTime')
+        );
+        $db = TikiDb::get();
+        foreach ($expected as $table => $columns) {
+            $result = $db->query('SHOW COLUMNS FROM ' . chr(96) . $table . chr(96), array(), -1, -1, TikiDb::ERR_EXCEPTION);
+            $actual = array();
+            while ($row = $result->fetchRow()) {
+                if (isset($row['Field'])) {
+                    $actual[] = $row['Field'];
+                }
+            }
+            foreach ($columns as $column) {
+                if (!in_array($column, $actual, true)) {
+                    throw new RuntimeException('The AJAX Chat table ' . $table . ' is missing column ' . $column . '.');
+                }
+            }
+            $status = $db->query('SHOW TABLE STATUS WHERE Name = ' . $db->qstr($table), array(), -1, -1, TikiDb::ERR_EXCEPTION);
+            $tableStatus = $status ? $status->fetchRow() : false;
+            if (!$tableStatus || !isset($tableStatus['Engine']) || strtolower($tableStatus['Engine']) !== 'innodb') {
+                throw new RuntimeException('The AJAX Chat table ' . $table . ' must use InnoDB.');
+            }
+        }
+    }
+
     private function writeConfig()
     {
         $dir = dirname($this->config);
@@ -157,6 +189,7 @@ class AjaxChatPackageInstaller
         if ($this->status() !== 'complete') {
             throw new RuntimeException('AJAX Chat database schema is incomplete.');
         }
+        $this->validateSchema();
         $this->writeCleanUrl();
     }
 
