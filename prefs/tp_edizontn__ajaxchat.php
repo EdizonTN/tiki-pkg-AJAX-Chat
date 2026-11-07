@@ -12,7 +12,7 @@ function prefs_tp_edizontn__ajaxchat_list()
         'tp_edizontn__ajaxchat__chat_enabled' => [
             'name' => tra('Enable Ajax Chat'),
             'description' => tra('Allow authenticated Tiki users to access the chat. Use the administration link to install, reinstall or uninstall the chat and open it for testing.'),
-            'urladmin' => 'tiki-admin.php?page=tp_edizontn_ajaxchat',
+            'admin' => 'tiki-admin.php?page=tp_edizontn_ajaxchat',
             'tags' => ['basic'],
             'type' => 'flag',
             'default' => 'y',
@@ -73,7 +73,7 @@ function prefs_tp_edizontn__ajaxchat_list()
         'chatbot_name' => ['ChatBot display name', 'Display name used for system messages.', 'ChatBot'],
         'limit_channel_list' => ['Visible public channel IDs', 'Optional comma-separated list of public channel IDs. Leave blank to show all configured public channels.', ''],
         'request_messages_prior_channel_enter_list' => ['Always load history for channel IDs', 'Optional comma-separated list of channel IDs for which earlier messages are always loaded.', ''],
-        'logs_user_access_channel_list' => ['Log access channel IDs', 'Optional comma-separated list of channels included in user log access. Leave blank to allow all accessible channels.', ''],
+        'logs_user_access_channel_list' => ['Log access channel IDs', 'Optional comma-separated list of channels included in log access. Leave blank to allow all accessible channels.', ''],
         'socket_server_host' => ['Socket server hostname', 'Client-side socket server hostname; blank uses the current host.', ''],
         'socket_server_ip' => ['Socket server IP address', 'Server-side address used to broadcast messages.', '127.0.0.1'],
     ];
@@ -100,7 +100,7 @@ function prefs_tp_edizontn__ajaxchat_list()
         'max_message_rate' => ['Maximum messages per minute', 'Maximum number of messages a user may send per minute.', '20'],
         'default_ban_time' => ['Default ban duration (minutes)', 'Default duration when a moderator kicks a user without specifying a duration.', '5'],
         'logs_request_messages_time_diff' => ['Log search default period (hours)', 'Default log period when no search period is supplied.', '1'],
-        'logs_request_messages_limit' => ['Log messages per request', 'Maximum number of log messages returned per request.', '10'],
+        'logs_request_messages_limit' => ['Log messages per request', 'Maximum number of log messages returned on each request.', '10'],
         'logs_first_year' => ['First year in log archive', 'Earliest year offered in the log archive selector.', '2007'],
         'logs_purge_time_diff' => ['Log retention (days)', 'Messages older than this are purged when log purging is enabled.', '365'],
         'session_cookie_lifetime' => ['Session preference cookie lifetime (days)', 'Lifetime of language, style and settings cookies.', '365'],
