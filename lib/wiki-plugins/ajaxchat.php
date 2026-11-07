@@ -50,15 +50,16 @@ function ajaxchat($content, $params)
     $chatPagePath = isset($prefs['tp_edizontn__ajax_chat__chat_url'])
         ? trim((string) $prefs['tp_edizontn__ajax_chat__chat_url'])
         : '/chat';
-    if (
+    $invalidPath = (
         $chatPagePath === ''
         || $chatPagePath[0] !== '/'
         || strpos($chatPagePath, '//') === 0
         || strpos($chatPagePath, '?') !== false
         || strpos($chatPagePath, '#') !== false
-        || strpos($chatPagePath, '\\\\') !== false
-        || preg_match('~(?:^|/)\\.\\.(?:/|$)|[^A-Za-z0-9/_-]~', $chatPagePath)
-    ) {
+        || strpos($chatPagePath, chr(92)) !== false
+        || preg_match('~[^A-Za-z0-9/_-]|(?:^|/)\\.\\.(?:/|$)~', $chatPagePath)
+    );
+    if ($invalidPath) {
         $chatPagePath = '/chat';
     }
     $chatPageUrl = TikiLib::tikiUrl(ltrim($chatPagePath, '/'));
