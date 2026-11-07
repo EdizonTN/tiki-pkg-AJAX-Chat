@@ -15,11 +15,21 @@
 
 <p>{tr}The installer creates the protected configuration and random HMAC secret in Tiki's temp directory, creates the six package-owned database tables, and generates{/tr} <code>/chat/index.php</code>. {tr}The generated /chat entry point does not overwrite an existing file.{/tr}</p>
 
+{if $ajax_chat_chat_ready}
+    <p>
+        <a class="btn btn-success" href="{$ajax_chat_chat_url|escape}" target="_blank" rel="noopener">
+            {icon name="comments"} {tr}Open Chat{/tr}
+        </a>
+    </p>
+{else}
+    <p class="text-muted">{tr}Open Chat becomes available after installation is complete.{/tr}</p>
+{/if}
+
 <form method="post" action="{$ajax_chat_admin_url|escape}">
     {ticket}
     <input type="hidden" name="redirect" value="0">
     <input type="hidden" name="ajax_chat_action" value="install">
-    <button type="submit" class="btn btn-primary">{tr}Install / repair AJAX Chat{/tr}</button>
+    <button type="submit" class="btn btn-primary">{tr}Install / reinstall / repair AJAX Chat{/tr}</button>
 </form>
 
 <hr>
