@@ -21,7 +21,8 @@
 - Composer metadata sú súčasťou koreňa balíka. Composer nebude požiadavkou na produkčnom serveri.
 - Chat používa existujúce databázové pripojenie TikiWiki cez `TikiDb`; neotvára vlastné databázové pripojenie a nevyžaduje samostatnú databázu ani DB používateľa.
 - Chatové tabuľky používajú prefix `tiki_ajaxchat_`.
-- Nastavenia `chat_enabled`, `moderator_groups` a `admin_stealth_in_private_rooms` sú definované ako Tiki Extension Preferences.
+- Nastavenia `chat_enabled`, `chat_url`, `moderator_groups` a `admin_stealth_in_private_rooms` sú definované ako Tiki Extension Preferences.
+- Samostatná čistá URL je predvolene `/chat`. Pri prvom spustení inštalátora sa zaregistruje dispatcher cez podporovaný Tiki 30.1 hook `_custom/shared/custom.php`. Cesta sa číta z preferencie pri každej požiadavke; nie je potrebná wiki stránka ani Custom Route. Vyžaduje sa štandardné Tiki SEF URL / rewrite pravidlo.
 
 ### Administrácia
 
@@ -38,10 +39,10 @@ Cieľové umiestnenie kompletného repozitára je `TIKI_ROOT/vendor_custom/tiki-
 Cieľový postup:
 1. Zálohovať súbory a databázu TikiWiki.
 2. Nasadiť kompletný balík do `vendor_custom/tiki-pkg-ajax-chat/`.
-3. Spustiť webový inštalátor ako Tiki administrátor.
-4. Aktivovať package cez Tiki Packages.
+3. Aktivovať package cez Tiki Packages.
+4. Spustiť webový inštalátor ako Tiki administrátor. Okrem databázovej schémy zaregistruje dispatcher čistej URL v `_custom/shared/custom.php`.
 5. Inštalátor overí databázovú schému a vytvorí chýbajúce vlastné tabuľky bez zásahu do existujúcich tabuliek TikiWiki.
-6. Nastaviť skupiny moderátorov a ostatné možnosti v administrácii Tiki.
+6. V **Admin → Packages → Extension Preferences** nastaviť `Standalone chat URL` (predvolene `/chat`), skupiny moderátorov a ostatné možnosti.
 
 Aktualizáciu spúšťa administrátor ručne. Pred výmenou súborov sa vytvorí záloha. Zmeny databázovej schémy budú samostatné, s upozornením a potvrdením administrátora.
 
@@ -75,7 +76,8 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú šes
 - Composer metadata is included at the package root, but Composer will not be required on the production server.
 - The chat reuses TikiWiki's existing database connection through `TikiDb`. It does not open a separate database connection and does not require a separate database or DB user.
 - Chat tables use the `tiki_ajaxchat_` prefix.
-- `chat_enabled`, `moderator_groups` and `admin_stealth_in_private_rooms` are defined as Tiki Extension Preferences.
+- `chat_enabled`, `chat_url`, `moderator_groups` and `admin_stealth_in_private_rooms` are defined as Tiki Extension Preferences.
+- The standalone clean URL defaults to `/chat`. The first run of the web installer registers a dispatcher through Tiki 30.1's supported `_custom/shared/custom.php` hook. The path is read from the preference on every request; no wiki page or Custom Route is needed. Standard Tiki SEF URL / rewrite support is required.
 
 ### Administration
 
@@ -92,10 +94,10 @@ Deploy the complete repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 Target workflow:
 1. Back up TikiWiki files and database.
 2. Deploy the complete package to `vendor_custom/tiki-pkg-ajax-chat/`.
-3. Run the web installer as a Tiki administrator.
-4. Enable the package through Tiki Packages.
+3. Enable the package through Tiki Packages.
+4. Run the web installer as a Tiki administrator. In addition to the database schema, it registers the clean-URL dispatcher in `_custom/shared/custom.php`.
 5. The installer checks the schema and creates missing extension tables without modifying existing TikiWiki tables.
-6. Configure moderator groups and other options in Tiki administration.
+6. Under **Admin → Packages → Extension Preferences**, set `Standalone chat URL` (default `/chat`), moderator groups and other options.
 
 Updates are started manually by an administrator. Files are backed up before replacement. Database schema migrations are separate operations and require an explicit warning and confirmation.
 
