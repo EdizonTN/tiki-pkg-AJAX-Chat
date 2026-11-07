@@ -30,8 +30,8 @@ function ajaxchat($content, $params)
     }
 
     if (
-        isset($prefs['tp_edizontn__ajax_chat__chat_enabled'])
-        && $prefs['tp_edizontn__ajax_chat__chat_enabled'] !== 'y'
+        isset($prefs['tp_edizontn__ajaxchat__chat_enabled'])
+        && $prefs['tp_edizontn__ajaxchat__chat_enabled'] !== 'y'
     ) {
         return '';
     }
