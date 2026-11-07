@@ -62,9 +62,20 @@ $tables = array(
 function ajaxChatAdminStatus(array $tables) {
     $db = TikiDb::get();
     $found = array();
+    $result = $db->query('SHOW TABLES', array(), -1, -1, TikiDb::ERR_EXCEPTION);
+    $actualTables = array();
+    if ($result) {
+        while ($row = $result->fetchRow()) {
+            if (is_array($row)) {
+                $values = array_values($row);
+                if (isset($values[0])) {
+                    $actualTables[] = (string) $values[0];
+                }
+            }
+        }
+    }
     foreach ($tables as $table) {
-        $result = $db->query('SHOW TABLES LIKE ' . $db->qstr($table), array(), -1, -1, TikiDb::ERR_EXCEPTION);
-        if ($result && $result->fetchRow()) {
+        if (in_array($table, $actualTables, true)) {
             $found[] = $table;
         }
     }
