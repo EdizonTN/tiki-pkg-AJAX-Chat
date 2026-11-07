@@ -2,7 +2,7 @@
 /**
  * Embed the AJAX Chat from this Tiki package's own src directory.
  *
- * Usage: {package package="edizontn/ajax_chat" plugin="ajaxchat"}
+ * Usage: {package package="edizontn/ajax-chat" plugin="ajaxchat"}
  */
 function ajaxchat_info()
 {
