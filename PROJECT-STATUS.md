@@ -182,3 +182,15 @@ Validation status:
 - Code and documentation were updated through GitHub API commits.
 - No live TikiWiki 30.1 integration test has been run from this session. In particular, verify extension preference discovery, extension admin page loading, filesystem permissions for `temp/ajax-chat/` and `/chat/`, install/reinstall/uninstall, and chat access via both `/chat` and the wiki plugin.
 - Do not treat the branch as production-ready until those manual checks pass.
+
+
+### Preference namespace correction (2026-11-07)
+
+The Composer package ID was normalized to `edizontn/ajaxchat`, but the preference definitions initially retained the old `tp_edizontn__ajax_chat__` keys. Tiki Extension Packages require the preference file, callback and preference-key namespace to match the Composer package ID. This caused undefined preferences and exposed raw preference identifiers in Extension Preferences.
+
+Corrected on `feature/standalone-chat-route`:
+- Preference overlay: `prefs/tp_edizontn__ajaxchat.php`.
+- Callback: `prefs_tp_edizontn__ajaxchat_list()`.
+- All preference keys and runtime references now use `tp_edizontn__ajaxchat__`.
+- The package admin page migrates existing values from the old `tp_edizontn__ajax_chat__` keys to the new keys, then deletes the obsolete rows. Existing user settings are preserved when no new-key value exists.
+- Open the package admin page once after updating to run this migration, then reload Extension Preferences.
