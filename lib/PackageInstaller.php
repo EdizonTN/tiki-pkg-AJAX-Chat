@@ -272,11 +272,11 @@ class AjaxChatPackageInstaller
             && strpos((string) file_get_contents($file), 'EdizonTN AJAX Chat managed asset routing') === false) {
             throw new RuntimeException('/chat/.htaccess already exists and was not overwritten.');
         }
-        $source = "# EdizonTN AJAX Chat managed asset routing\\n";
-        $source .= "<IfModule mod_rewrite.c>\\n";
-        $source .= "RewriteEngine On\\n";
-        $source .= "RewriteRule ^(css|js|img|sounds|flash)/(.*)$ " . $assetUrl . "/$1/$2 [L]\\n";
-        $source .= "</IfModule>\\n";
+        $source = "# EdizonTN AJAX Chat managed asset routing\n";
+        $source .= "<IfModule mod_rewrite.c>\n";
+        $source .= "RewriteEngine On\n";
+        $source .= "RewriteRule ^(css|js|img|sounds|flash)/(.*)$ " . $assetUrl . "/$1/$2 [L]\n";
+        $source .= "</IfModule>\n";
         if (file_put_contents($file, $source, LOCK_EX) === false) {
             throw new RuntimeException('Could not create /chat/.htaccess for AJAX Chat assets.');
         }
