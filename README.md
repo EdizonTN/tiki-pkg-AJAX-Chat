@@ -43,7 +43,7 @@ The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The ins
 ## Tiki package metadata
 
 - Composer package: `edizontn/ajax_chat`
-- Tiki package namespace: `EdizonTN\\AjaxChat`
+- Tiki package namespace: `EdizonTN\AjaxChat`
 - Package type: `tiki-package`
 - Minimum PHP version: 8.1
 - Target platform: TikiWiki 30.1

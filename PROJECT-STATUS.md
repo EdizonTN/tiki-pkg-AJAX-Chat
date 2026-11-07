@@ -95,7 +95,7 @@ Tiki integrácia sa eviduje v repozitári https://github.com/PetoJanis/New-MZ-ti
 
 Známy plán:
 - Tiki/Composer package ID: `edizontn/ajax_chat`.
-- Tiki package namespace: `EdizonTN\\AjaxChat`.
+- Tiki package namespace: `EdizonTN\AjaxChat`.
 - Package root: repository root; package metadata, wiki plugin and preferences are stored at repository root.
 - Adresár balíka: `vendor_custom/tiki-pkg-ajax-chat/`.
 - Chat engine runs from `vendor_custom/tiki-pkg-ajax-chat/src/`; do not extract it into Tiki root or `_CHAT/`.
