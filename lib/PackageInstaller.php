@@ -88,12 +88,25 @@ class AjaxChatPackageInstaller
         if (!is_writable($dir)) {
             throw new RuntimeException('Tiki temp/ajax-chat is not writable by PHP.');
         }
+
+        $htaccess = $dir . '/.htaccess';
+        if (!is_file($htaccess)) {
+            if (file_put_contents($htaccess, "# EdizonTN AJAX Chat protected config directory\nRequire all denied\n", LOCK_EX) === false) {
+                throw new RuntimeException('Could not protect the generated configuration directory.');
+            }
+        } else {
+            $rules = (string) file_get_contents($htaccess);
+            if (stripos($rules, 'require all denied') === false && stripos($rules, 'deny from all') === false) {
+                throw new RuntimeException('The existing temp/ajax-chat/.htaccess does not deny web access; the configuration was not exposed.');
+            }
+        }
+
         if (is_file($this->config)) {
             return;
         }
         $template = $this->package . '/src/lib/Chat-config.php.example';
-        if (!is_file($template)) {
-            throw new RuntimeException('Chat-config.php.example is missing.');
+        if (!is_file($template) || !is_readable($template)) {
+            throw new RuntimeException('Chat-config.php.example is missing or unreadable.');
         }
         $config = require $template;
         if (!is_array($config)) {
@@ -118,17 +131,7 @@ class AjaxChatPackageInstaller
             throw new RuntimeException('Could not write generated chat configuration.');
         }
         chmod($this->config, 0640);
-        $htaccess = $dir . '/.htaccess';
-        if (!is_file($htaccess)) {
-            if (file_put_contents($htaccess, "# EdizonTN AJAX Chat protected config directory\nRequire all denied\n", LOCK_EX) === false) {
-                throw new RuntimeException('Could not protect the generated configuration directory.');
-            }
-        } else {
-            $rules = (string) file_get_contents($htaccess);
-            if (stripos($rules, 'require all denied') === false && stripos($rules, 'deny from all') === false) {
-                throw new RuntimeException('The existing temp/ajax-chat/.htaccess does not deny web access; the configuration was not exposed.');
-            }
-        }
+
         if (!is_file($dir . '/index.php')) {
             if (file_put_contents($dir . '/index.php', "<?php\n// EdizonTN AJAX Chat protected config directory\nhttp_response_code(404);\nexit;\n", LOCK_EX) === false) {
                 throw new RuntimeException('Could not protect the generated configuration directory.');
