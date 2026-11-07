@@ -44,8 +44,31 @@ function ajaxchat($content, $params)
     $escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
     $title = htmlspecialchars(tra('Ajax Chat'), ENT_QUOTES, 'UTF-8');
 
+    // The clean public URL is a Tiki Custom Route pointing to a wiki page
+    // containing this plugin. Keep the iframe pointed at the package engine
+    // to avoid recursively embedding the routed wiki page.
+    $chatPagePath = isset($prefs['tp_edizontn__ajax_chat__chat_url'])
+        ? trim((string) $prefs['tp_edizontn__ajax_chat__chat_url'])
+        : '/chat';
+    if (
+        $chatPagePath === ''
+        || $chatPagePath[0] !== '/'
+        || strpos($chatPagePath, '//') === 0
+        || strpos($chatPagePath, '?') !== false
+        || strpos($chatPagePath, '#') !== false
+        || strpos($chatPagePath, '\\\\') !== false
+        || preg_match('~(?:^|/)\\.\\.(?:/|$)|[^A-Za-z0-9/_-]~', $chatPagePath)
+    ) {
+        $chatPagePath = '/chat';
+    }
+    $chatPageUrl = TikiLib::tikiUrl(ltrim($chatPagePath, '/'));
+    $escapedChatPageUrl = htmlspecialchars($chatPageUrl, ENT_QUOTES, 'UTF-8');
+
     return '<iframe src="' . $escapedUrl . '" title="' . $title . '"'
         . ' loading="lazy" referrerpolicy="same-origin"'
         . ' style="display:block;width:100%;height:' . $height . 'px;border:1px solid #ccc;background:#fff"'
-        . ' allow="clipboard-read; clipboard-write"></iframe>';
+        . ' allow="clipboard-read; clipboard-write"></iframe>'
+        . '<p class="ajaxchat-fullpage-link"><a href="' . $escapedChatPageUrl . '" target="_blank" rel="noopener noreferrer">'
+        . htmlspecialchars(tra('Open Ajax Chat in a separate page'), ENT_QUOTES, 'UTF-8')
+        . '</a></p>';
 }
