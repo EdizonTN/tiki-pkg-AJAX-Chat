@@ -314,6 +314,10 @@ class AjaxChatPackageInstaller
 
     public function install()
     {
+        require_once __DIR__ . '/SettingsStore.php';
+        $settingsStore = new AjaxChatSettingsStore();
+        $settingsStore->ensureTable();
+        $settingsStore->migratePreferences();
         $this->assertCleanUrlAvailable();
         $this->writeConfig();
         $sql = file_get_contents($this->package . '/src/chat.sql');
@@ -351,14 +355,19 @@ class AjaxChatPackageInstaller
 
     public function uninstall()
     {
-        global $prefs;
-        if (($prefs['tp_edizontn__ajaxchat__chat_enabled'] ?? 'y') === 'y') {
+        require_once __DIR__ . '/SettingsStore.php';
+        $settingsStore = new AjaxChatSettingsStore();
+        $settingsStore->ensureTable();
+        $settingsStore->migratePreferences();
+        $settings = $settingsStore->getAll();
+        if (($settings['chat_enabled'] ?? 'y') === 'y') {
             throw new RuntimeException('Disable AJAX Chat in Extension Preferences before uninstalling.');
         }
         $db = TikiDb::get();
         foreach ($this->tables as $table) {
             $db->query('DROP TABLE IF EXISTS ' . chr(96) . $table . chr(96), array(), -1, -1, TikiDb::ERR_EXCEPTION);
         }
+        $settingsStore->remove();
         $entry = $this->root . '/chat/index.php';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') !== false) {
             unlink($entry);
