@@ -77,7 +77,7 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú šes
 - The chat reuses TikiWiki's existing database connection through `TikiDb`. It does not open a separate database connection and does not require a separate database or DB user.
 - Chat tables use the `tiki_ajaxchat_` prefix.
 - `chat_enabled`, `moderator_groups` and `admin_stealth_in_private_rooms` are defined as Tiki Extension Preferences.
-- The standalone clean URL defaults to `/chat`. The first run of the web installer registers a dispatcher through Tiki 30.1's supported `_custom/shared/custom.php` hook. The path is read from the preference on every request; no wiki page or Custom Route is needed. Standard Tiki SEF URL / rewrite support is required.
+- The standalone `/chat` URL is created as a physical directory and entry point by the Tiki administration page. It does not intercept Tiki routing and does not require `_custom/shared/custom.php`, a Custom Route or Tiki core changes.
 
 ### Administration
 
