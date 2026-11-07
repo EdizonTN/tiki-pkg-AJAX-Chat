@@ -12,15 +12,15 @@
 ini_set('display_errors', 0);
 
 // Load the installer-generated configuration and use its stored chat filesystem path.
-$configFile = __DIR__.'/lib/Chat-config.php';
+$configFile = dirname(__DIR__, 3) . '/temp/ajax-chat/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
 	http_response_code(500);
-	exit('Chat is not configured. Run install.php first.');
+	exit('Chat is not configured. Install the package from Tiki administration.');
 }
 $chatConfig = require($configFile);
 if (!is_array($chatConfig) || empty($chatConfig['paths']['chatRootPath']) || empty($chatConfig['paths']['chatUrlPath'])) {
 	http_response_code(500);
-	exit('Chat paths are not configured. Run install.php first.');
+	exit('Chat paths are not configured. Reinstall the package from Tiki administration.');
 }
 $GLOBALS['ajaxChatConfig'] = $chatConfig;
 define('AJAX_CHAT_PATH', rtrim($chatConfig['paths']['chatRootPath'], '/\\').DIRECTORY_SEPARATOR);
