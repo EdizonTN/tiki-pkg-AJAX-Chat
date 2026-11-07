@@ -23,6 +23,16 @@ if (!is_array($chatConfig) || empty($chatConfig['paths']['chatRootPath']) || emp
 	exit('Chat paths are not configured. Reinstall the package from Tiki administration.');
 }
 $GLOBALS['ajaxChatConfig'] = $chatConfig;
+$packageRoot = dirname(rtrim($chatConfig['paths']['chatRootPath'], '/\\\\'));
+$packageMetadata = $packageRoot . '/composer.json';
+$packageVersion = 'unknown';
+if (is_file($packageMetadata)) {
+    $metadata = json_decode((string) file_get_contents($packageMetadata), true);
+    if (is_array($metadata) && isset($metadata['version']) && is_string($metadata['version'])) {
+        $packageVersion = $metadata['version'];
+    }
+}
+$GLOBALS['ajaxChatPackageVersion'] = $packageVersion;
 define('AJAX_CHAT_PATH', rtrim($chatConfig['paths']['chatRootPath'], '/\\').DIRECTORY_SEPARATOR);
 // Use the installer-saved root-relative path; do not trust the request Host header.
 define('AJAX_CHAT_URL', $chatConfig['paths']['chatUrlPath']);
