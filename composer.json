@@ -1,5 +1,5 @@
 {
-    "name": "edizontn/ajax_chat",
+    "name": "edizontn/ajax-chat",
     "description": "EdizonTN AJAX Chat integration package for TikiWiki",
     "type": "tiki-package",
     "license": "MIT",
