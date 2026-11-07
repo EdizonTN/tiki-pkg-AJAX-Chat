@@ -41,5 +41,5 @@ try {
     error_log('AJAX Chat schema status: ' . $e->getMessage());
     $smarty->assign('ajax_chat_schema_status', 'unknown');
 }
-$smarty->assign('ajax_chat_admin_url', 'tiki-admin.php?page=tp_edizontn_ajax-chat');
+$smarty->assign('ajax_chat_admin_url', 'tiki-admin.php?page=tp_edizontn_ajaxchat');
 $smarty->assign('ajax_chat_uninstall_confirmation', 'DELETE AJAX CHAT DATA');
