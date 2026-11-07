@@ -67,7 +67,7 @@
 <hr>
 
 <h2>{tr}Uninstall{/tr}</h2>
-<p><strong>{tr}Warning:{/tr}</strong> {tr}This permanently deletes all AJAX Chat messages, rooms, memberships, bans, invitations and online status. Disable AJAX Chat first in Extension Preferences. Only the six AJAX Chat tables and files created by this package are removed. Unrelated files and Tiki data are left untouched.{/tr}</p>
+<p><strong>{tr}Warning:{/tr}</strong> {tr}This permanently deletes all AJAX Chat messages, rooms, memberships, bans, invitations and online status. Disable AJAX Chat first in Ajax Chat settings. Only the six AJAX Chat tables and files created by this package are removed. Unrelated files and Tiki data are left untouched.{/tr}</p>
 
 <form method="post" action="{$ajax_chat_admin_url|escape}" onsubmit="return confirm('{tr}This permanently deletes all AJAX Chat data. Continue?{/tr}');">
     {ticket}
