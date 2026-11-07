@@ -33,7 +33,7 @@ Toto je plánovaný postup po dokončení inštalátora:
 1. **Urobte zálohu.** Pred inštaláciou si zálohujte súbory TikiWiki aj celú databázu.
 2. **Pripravte prvý inštalačný balík.** Jednorazovo sprístupnite malý inštalačný súbor (bootstrap). Podľa možností hostingu sa nahrá cez administračné rozhranie TikiWiki alebo cez FTP/správcu súborov.
 3. **Spustite inštaláciu v TikiWiki.** Prihláste sa ako administrátor a otvorte stránku rozšírení. Inštalátor stiahne a overí balík AJAX-Chat-MZ a uloží jeho integračnú časť do adresára určeného pre vlastné rozšírenia TikiWiki.
-4. **Nainštalujte chatové jadro.** Inštalátor uloží chat do adresára `_CHAT` v koreňovom adresári TikiWiki. Cestu a URL zistí pri inštalácii a uloží ich; pri bežnom používaní ich nebude opakovane zisťovať.
+4. **Nainštalujte chatové jadro.** Inštalátor uloží chat do adresára `vendor_custom/tiki-pkg-ajax-chat/src` v koreňovom adresári TikiWiki. Cestu a URL zistí pri inštalácii a uloží ich; pri bežnom používaní ich nebude opakovane zisťovať.
 5. **Skontrolujte databázu.** Chat použije tú istú databázu a databázové pripojenie ako TikiWiki. Vytvorí vlastné tabuľky s prefixom `tikiwiki_ext_ajax_chat_`. Existujúce tabuľky a údaje TikiWiki sa nebudú meniť.
 6. **Dokončite nastavenie.** V administrácii TikiWiki nastavíte skupiny moderátorov a ďalšie dostupné možnosti. Administrátori TikiWiki budú mať najvyššie oprávnenia aj v chate.
 7. **Otestujte chat.** Overte prihlásenie, odhlásenie, odosielanie správ, moderovanie a súkromné miestnosti ešte pred sprístupnením používateľom.
@@ -115,7 +115,7 @@ The following is the planned procedure once the installer is complete:
 1. **Back up your site.** Back up both the TikiWiki files and the complete database.
 2. **Prepare the initial installer.** Make the small bootstrap installer available. Depending on hosting capabilities, it will be uploaded through TikiWiki administration or by FTP/file manager.
 3. **Start installation in TikiWiki.** Sign in as a TikiWiki administrator and open the extensions administration page. The installer will download and verify the AJAX-Chat-MZ package and place its integration files in TikiWiki's custom extension location.
-4. **Install the chat engine.** The installer will deploy the chat into the `_CHAT` directory in the TikiWiki document root. It will detect and store the filesystem path and URL during installation, rather than detecting them on every request.
+4. **Install the chat engine.** The installer will deploy the chat into the `vendor_custom/tiki-pkg-ajax-chat/src` directory in the TikiWiki document root. It will detect and store the filesystem path and URL during installation, rather than detecting them on every request.
 5. **Check the database.** The chat will reuse TikiWiki's database connection. It will create its own tables using the `tikiwiki_ext_ajax_chat_` prefix. Existing TikiWiki tables and data will not be modified.
 6. **Configure the integration.** Use TikiWiki administration to select moderator groups and configure the available options. TikiWiki administrators will always have the highest chat privileges.
 7. **Test before launch.** Verify login, logout, message sending, moderation and private rooms before making the chat available to users.
@@ -165,3 +165,8 @@ Before production deployment, at least the following must be tested:
 This project is based on the open-source [AJAX Chat](https://github.com/frug/AJAX-Chat) project by Frug/AJAX-Chat. It contains adaptations and extensions for Mikrozone and TikiWiki integration. Please observe the original project's license and see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 **This project was created and developed with assistance from OpenAI ChatGPT (GPT-6).** Design proposals, code and documentation generation, and code review are carried out in collaboration with the project author. Responsibility for the final code, its review, testing and deployment remains with the project maintainer.
+
+
+## TikiWiki package layout
+
+The Tiki Extension Package is maintained in [tiki-pkg-ajax-chat/](tiki-pkg-ajax-chat/). Its `src/` directory contains the complete application previously stored in the repository's `chat/` directory. In TikiWiki, keep it at `vendor_custom/tiki-pkg-ajax-chat/src/`; do not extract it into the document root.

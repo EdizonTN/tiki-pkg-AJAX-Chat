@@ -9,8 +9,8 @@
 ### Architektúra
 
 - TikiWiki spravuje používateľov, prihlasovanie, skupiny, oprávnenia a nastavenia rozšírenia.
-- Chatové jadro bude nasadené v adresári `_CHAT/` v koreňovom adresári TikiWiki.
-- Zdrojový kód Tiki Extension Package je v `tiki-bridge/package/`. Cieľové umiestnenie po inštalácii je `vendor_custom/mikrozone/ajax_chat/`.
+- Chatové jadro bude nasadené v adresári `vendor_custom/tiki-pkg-ajax-chat/src/` v koreňovom adresári TikiWiki.
+- Zdrojový kód Tiki Extension Package je v `tiki-pkg-ajax-chat/`. Cieľové umiestnenie po inštalácii je `vendor_custom/tiki-pkg-ajax-chat/`.
 - Package definuje vlastné preferencie Tiki a wiki plugin `mzchat`. Na wiki stránke sa používa syntax:
   
   ```text
@@ -28,7 +28,7 @@ Cieľový postup:
 1. Zálohovať súbory a databázu TikiWiki.
 2. Jednorazovo sprístupniť bootstrap inštalátor cez Tiki admin alebo FTP/správcu súborov.
 3. Spustiť inštaláciu ako Tiki administrátor.
-4. Nasadiť package do `vendor_custom/mikrozone/ajax_chat/` a chatové jadro do `_CHAT/`.
+4. Nasadiť package do `vendor_custom/tiki-pkg-ajax-chat/` a chatové jadro do `vendor_custom/tiki-pkg-ajax-chat/src/`.
 5. Aktivovať package cez Tiki Packages.
 6. Inštalátor overí databázovú schému a vytvorí chýbajúce vlastné tabuľky bez zásahu do existujúcich tabuliek TikiWiki.
 7. Nastaviť skupiny moderátorov a ostatné možnosti v Admin → Packages → Extensions Preferences.
@@ -53,8 +53,8 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú vlas
 ### Architecture
 
 - TikiWiki manages users, authentication, groups, permissions and extension settings.
-- The chat engine will be deployed in `_CHAT/` under the TikiWiki document root.
-- Tiki Extension Package source is in `tiki-bridge/package/`; the intended installed location is `vendor_custom/mikrozone/ajax_chat/`.
+- The chat engine will be deployed in `vendor_custom/tiki-pkg-ajax-chat/src/` under the TikiWiki document root.
+- Tiki Extension Package source is in `tiki-pkg-ajax-chat/`; the intended installed location is `vendor_custom/tiki-pkg-ajax-chat/`.
 - The package defines Tiki preferences and the `mzchat` wiki plugin. Use it on a wiki page as follows:
 
   ```text
@@ -72,7 +72,7 @@ Target workflow:
 1. Back up TikiWiki files and database.
 2. Make the bootstrap installer available once through Tiki administration or FTP/file manager.
 3. Run the installer as a Tiki administrator.
-4. Deploy the package to `vendor_custom/mikrozone/ajax_chat/` and the chat engine to `_CHAT/`.
+4. Deploy the package to `vendor_custom/tiki-pkg-ajax-chat/` and the chat engine to `vendor_custom/tiki-pkg-ajax-chat/src/`.
 5. Enable the package through Tiki Packages.
 6. The installer checks the schema and creates missing extension tables without modifying existing TikiWiki tables.
 7. Configure moderator groups and other options under Admin → Packages → Extensions Preferences.
