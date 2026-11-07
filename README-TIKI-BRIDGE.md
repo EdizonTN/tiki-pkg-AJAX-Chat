@@ -11,10 +11,10 @@
 - TikiWiki spravuje používateľov, prihlasovanie, skupiny, oprávnenia a nastavenia rozšírenia.
 - Chatové jadro bude nasadené v adresári `vendor_custom/tiki-pkg-ajax-chat/src/` v koreňovom adresári TikiWiki.
 - Zdrojový kód Tiki Extension Package je v `tiki-pkg-ajax-chat/`. Cieľové umiestnenie po inštalácii je `vendor_custom/tiki-pkg-ajax-chat/`.
-- Package definuje vlastné preferencie Tiki a wiki plugin `mzchat`. Na wiki stránke sa používa syntax:
+- Package definuje vlastné preferencie Tiki a wiki plugin `ajaxchat`. Na wiki stránke sa používa syntax:
   
   ```text
-  {package package="mikrozone/ajax_chat" plugin="mzchat"}
+  {package package="edizontn/ajax_chat" plugin="ajaxchat"}
   ```
 
 - Composer metadata sú súčasťou zdrojového balíka, ale Composer nebude požiadavkou na produkčnom serveri. Plánovaný webový inštalátor uloží súbory balíka na správne miesto a umožní jeho aktiváciu cez Tiki Packages.
@@ -55,10 +55,10 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú vlas
 - TikiWiki manages users, authentication, groups, permissions and extension settings.
 - The chat engine will be deployed in `vendor_custom/tiki-pkg-ajax-chat/src/` under the TikiWiki document root.
 - Tiki Extension Package source is in `tiki-pkg-ajax-chat/`; the intended installed location is `vendor_custom/tiki-pkg-ajax-chat/`.
-- The package defines Tiki preferences and the `mzchat` wiki plugin. Use it on a wiki page as follows:
+- The package defines Tiki preferences and the `ajaxchat` wiki plugin. Use it on a wiki page as follows:
 
   ```text
-  {package package="mikrozone/ajax_chat" plugin="mzchat"}
+  {package package="edizontn/ajax_chat" plugin="ajaxchat"}
   ```
 
 - Composer metadata is included in the source package, but Composer will not be required on the production server. The planned web installer will place the package files and make it available through Tiki Packages.

@@ -7,7 +7,7 @@
  * @link https://blueimp.net/ajax/
  */
 
-// Fail-closed placeholder. Mikrozone authentication will be provided by the
+// Fail-closed placeholder. TikiWiki authentication will be provided by the
 // TikiWiki bridge; never ship the upstream admin/admin demo credentials.
 $users = array();
 

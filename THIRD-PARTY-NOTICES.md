@@ -10,7 +10,7 @@ See `chat/license.txt`. Preserve that notice in redistributed copies.
 The files `chat/socket/server` and `chat/socket/server.rb` identify themselves as
 **GNU Affero General Public License (AGPL)** components in their source headers.
 
-The Mikrozone deployment uses ordinary HTTP/AJAX polling; the socket server is disabled
+The TikiWiki deployment uses ordinary HTTP/AJAX polling; the socket server is disabled
 and is not required. It can be omitted from the deployed chat directory. If these files
 are redistributed or modified, keep their AGPL notices and comply with the AGPL for
 those components. The AGPL does not automatically relicense the separately licensed

@@ -1,6 +1,6 @@
 <?php
 /*
- * Mikrozone chat authentication endpoint.
+ * TikiWiki chat authentication endpoint.
  * This endpoint runs inside Tiki's authenticated PHP session and issues a
  * short-lived signed token. It never accepts a username or password.
  */
@@ -25,9 +25,9 @@ $config = require($configFile);
 if (!is_array($config)) {
 	mz_chat_auth_error(500, 'chat_config_invalid');
 }
-require_once(__DIR__.'/lib/class/MZChatAuth.php');
+require_once(__DIR__.'/lib/class/AjaxChatAuth.php');
 
-$secret = isset($config['mzChatSharedSecret']) ? $config['mzChatSharedSecret'] : '';
+$secret = isset($config['AjaxChatSharedSecret']) ? $config['AjaxChatSharedSecret'] : '';
 if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH_') === 0) {
 	mz_chat_auth_error(500, 'chat_auth_not_configured');
 }
@@ -35,9 +35,9 @@ if (!is_string($secret) || strlen($secret) < 32 || strpos($secret, 'REPLACE_WITH
 $paths = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : array();
 require_once(__DIR__.'/lib/tiki-bootstrap.php');
 try {
-    mzChatBootstrapTiki($config);
+    AjaxChatBootstrapTiki($config);
 } catch (Throwable $e) {
-    error_log('Mikrozone chat auth Tiki bootstrap: '.$e->getMessage());
+    error_log('Ajax Chat auth Tiki bootstrap: '.$e->getMessage());
     mz_chat_auth_error(500, 'tiki_database_unavailable');
 }
 
@@ -57,16 +57,16 @@ if (!is_array($userInfo) || $userId < 1 || !empty($userInfo['userBanned']) || !e
 $groups = $tikiLib->get_user_groups($user);
 $isAdmin = in_array('Admins', $groups, true) || (isset($tiki_p_admin) && $tiki_p_admin === 'y');
 global $prefs;
-$moderatorGroupsRaw = isset($prefs['tp_mikrozone__ajax_chat__moderator_groups'])
-    ? (string) $prefs['tp_mikrozone__ajax_chat__moderator_groups'] : '';
+$moderatorGroupsRaw = isset($prefs['tp_edizontn__ajax_chat__moderator_groups'])
+    ? (string) $prefs['tp_edizontn__ajax_chat__moderator_groups'] : '';
 $moderatorGroups = array_values(array_filter(array_map('trim', explode(',', $moderatorGroupsRaw)), 'strlen'));
-$chatEnabled = !isset($prefs['tp_mikrozone__ajax_chat__chat_enabled'])
-    || $prefs['tp_mikrozone__ajax_chat__chat_enabled'] === 'y';
+$chatEnabled = !isset($prefs['tp_edizontn__ajax_chat__chat_enabled'])
+    || $prefs['tp_edizontn__ajax_chat__chat_enabled'] === 'y';
 if (!$chatEnabled) {
     mz_chat_auth_error(403, 'chat_disabled');
 }
-$adminStealth = isset($prefs['tp_mikrozone__ajax_chat__admin_stealth_in_private_rooms'])
-    && $prefs['tp_mikrozone__ajax_chat__admin_stealth_in_private_rooms'] === 'y';
+$adminStealth = isset($prefs['tp_edizontn__ajax_chat__admin_stealth_in_private_rooms'])
+    && $prefs['tp_edizontn__ajax_chat__admin_stealth_in_private_rooms'] === 'y';
 $isModerator = count(array_intersect($moderatorGroups, $groups)) > 0;
 
 if ($isAdmin) {
@@ -92,7 +92,7 @@ $claims = array(
 );
 
 try {
-	$token = MZChatAuth::createToken($claims, $secret);
+	$token = AjaxChatAuth::createToken($claims, $secret);
 } catch (Throwable $e) {
 	mz_chat_auth_error(500, 'token_issue_failed');
 }

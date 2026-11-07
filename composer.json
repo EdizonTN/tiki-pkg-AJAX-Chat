@@ -1,6 +1,6 @@
 {
-    "name": "mikrozone/ajax_chat",
-    "description": "Mikrozone AJAX Chat integration package for TikiWiki",
+    "name": "edizontn/ajax_chat",
+    "description": "Full AJAX Chat integration package for TikiWiki",
     "type": "tiki-package",
     "license": "MIT",
     "version": "0.1.0",
@@ -10,7 +10,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Mikrozone\\AjaxChat\\": "lib/"
+            "EdizonTN\\AjaxChat\\": "lib/"
         }
     }
 }

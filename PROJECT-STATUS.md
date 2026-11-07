@@ -8,7 +8,7 @@
 - Hlavný súkromný repozitár: https://github.com/PetoJanis/tiki-AJAX-Chat
 - Pôvodný verejný fork/archív: https://github.com/PetoJanis/AJAX-Chat-MZ
 - Pôvodný projekt: AJAX-Chat (JavaScript + PHP + MySQL/MariaDB).
-- Cieľ: modernizovaný, bezpečný, samostatne testovateľný chat pre Mikrozone, neskôr integrovaný s TikiWiki.
+- Cieľ: modernizovaný, bezpečný, samostatne testovateľný chat pre TikiWiki, neskôr integrovaný s TikiWiki.
 - Hostingový cieľ: Active24 shared hosting; riešenie nesmie vyžadovať vlastný VPS ani samostatnú socket server infraštruktúru.
 - Preferované testovanie: najprv lokálne Debian prostredie, až potom nasadenie na hosting.
 
@@ -80,11 +80,6 @@ Zaznamenané lokálne Debian testovacie prostredie:
 - MariaDB 10.11.19.
 - TikiWiki má čerstvú lokálnu inštaláciu na účely neskoršej integrácie.
 
-Produkčné/hostingové prostredie Mikrozone:
-- Active24 shared hosting.
-- Historicky PHP 5.6.40 FPM pre pôvodný e107; cieľová dostupná PHP verzia pre chat/Tiki treba vždy overiť pred nasadením.
-- MariaDB 11.4 (zaznamenaný stav hostingu).
-
 ## Súkromné miestnosti a oprávnenia
 
 Požiadavky:
@@ -105,7 +100,7 @@ Známy plán:
 - Chat má používať Tiki autentifikáciu/identitu namiesto samostatného prihlasovania, keď bude bridge dokončený.
 - Konfigurácia bridge a mapovanie Tiki skupín/rolí majú byť spravovateľné z Tiki administrácie, ak to architektúra umožní.
 - Chat sa má dať vložiť do spodnej časti stránok Tiki a zároveň otvoriť samostatne.
-- Pred plnou migráciou Mikrozone obsahu musí byť chat bridge samostatne otestovaný.
+- Pred plnou migráciou obsahu musí byť chat bridge samostatne otestovaný.
 
 Tieto body sú požiadavky/plán, nie automaticky potvrdený stav implementácie. Pri ďalšej práci ich overiť voči aktuálnemu kódu.
 

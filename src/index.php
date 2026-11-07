@@ -22,16 +22,16 @@ if (!is_array($chatConfig) || empty($chatConfig['paths']['chatRootPath']) || emp
 	http_response_code(500);
 	exit('Chat paths are not configured. Run install.php first.');
 }
-$GLOBALS['mzChatConfig'] = $chatConfig;
+$GLOBALS['AjaxChatConfig'] = $chatConfig;
 define('AJAX_CHAT_PATH', rtrim($chatConfig['paths']['chatRootPath'], '/\\').DIRECTORY_SEPARATOR);
 // Use the installer-saved root-relative path; do not trust the request Host header.
 define('AJAX_CHAT_URL', $chatConfig['paths']['chatUrlPath']);
 
 require_once(AJAX_CHAT_PATH.'lib/tiki-bootstrap.php');
 try {
-    mzChatBootstrapTiki($chatConfig);
+    AjaxChatBootstrapTiki($chatConfig);
 } catch (Throwable $e) {
-    error_log('Mikrozone chat Tiki bootstrap: '.$e->getMessage());
+    error_log('Ajax Chat Tiki bootstrap: '.$e->getMessage());
     http_response_code(500);
     exit('TikiWiki database connection is unavailable.');
 }

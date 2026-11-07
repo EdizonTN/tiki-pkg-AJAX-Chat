@@ -18,7 +18,7 @@
 					statusNode.textContent = ajaxChatLang['errorCookiesRequired'];
 					return;
 				}
-				statusNode.textContent = 'Overujem prihlásenie do Mikrozone...';
+				statusNode.textContent = 'Overujem prihlásenie do systému...';
 				var request = new XMLHttpRequest();
 				request.open('GET', 'tiki-auth.php', true);
 				request.withCredentials = true;
@@ -28,7 +28,7 @@
 						return;
 					}
 					if(request.status === 401) {
-						statusNode.textContent = 'Najprv sa prihláste do Mikrozone a potom obnovte túto stránku.';
+						statusNode.textContent = 'Najprv sa prihláste do systému a potom obnovte túto stránku.';
 						return;
 					}
 					if(request.status !== 200) {
@@ -74,9 +74,9 @@
 </head>
 <body class="ajax-chat" onload="initializeLoginPage();">
 	<div id="loginContent">
-		<h1 id="loginHeadline">Mikrozone chat</h1>
+		<h1 id="loginHeadline">Ajax Chat</h1>
 		<div id="errorContainer">[ERROR_MESSAGES/]<noscript><div>[LANG]requiresJavaScript[/LANG]</div></noscript></div>
-		<p id="authStatus">Pripájam sa k účtu Mikrozone...</p>
+		<p id="authStatus">Pripájam sa k účtu v systéme...</p>
 		<!--
 			Please retain the full copyright notice below including the link to blueimp.net.
 			This not only gives respect to the amount of time given freely by the developer

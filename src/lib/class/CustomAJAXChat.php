@@ -6,7 +6,7 @@
  * @license Modified MIT License
  * @link https://blueimp.net/ajax/
  *
- * Mikrozone adapter:
+ * Tikiwiki adapter:
  * - TikiWiki is the only identity and role authority.
  * - Multiple named private rooms are stored separately from public channels.
  */
@@ -30,7 +30,7 @@ class CustomAJAXChat extends AJAXChat {
 
 	function databaseError($context, $result) {
 		$details = is_object($result) && method_exists($result, 'getError') ? $result->getError() : 'Unknown database error';
-		error_log('Mikrozone chat database error in '.$context.': '.$details);
+		error_log('Ajax Chat database error in '.$context.': '.$details);
 		http_response_code(500);
 		exit('Chat database error.');
 	}
@@ -195,7 +195,7 @@ class CustomAJAXChat extends AJAXChat {
 	}
 
 	function verifyTikiAuthToken($token) {
-		$claims = MZChatAuth::verifyToken($token, $this->getConfig('mzChatSharedSecret'));
+		$claims = AjaxChatAuth::verifyToken($token, $this->getConfig('AjaxChatSharedSecret'));
 		// AJAX Chat reserves ID ranges above this value for private channels/messages.
 		if($claims && $claims['uid'] >= (int)$this->getConfig('privateChannelDiff')) {
 			return false;
@@ -554,7 +554,7 @@ class CustomAJAXChat extends AJAXChat {
 				}
 				$connection = $this->db->getConnectionID();
 				if (!$connection->begin_transaction()) {
-					error_log('Mikrozone chat room deletion: transaction start failed: '.$connection->error);
+					error_log('Ajax Chat room deletion: transaction start failed: '.$connection->error);
 					http_response_code(500);
 					exit('Chat database error.');
 				}
@@ -576,7 +576,7 @@ class CustomAJAXChat extends AJAXChat {
 					}
 				} catch (Throwable $e) {
 					$connection->rollback();
-					error_log('Mikrozone chat room deletion failed: '.$e->getMessage());
+					error_log('Ajax Chat room deletion failed: '.$e->getMessage());
 					$this->insertChatBotMessage($this->getPrivateMessageID(), 'Nepodarilo sa odstrániť miestnosť.');
 					return;
 				}
