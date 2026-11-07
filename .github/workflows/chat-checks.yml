@@ -43,6 +43,7 @@ jobs:
       - name: Run PHP tests
         run: |
           php tests/test_ajax_chat_auth.php
+          php tests/test_tiki_bootstrap_scope.php
           php tests/test_chat_schema.php
           php tests/test_tiki_database_adapter.php
           php tests/test_private_rooms.php
