@@ -86,10 +86,13 @@ function ajaxChatRegisterStandaloneRouter($tikiRoot, $chatRoot) {
 		}
 		$newContents = $updatedContents;
 	} else {
-		if (!preg_match('/\\A(\\s*<\\?php\\s*(?:declare\\s*\\(\\s*strict_types\\s*=\\s*1\\s*\\)\\s*;\\s*)?)/', $contents, $match)) {
-		throw new RuntimeException('_custom/shared/custom.php nemá očakávaný PHP začiatok; súbor nebol zmenený.');
-	}
-		$offset = strlen($match[1]);
+		if (preg_match('~\\A(\\s*<\\?php\\s*(?:(?:/\\*.*?\\*/|//[^\\r\\n]*|\\#[^\\r\\n]*)\\s*)*declare\\s*\\(\\s*strict_types\\s*=\\s*1\\s*\\)\\s*;\\s*)~s', $contents, $match)) {
+			$offset = strlen($match[1]);
+		} elseif (preg_match('/\\A(\\s*<\\?php\\s*)/', $contents, $match)) {
+			$offset = strlen($match[1]);
+		} else {
+			throw new RuntimeException('_custom/shared/custom.php nemá očakávaný PHP začiatok; súbor nebol zmenený.');
+		}
 		$newContents = substr($contents, 0, $offset).$include.substr($contents, $offset);
 	}
 	$handle = @fopen($customFile, 'c+');
