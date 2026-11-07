@@ -75,8 +75,12 @@ class AjaxChatPackageInstaller
             throw new RuntimeException('Could not write generated chat configuration.');
         }
         chmod($this->config, 0640);
-        if (!is_file($dir . '/.htaccess')) {\n            file_put_contents($dir . '/.htaccess', "Require all denied\\n", LOCK_EX);\n        }
-        if (!is_file($dir . '/index.php')) {\n            file_put_contents($dir . '/index.php', "<?php\\n// EdizonTN AJAX Chat protected config directory\\nhttp_response_code(404);\\nexit;\\n", LOCK_EX);\n        }
+        if (!is_file($dir . '/.htaccess')) {
+            file_put_contents($dir . '/.htaccess', "Require all denied\n", LOCK_EX);
+        }
+        if (!is_file($dir . '/index.php')) {
+            file_put_contents($dir . '/index.php', "<?php\n// EdizonTN AJAX Chat protected config directory\nhttp_response_code(404);\nexit;\n", LOCK_EX);
+        }
     }
 
     private function writeCleanUrl()
