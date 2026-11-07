@@ -76,13 +76,22 @@ function ajaxChatRegisterStandaloneRouter($tikiRoot, $chatRoot) {
 		throw new RuntimeException('_custom/shared/custom.php sa nepodarilo prečítať.');
 	}
 	if (strpos($contents, $marker) !== false) {
-		return true;
-	}
-	if (!preg_match('/\\A(\\s*<\\?php\\s*(?:declare\\s*\\(\\s*strict_types\\s*=\\s*1\\s*\\)\\s*;\\s*)?)/', $contents, $match)) {
+		$pattern = '~// BEGIN '.preg_quote($marker, '~').'.*?// END '.preg_quote($marker, '~').'~s';
+		$updatedContents = preg_replace($pattern, trim($include), $contents, 1, $count);
+		if ($count !== 1 || $updatedContents === null) {
+			throw new RuntimeException('Existujúci AJAX Chat router v custom.php sa nepodarilo bezpečne aktualizovať.');
+		}
+		if ($updatedContents === $contents) {
+			return true;
+		}
+		$contents = $updatedContents;
+	} else {
+		if (!preg_match('/\\A(\\s*<\\?php\\s*(?:declare\\s*\\(\\s*strict_types\\s*=\\s*1\\s*\\)\\s*;\\s*)?)/', $contents, $match)) {
 		throw new RuntimeException('_custom/shared/custom.php nemá očakávaný PHP začiatok; súbor nebol zmenený.');
 	}
-	$offset = strlen($match[1]);
-	$newContents = substr($contents, 0, $offset).$include.substr($contents, $offset);
+		$offset = strlen($match[1]);
+		$newContents = substr($contents, 0, $offset).$include.substr($contents, $offset);
+	}
 	$handle = @fopen($customFile, 'c+');
 	if ($handle === false || !flock($handle, LOCK_EX)) {
 		if (is_resource($handle)) {
