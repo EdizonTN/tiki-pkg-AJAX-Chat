@@ -23,7 +23,7 @@ if (
     || $chatPath[0] !== '/'
     || strpos($chatPath, '//') !== false
     || strpos($chatPath, '..') !== false
-    || !preg_match('#^/[A-Za-z0-9._~/-]+$#D', $chatPath)
+    || !preg_match('#^/[A-Za-z0-9_~/-]+$#D', $chatPath)
 ) {
     return;
 }
