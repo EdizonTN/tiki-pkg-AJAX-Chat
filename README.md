@@ -41,7 +41,7 @@ The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The Tik
 
 ## Tiki package metadata
 
-- Composer package: `edizontn/ajax-chat`
+- Composer package: `edizontn/ajaxchat`
 - Tiki package namespace: `EdizonTN\AjaxChat`
 - Package type: `tiki-package`
 - Minimum PHP version: 8.1
@@ -50,18 +50,18 @@ The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The Tik
 Add the chat to a wiki page:
 
 ```text
-{package package="edizontn/ajax-chat" plugin="ajaxchat"}
+{package package="edizontn/ajaxchat" plugin="ajaxchat"}
 ```
 
 Optional iframe height:
 
 ```text
-{package package="edizontn/ajax-chat" plugin="ajaxchat" height="520"}
+{package package="edizontn/ajaxchat" plugin="ajaxchat" height="520"}
 ```
 
 The package exposes the configurable, runtime-safe AJAX Chat options through **Settings → Packages → Extension Preferences**. This includes language and style, public/private rooms and private messages, nickname policies, opening hours, message/history limits, moderation defaults, log retention/access, IP checks and optional socket-server settings. Moderator group mapping and administrator stealth are Tiki bridge settings. Guest logins remain disabled by design because Tiki authentication is mandatory. Tiki administrators retain the highest chat role; moderator status does not grant membership in private rooms.
 
-Database and file lifecycle management is provided by the native Tiki extension administration page: `tiki-admin.php?page=tp_edizontn_ajax-chat`. It is available to Tiki administrators after enabling the package under Admin → Packages. Install / repair creates the configuration, secret, database tables and `/chat` entry point. Uninstall requires the chat to be disabled and an explicit confirmation phrase; it removes only the six package tables and files marked as package-owned.
+Database and file lifecycle management is provided by the native Tiki extension administration page: `tiki-admin.php?page=tp_edizontn_ajaxchat`. It is available to Tiki administrators after enabling the package under Admin → Packages. Install / repair creates the configuration, secret, database tables and `/chat` entry point. Uninstall requires the chat to be disabled and an explicit confirmation phrase; it removes only the six package tables and files marked as package-owned.
 
 ## Database
 
