@@ -75,8 +75,8 @@ class AjaxChatPackageInstaller
             throw new RuntimeException('Could not write generated chat configuration.');
         }
         chmod($this->config, 0640);
-        file_put_contents($dir . '/.htaccess', "Require all denied\n", LOCK_EX);
-        file_put_contents($dir . '/index.php', "<?php\nhttp_response_code(404);\nexit;\n", LOCK_EX);
+        if (!is_file($dir . '/.htaccess')) {\n            file_put_contents($dir . '/.htaccess', "Require all denied\\n", LOCK_EX);\n        }
+        if (!is_file($dir . '/index.php')) {\n            file_put_contents($dir . '/index.php', "<?php\\n// EdizonTN AJAX Chat protected config directory\\nhttp_response_code(404);\\nexit;\\n", LOCK_EX);\n        }
     }
 
     private function writeCleanUrl()
@@ -132,7 +132,7 @@ class AjaxChatPackageInstaller
     public function uninstall()
     {
         global $prefs;
-        if (($prefs['tp_edizontn__ajax-chat__chat_enabled'] ?? 'y') === 'y') {
+        if (($prefs['tp_edizontn__ajax_chat__chat_enabled'] ?? 'y') === 'y') {
             throw new RuntimeException('Disable AJAX Chat in Extension Preferences before uninstalling.');
         }
         $db = TikiDb::get();
