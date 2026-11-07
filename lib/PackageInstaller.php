@@ -98,15 +98,20 @@ class AjaxChatPackageInstaller
     public function isReady()
     {
         $entry = $this->root . '/chat/index.php';
+        $auth = $this->root . '/chat/tiki-auth.php';
         $routing = $this->root . '/chat/.htaccess';
         if ($this->status() !== 'complete' || !is_file($this->config) || !is_readable($this->config)
-            || !is_file($entry) || !is_readable($entry) || !is_file($routing) || !is_readable($routing)) {
+            || !is_file($entry) || !is_readable($entry)
+            || !is_file($auth) || !is_readable($auth)
+            || !is_file($routing) || !is_readable($routing)) {
             return false;
         }
         $entryContents = (string) file_get_contents($entry);
+        $authContents = (string) file_get_contents($auth);
         $routingContents = (string) file_get_contents($routing);
         $configContents = (string) file_get_contents($this->config);
         return strpos($entryContents, 'EdizonTN AJAX Chat managed entry point') !== false
+            && strpos($authContents, 'EdizonTN AJAX Chat managed authentication endpoint') !== false
             && strpos($routingContents, 'EdizonTN AJAX Chat managed asset routing') !== false
             && strpos($configContents, 'Generated and managed by the EdizonTN AJAX Chat Tiki package.') !== false;
     }
@@ -219,12 +224,19 @@ class AjaxChatPackageInstaller
     private function assertCleanUrlAvailable()
     {
         $entry = $this->root . '/chat/index.php';
+        $auth = $this->root . '/chat/tiki-auth.php';
         $routing = $this->root . '/chat/.htaccess';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') === false) {
             throw new RuntimeException('/chat/index.php already exists and belongs to another application.');
         }
         if (file_exists($entry) && !is_file($entry)) {
             throw new RuntimeException('/chat/index.php exists but is not a regular file.');
+        }
+        if (is_file($auth) && strpos((string) file_get_contents($auth), 'EdizonTN AJAX Chat managed authentication endpoint') === false) {
+            throw new RuntimeException('/chat/tiki-auth.php already exists and belongs to another application.');
+        }
+        if (file_exists($auth) && !is_file($auth)) {
+            throw new RuntimeException('/chat/tiki-auth.php exists but is not a regular file.');
         }
         if (is_file($routing) && strpos((string) file_get_contents($routing), 'EdizonTN AJAX Chat managed asset routing') === false) {
             throw new RuntimeException('/chat/.htaccess already exists and is not managed by this package; it was not overwritten.');
@@ -248,6 +260,24 @@ class AjaxChatPackageInstaller
         $source = "<?php\n// " . $marker . "\nrequire " . var_export($this->package . '/src/index.php', true) . ";\n";
         if (file_put_contents($file, $source, LOCK_EX) === false) {
             throw new RuntimeException('Could not create /chat/index.php.');
+        }
+    }
+
+    /**
+     * Publish the Tiki authentication bridge at the same public /chat path
+     * used by loggedOut.html. The implementation remains in the package.
+     */
+    private function writeAuthEndpoint()
+    {
+        $dir = $this->root . '/chat';
+        $file = $dir . '/tiki-auth.php';
+        $marker = 'EdizonTN AJAX Chat managed authentication endpoint';
+        if (is_file($file) && strpos((string) file_get_contents($file), $marker) === false) {
+            throw new RuntimeException('/chat/tiki-auth.php already exists and was not overwritten.');
+        }
+        $source = "<?php\n// " . $marker . "\nrequire " . var_export($this->package . '/src/tiki-auth.php', true) . ";\n";
+        if (file_put_contents($file, $source, LOCK_EX) === false) {
+            throw new RuntimeException('Could not create /chat/tiki-auth.php.');
         }
     }
 
@@ -315,6 +345,7 @@ class AjaxChatPackageInstaller
         }
         $this->validateSchema();
         $this->writeCleanUrl();
+        $this->writeAuthEndpoint();
         $this->writeAssetRouting();
     }
 
@@ -331,6 +362,10 @@ class AjaxChatPackageInstaller
         $entry = $this->root . '/chat/index.php';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') !== false) {
             unlink($entry);
+        }
+        $auth = $this->root . '/chat/tiki-auth.php';
+        if (is_file($auth) && strpos((string) file_get_contents($auth), 'EdizonTN AJAX Chat managed authentication endpoint') !== false) {
+            unlink($auth);
         }
         $routing = $this->root . '/chat/.htaccess';
         if (is_file($routing) && strpos((string) file_get_contents($routing), 'EdizonTN AJAX Chat managed asset routing') !== false) {

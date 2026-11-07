@@ -7,6 +7,11 @@
  */
 function AjaxChatBootstrapTiki(array $config)
 {
+    // Tiki's setup script is included below. PHP executes an included file
+    // in the scope of its caller, so these Tiki runtime variables must be
+    // explicitly bound to the global scope before loading tiki-setup.php.
+    global $user, $prefs, $tiki_p_admin;
+
     $paths = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : array();
     $tikiRoot = isset($paths['tikiRootPath']) ? $paths['tikiRootPath'] : '';
     $tikiUrlPath = isset($paths['tikiUrlPath']) ? $paths['tikiUrlPath'] : '';

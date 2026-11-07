@@ -17,7 +17,7 @@ function ajax_chat_auth_error($status, $code) {
 	exit;
 }
 
-$configFile = __DIR__.'/lib/Chat-config.php';
+$configFile = dirname(__DIR__, 3) . '/temp/ajax-chat/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
 	ajax_chat_auth_error(500, 'chat_config_missing');
 }

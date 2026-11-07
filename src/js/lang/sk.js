@@ -69,7 +69,7 @@ var ajaxChatLang = {
 	urlDialog: 'Prosím, vložte adresu (URL) webstránky:',
 	deleteMessage: 'Zmazať túto správu',
 	deleteMessageConfirm: 'Naozaj chcete vymazať označenú správu?',
-	errorCookiesRequired: 'Tento chat vyžaduje mať povolené Cookies.',
+	errorCookiesRequired: 'Tento chat vyžaduje povolené cookies. Ak testujete lokálne cez HTTP (bez HTTPS), v Tiki administrácii → Packages → Extension Preferences → AJAX Chat vypnite možnosť „Require HTTPS for chat cookies“. Na produkčnom webe s HTTPS ju ponechajte zapnutú.',
 	errorUserNameNotFound: 'Chyba: Používateľ %s nenájdený.',
 	errorMissingText: 'Chyba: Chýba text správy.',
 	errorMissingUserName: 'Chyba: Chýba meno používateľa.',

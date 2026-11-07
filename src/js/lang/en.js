@@ -67,7 +67,7 @@ var ajaxChatLang = {
 	urlDialog: 'Please enter the address (URL) of the webpage:',
 	deleteMessage: 'Delete this chat message',
 	deleteMessageConfirm: 'Really delete the selected chat message?',
-	errorCookiesRequired: 'Cookies are required for this chat.',
+	errorCookiesRequired: 'Cookies are required for this chat. For local testing over HTTP (without HTTPS), disable “Require HTTPS for chat cookies” under Tiki administration → Packages → Extension Preferences → AJAX Chat. Keep it enabled on the production HTTPS site.',
 	errorUserNameNotFound: 'Error: User %s not found.',
 	errorMissingText: 'Error: Missing message text.',
 	errorMissingUserName: 'Error: Missing username.',
