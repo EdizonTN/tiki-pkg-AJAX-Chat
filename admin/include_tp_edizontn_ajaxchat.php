@@ -5,6 +5,8 @@
  * Loaded by Tiki's native extension admin-page dispatcher.
  */
 $access->check_permission('tiki_p_admin');
+$admintitle = tra('Ajax Chat settings');
+$description = tra('Configure and maintain the AJAX Chat extension.');
 
 require_once dirname(__DIR__) . '/lib/PackageInstaller.php';
 require_once dirname(__DIR__) . '/lib/SettingsStore.php';
