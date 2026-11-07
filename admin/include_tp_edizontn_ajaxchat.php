@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_chat_action']) &
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_chat_action'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_chat_action']) && $_POST['ajax_chat_action'] !== 'save_settings') {
     if (!$access->checkCsrf()) {
         Feedback::error(tra('The security ticket is missing or invalid. No action was performed.'));
     } else {
