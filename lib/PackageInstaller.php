@@ -219,23 +219,28 @@ class AjaxChatPackageInstaller
                 rmdir(dirname($entry));
             }
         }
-        if (is_file($this->config) && strpos((string) file_get_contents($this->config), 'Generated and managed by the EdizonTN AJAX Chat Tiki package.') !== false) {
-            unlink($this->config);
+        $configExists = is_file($this->config);
+        $configOwned = $configExists
+            && strpos((string) file_get_contents($this->config), 'Generated and managed by the EdizonTN AJAX Chat Tiki package.') !== false;
+        if (!$configExists || $configOwned) {
+            if ($configOwned) {
+                unlink($this->config);
+            }
             $dir = dirname($this->config);
             foreach (array('.htaccess', 'index.php') as $name) {
                 $path = $dir . '/' . $name;
                 if (is_file($path)) {
                     $contents = (string) file_get_contents($path);
-                    $owned = ($name === '.htaccess' && strpos($contents, 'EdizonTN AJAX Chat protected config directory') !== false)
-                        || ($name === 'index.php' && strpos($contents, 'EdizonTN AJAX Chat protected config directory') !== false);
+                    $owned = strpos($contents, 'EdizonTN AJAX Chat protected config directory') !== false;
                     if ($owned) {
                         unlink($path);
                     }
                 }
             }
-            if (count(scandir($dir)) === 2) {
+            if (is_dir($dir) && count(scandir($dir)) === 2) {
                 rmdir($dir);
             }
         }
+
     }
 }
