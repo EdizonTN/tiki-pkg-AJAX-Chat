@@ -15,6 +15,12 @@ header('X-Frame-Options: DENY');
 
 $configFile = __DIR__ . '/lib/Chat-config.php';
 if (!is_file($configFile) || !is_readable($configFile)) {
+    // The contextual admin link is also the package's first-install entry point.
+    // The installer performs its own Tiki login/admin and CSRF checks.
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        header('Location: install.php', true, 302);
+        exit;
+    }
     http_response_code(500);
     exit('Ajax Chat is not configured. Run the package installer first.');
 }
