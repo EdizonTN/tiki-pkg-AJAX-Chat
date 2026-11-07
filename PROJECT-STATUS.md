@@ -106,6 +106,33 @@ Známy plán:
 
 Tieto body sú požiadavky/plán, nie automaticky potvrdený stav implementácie. Pri ďalšej práci ich overiť voči aktuálnemu kódu.
 
+## Tiki administrácia a runtime preferencie (2026-11-07)
+
+Vetva: `feature/tiki-admin-settings`
+
+Implementované v tejto vetve:
+- `prefs/tp_edizontn__ajax_chat.php` definuje Tiki Extension Preferences pre bezpečné runtime nastavenia AJAX Chatu.
+- `src/lib/tiki-bootstrap.php` prenáša a validuje tieto preferencie do konfigurácie AJAX Chat. Základné ovládacie prvky (`chat_enabled`, `moderator_groups`, `admin_stealth_in_private_rooms`) sú označené ako základné preferencie.
+- Preferencia `chat_enabled` používa podporovaný Tiki atribút `urladmin` a poskytuje kontextový odkaz na `vendor_custom/tiki-pkg-ajax-chat/src/admin.php`. Balík nepridáva vlastnú položku do Tiki administračného menu a nemení Tiki core.
+- Ak ešte neexistuje `src/lib/Chat-config.php`, `src/admin.php` presmeruje GET požiadavku na webový inštalátor `src/install.php`. Inštalátor následne vykonáva vlastnú kontrolu Tiki administrátora a CSRF ochranu.
+- `src/admin.php` je dostupný iba prihláseným Tiki administrátorom. Inštalácia/oprava vytvára presne šesť tabuliek s prefixom `tiki_ajaxchat_` cez `CREATE TABLE IF NOT EXISTS`; odinštalácia vyžaduje vypnutý chat a explicitnú potvrdzovaciu frázu a maže iba týchto šesť tabuliek.
+- Databázové údaje, HMAC secret, cesty, rezervované ID rozsahy a guest login zostávajú mimo UI. Sú štrukturálne, bezpečnostné alebo v režime Tiki SSO nepoužívané.
+- `README-TIKI-BRIDGE.md` opisuje umiestnenie preferencií, kontextový odkaz, prvú inštaláciu a pravidlá správy tabuliek.
+
+Automatické overenie:
+- GitHub Actions workflow `PHP and chat checks` na HEAD `db7e3073dbcff645ec9a51e3d6b51323aadbd235` skončil úspešne.
+- Úspešné kroky: PHP 8.2 lint všetkých PHP súborov, PHP testy vrátane databázovej schémy/TikiDb adaptéra/súkromných miestností a JavaScript syntax + code-block testy.
+- Prostredie CI používa MariaDB 11.4.
+
+Zostáva manuálne overiť na skutočnej TikiWiki 30.1 inštalácii:
+1. Zobrazenie kontextového odkazu `urladmin` v karte Extension Preferences.
+2. Prvý vstup cez odkaz a presmerovanie na `src/install.php`.
+3. Inštaláciu, stav všetkých šiestich tabuliek a opakované spustenie bez straty dát.
+4. Odinštaláciu: blokovanie, kým je chat povolený; potvrdenie frázy; odstránenie iba chatových tabuliek.
+5. Ukladanie preferencií v Tiki a ich účinnosť v chate.
+
+Táto vetva zatiaľ nie je zlúčená do `main`; pred merge treba dokončiť manuálny test v TikiWiki 30.1.
+
 ## Aktuálny otvorený kontext
 
 - V Tiki administrácii sa objavila chyba pri zobrazení balíkov po načítaní `package_custom-tiki-pkg-ajac_chat`:
