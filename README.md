@@ -37,7 +37,7 @@ TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/
 TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/src/
 ```
 
-The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The Tiki administration page generates a protected configuration file and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, creates the six database tables, and creates a package-owned `TIKI_ROOT/chat/index.php` entry point. The `/chat` URL is therefore served by a real directory and does not depend on intercepting Tiki's route dispatcher or editing `_custom/shared/custom.php`.
+The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The Tiki administration page generates a protected configuration file and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, creates the six database tables, and creates package-owned `TIKI_ROOT/chat/index.php` and `TIKI_ROOT/chat/.htaccess` files. The `.htaccess` maps the public `/chat/css`, `/chat/js`, `/chat/img`, `/chat/sounds` and `/chat/flash` asset URLs to the package's `src/` tree, so assets are served without copying them into the document root. The `/chat` URL is therefore served by a real directory and does not depend on intercepting Tiki's route dispatcher or editing `_custom/shared/custom.php`.
 
 ## Tiki package metadata
 

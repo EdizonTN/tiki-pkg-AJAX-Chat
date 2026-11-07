@@ -98,13 +98,16 @@ class AjaxChatPackageInstaller
     public function isReady()
     {
         $entry = $this->root . '/chat/index.php';
+        $routing = $this->root . '/chat/.htaccess';
         if ($this->status() !== 'complete' || !is_file($this->config) || !is_readable($this->config)
-            || !is_file($entry) || !is_readable($entry)) {
+            || !is_file($entry) || !is_readable($entry) || !is_file($routing) || !is_readable($routing)) {
             return false;
         }
         $entryContents = (string) file_get_contents($entry);
+        $routingContents = (string) file_get_contents($routing);
         $configContents = (string) file_get_contents($this->config);
         return strpos($entryContents, 'EdizonTN AJAX Chat managed entry point') !== false
+            && strpos($routingContents, 'EdizonTN AJAX Chat managed asset routing') !== false
             && strpos($configContents, 'Generated and managed by the EdizonTN AJAX Chat Tiki package.') !== false;
     }
 
@@ -216,11 +219,18 @@ class AjaxChatPackageInstaller
     private function assertCleanUrlAvailable()
     {
         $entry = $this->root . '/chat/index.php';
+        $routing = $this->root . '/chat/.htaccess';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') === false) {
             throw new RuntimeException('/chat/index.php already exists and belongs to another application.');
         }
         if (file_exists($entry) && !is_file($entry)) {
             throw new RuntimeException('/chat/index.php exists but is not a regular file.');
+        }
+        if (is_file($routing) && strpos((string) file_get_contents($routing), 'EdizonTN AJAX Chat managed asset routing') === false) {
+            throw new RuntimeException('/chat/.htaccess already exists and is not managed by this package; it was not overwritten.');
+        }
+        if (file_exists($routing) && !is_file($routing)) {
+            throw new RuntimeException('/chat/.htaccess exists but is not a regular file.');
         }
     }
 
@@ -238,6 +248,37 @@ class AjaxChatPackageInstaller
         $source = "<?php\n// " . $marker . "\nrequire " . var_export($this->package . '/src/index.php', true) . ";\n";
         if (file_put_contents($file, $source, LOCK_EX) === false) {
             throw new RuntimeException('Could not create /chat/index.php.');
+        }
+    }
+
+    /**
+     * Route the chat's static asset directories to the package source tree.
+     * The public /chat entry point is intentionally separate from the engine,
+     * so relative URLs such as css/black.css need an explicit Apache mapping.
+     */
+    private function writeAssetRouting()
+    {
+        $dir = $this->root . '/chat';
+        $file = $dir . '/.htaccess';
+        $config = require $this->config;
+        $assetUrl = isset($config['paths']['chatUrlPath']) ? $config['paths']['chatUrlPath'] : '';
+        if (!is_string($assetUrl)
+            || !preg_match('#^/[A-Za-z0-9_./-]+/$#', $assetUrl)
+            || strpos($assetUrl, '/../') !== false) {
+            throw new RuntimeException('The configured AJAX Chat asset URL is invalid.');
+        }
+        $assetUrl = rtrim($assetUrl, '/');
+        if (is_file($file)
+            && strpos((string) file_get_contents($file), 'EdizonTN AJAX Chat managed asset routing') === false) {
+            throw new RuntimeException('/chat/.htaccess already exists and was not overwritten.');
+        }
+        $source = "# EdizonTN AJAX Chat managed asset routing\n";
+        $source .= "<IfModule mod_rewrite.c>\n";
+        $source .= "RewriteEngine On\n";
+        $source .= "RewriteRule ^(css|js|img|sounds|flash)/(.*)$ " . $assetUrl . "/$1/$2 [L]\n";
+        $source .= "</IfModule>\n";
+        if (file_put_contents($file, $source, LOCK_EX) === false) {
+            throw new RuntimeException('Could not create /chat/.htaccess for AJAX Chat assets.');
         }
     }
 
@@ -274,6 +315,7 @@ class AjaxChatPackageInstaller
         }
         $this->validateSchema();
         $this->writeCleanUrl();
+        $this->writeAssetRouting();
     }
 
     public function uninstall()
@@ -289,9 +331,13 @@ class AjaxChatPackageInstaller
         $entry = $this->root . '/chat/index.php';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') !== false) {
             unlink($entry);
-            if (count(scandir(dirname($entry))) === 2) {
-                rmdir(dirname($entry));
-            }
+        }
+        $routing = $this->root . '/chat/.htaccess';
+        if (is_file($routing) && strpos((string) file_get_contents($routing), 'EdizonTN AJAX Chat managed asset routing') !== false) {
+            unlink($routing);
+        }
+        if (is_dir(dirname($entry)) && count(scandir(dirname($entry))) === 2) {
+            rmdir(dirname($entry));
         }
         $configExists = is_file($this->config);
         $configOwned = $configExists
