@@ -11,7 +11,7 @@ function prefs_tp_edizontn__ajax_chat_list()
     $prefs = [
         'tp_edizontn__ajax_chat__chat_enabled' => [
             'name' => tra('Enable Ajax Chat'),
-            'description' => tra('Allow authenticated Tiki users to access the chat.'),
+            'description' => tra('Allow authenticated Tiki users to access the chat. Database install/uninstall: vendor_custom/tiki-pkg-ajax-chat/src/admin.php (Tiki administrators only).'),
             'type' => 'flag',
             'default' => 'y',
         ],
