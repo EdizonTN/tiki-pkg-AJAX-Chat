@@ -57,16 +57,16 @@ if (!is_array($userInfo) || $userId < 1 || !empty($userInfo['userBanned']) || !e
 $groups = $tikiLib->get_user_groups($user);
 $isAdmin = in_array('Admins', $groups, true) || (isset($tiki_p_admin) && $tiki_p_admin === 'y');
 global $prefs;
-$moderatorGroupsRaw = isset($prefs['tp_edizontn__ajax_chat__moderator_groups'])
-    ? (string) $prefs['tp_edizontn__ajax_chat__moderator_groups'] : '';
+$moderatorGroupsRaw = isset($prefs['tp_edizontn__ajaxchat__moderator_groups'])
+    ? (string) $prefs['tp_edizontn__ajaxchat__moderator_groups'] : '';
 $moderatorGroups = array_values(array_filter(array_map('trim', explode(',', $moderatorGroupsRaw)), 'strlen'));
-$chatEnabled = !isset($prefs['tp_edizontn__ajax_chat__chat_enabled'])
-    || $prefs['tp_edizontn__ajax_chat__chat_enabled'] === 'y';
+$chatEnabled = !isset($prefs['tp_edizontn__ajaxchat__chat_enabled'])
+    || $prefs['tp_edizontn__ajaxchat__chat_enabled'] === 'y';
 if (!$chatEnabled) {
     ajax_chat_auth_error(403, 'chat_disabled');
 }
-$adminStealth = isset($prefs['tp_edizontn__ajax_chat__admin_stealth_in_private_rooms'])
-    && $prefs['tp_edizontn__ajax_chat__admin_stealth_in_private_rooms'] === 'y';
+$adminStealth = isset($prefs['tp_edizontn__ajaxchat__admin_stealth_in_private_rooms'])
+    && $prefs['tp_edizontn__ajaxchat__admin_stealth_in_private_rooms'] === 'y';
 $isModerator = count(array_intersect($moderatorGroups, $groups)) > 0;
 
 if ($isAdmin) {

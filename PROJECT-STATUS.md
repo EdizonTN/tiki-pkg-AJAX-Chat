@@ -94,7 +94,7 @@ Požiadavky:
 Tiki integrácia sa eviduje v repozitári https://github.com/PetoJanis/New-MZ-tikiwiki.
 
 Známy plán:
-- Tiki/Composer package ID: `edizontn/ajax_chat`.
+- Tiki/Composer package ID: `edizontn/ajaxchat`.
 - Tiki package namespace: `EdizonTN\AjaxChat`.
 - Package root: repository root; package metadata, wiki plugin and preferences are stored at repository root.
 - Adresár balíka: `vendor_custom/tiki-pkg-ajax-chat/`.
@@ -111,7 +111,7 @@ Tieto body sú požiadavky/plán, nie automaticky potvrdený stav implementácie
 Vetva: `feature/tiki-admin-settings`
 
 Implementované v tejto vetve:
-- `prefs/tp_edizontn__ajax_chat.php` definuje Tiki Extension Preferences pre bezpečné runtime nastavenia AJAX Chatu.
+- `prefs/tp_edizontn__ajaxchat.php` definuje Tiki Extension Preferences pre bezpečné runtime nastavenia AJAX Chatu.
 - `src/lib/tiki-bootstrap.php` prenáša a validuje tieto preferencie do konfigurácie AJAX Chat. Základné ovládacie prvky (`chat_enabled`, `moderator_groups`, `admin_stealth_in_private_rooms`) sú označené ako základné preferencie.
 - Preferencia `chat_enabled` používa podporovaný Tiki atribút `urladmin` a poskytuje kontextový odkaz na `vendor_custom/tiki-pkg-ajax-chat/src/admin.php`. Balík nepridáva vlastnú položku do Tiki administračného menu a nemení Tiki core.
 - Ak ešte neexistuje `src/lib/Chat-config.php`, `src/admin.php` presmeruje GET požiadavku na webový inštalátor `src/install.php`. Inštalátor následne vykonáva vlastnú kontrolu Tiki administrátora a CSRF ochranu.
@@ -160,3 +160,37 @@ Táto vetva zatiaľ nie je zlúčená do `main`; pred merge treba dokončiť man
 - Pri testoch uviesť prostredie, príkazy/postup a výsledok.
 - Nezapisovať sem podrobnosti TikiWiki core migrácie; tie patria do repozitára New-MZ-tikiwiki.
 - Pred ukončením väčšej pracovnej relácie aktualizovať stav a ďalšie kroky. Automatické uloženie pri náhlom ukončení konverzácie nie je zaručené.
+
+
+## Tiki-native package administration and standalone URL (2026-11-07)
+
+Branch: `feature/standalone-chat-route` (PR #4)
+
+PR #4 has been reworked to remove the direct PHP installer/admin endpoints and the unverified `_custom/shared/custom.php` route dispatcher.
+
+Current implementation on the branch:
+- Composer package ID is `edizontn/ajaxchat`, allowing Tiki's `tp_edizontn_ajaxchat` extension admin page identifier to map unambiguously to the package ID.
+- Native Tiki admin page: `tiki-admin.php?page=tp_edizontn_ajaxchat`.
+- The package admin controller checks `tiki_p_admin` and uses Tiki's CSRF ticket validation for POST actions.
+- Install/repair creates the protected config and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, creates/verifies the six `tiki_ajaxchat_*` tables, and creates `TIKI_ROOT/chat/index.php`.
+- The physical `/chat` directory avoids attempting to intercept a Tiki route from the `_custom/shared/custom.php` hook, which Tiki loads only at the end of `tiki-setup.php`.
+- An existing unowned `/chat/index.php` is not overwritten. Uninstall requires disabling chat and confirming the deletion phrase; it drops only the six chat tables and removes files carrying package ownership markers.
+- Direct `src/install.php` and `src/admin.php` endpoints and the standalone router were removed from this branch.
+- Package preferences remain in Tiki Extension Preferences; the contextual `urladmin` link opens the native extension admin page.
+
+Validation status:
+- Code and documentation were updated through GitHub API commits.
+- No live TikiWiki 30.1 integration test has been run from this session. In particular, verify extension preference discovery, extension admin page loading, filesystem permissions for `temp/ajax-chat/` and `/chat/`, install/reinstall/uninstall, and chat access via both `/chat` and the wiki plugin.
+- Do not treat the branch as production-ready until those manual checks pass.
+
+
+### Preference namespace correction (2026-11-07)
+
+The Composer package ID was normalized to `edizontn/ajaxchat`, but the preference definitions initially retained the old `tp_edizontn__ajax_chat__` keys. Tiki Extension Packages require the preference file, callback and preference-key namespace to match the Composer package ID. This caused undefined preferences and exposed raw preference identifiers in Extension Preferences.
+
+Corrected on `feature/standalone-chat-route`:
+- Preference overlay: `prefs/tp_edizontn__ajaxchat.php`.
+- Callback: `prefs_tp_edizontn__ajaxchat_list()`.
+- All preference keys and runtime references now use `tp_edizontn__ajaxchat__`.
+- The package admin page migrates existing values from the old `tp_edizontn__ajax_chat__` keys to the new keys, then deletes the obsolete rows. Existing user settings are preserved when no new-key value exists.
+- Open the package admin page once after updating to run this migration, then reload Extension Preferences.

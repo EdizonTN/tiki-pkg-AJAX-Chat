@@ -57,7 +57,7 @@ function AjaxChatApplyTikiPreferences(array $config)
         return $config;
     }
 
-    $prefix = 'tp_edizontn__ajax_chat__';
+    $prefix = 'tp_edizontn__ajaxchat__';
     $flagMap = array(
         'allow_private_rooms' => 'allowPrivateRooms',
         'allow_private_channels' => 'allowPrivateChannels',

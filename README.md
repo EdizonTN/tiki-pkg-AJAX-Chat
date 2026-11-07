@@ -12,11 +12,9 @@ tiki-AJAX-Chat/
 │   └── wiki-plugins/
 │       └── ajaxchat.php
 ├── prefs/
-│   └── tp_edizontn__ajax_chat.php
+│   └── tp_edizontn__ajaxchat.php
 └── src/                 # AJAX Chat engine and Tiki bridge
     ├── index.php
-    ├── install.php
-    ├── admin.php
     ├── tiki-auth.php
     ├── chat.sql
     ├── lib/
@@ -39,11 +37,11 @@ TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/
 TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/src/
 ```
 
-The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The installer stores the chat filesystem path and URL, as well as the Tiki root path and URL, in the protected `src/lib/Chat-config.php` configuration file.
+The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The Tiki administration page generates a protected configuration file and random HMAC secret in `TIKI_ROOT/temp/ajax-chat/`, creates the six database tables, and creates a package-owned `TIKI_ROOT/chat/index.php` entry point. The `/chat` URL is therefore served by a real directory and does not depend on intercepting Tiki's route dispatcher or editing `_custom/shared/custom.php`.
 
 ## Tiki package metadata
 
-- Composer package: `edizontn/ajax_chat`
+- Composer package: `edizontn/ajaxchat`
 - Tiki package namespace: `EdizonTN\AjaxChat`
 - Package type: `tiki-package`
 - Minimum PHP version: 8.1
@@ -52,18 +50,18 @@ The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The ins
 Add the chat to a wiki page:
 
 ```text
-{package package="edizontn/ajax_chat" plugin="ajaxchat"}
+{package package="edizontn/ajaxchat" plugin="ajaxchat"}
 ```
 
 Optional iframe height:
 
 ```text
-{package package="edizontn/ajax_chat" plugin="ajaxchat" height="520"}
+{package package="edizontn/ajaxchat" plugin="ajaxchat" height="520"}
 ```
 
 The package exposes the configurable, runtime-safe AJAX Chat options through **Settings → Packages → Extension Preferences**. This includes language and style, public/private rooms and private messages, nickname policies, opening hours, message/history limits, moderation defaults, log retention/access, IP checks and optional socket-server settings. Moderator group mapping and administrator stealth are Tiki bridge settings. Guest logins remain disabled by design because Tiki authentication is mandatory. Tiki administrators retain the highest chat role; moderator status does not grant membership in private rooms.
 
-Database management is provided by the package-local `src/admin.php` page. Open it at `vendor_custom/tiki-pkg-ajax-chat/src/admin.php` while logged in as a Tiki administrator. It is restricted to Tiki administrators and supports schema installation/repair and explicit, confirmed removal of the six chat tables. The uninstall operation deletes chat data but does not remove package files or modify Tiki tables.
+Database and file lifecycle management is provided by the native Tiki extension administration page: `tiki-admin.php?page=tp_edizontn_ajaxchat`. It is available to Tiki administrators after enabling the package under Admin → Packages. Install / repair creates the configuration, secret, database tables and `/chat` entry point. Uninstall requires the chat to be disabled and an explicit confirmation phrase; it removes only the six package tables and files marked as package-owned.
 
 ## Database
 
@@ -76,12 +74,12 @@ The integrated chat reuses TikiWiki's active database connection through `TikiDb
 - `tiki_ajaxchat_rooms`
 - `tiki_ajaxchat_room_members`
 
-Generated configuration, secrets, and chat data must remain package-local and must not be overwritten during code updates.
+Generated configuration and secrets are stored outside the package in the protected Tiki `temp/ajax-chat/` directory so package updates cannot overwrite them.
 
 ## Installation and status
 
 Keep `composer.json` and `tiki-package.json` at the package root so Tiki can identify it as an Extension Package. Use the package discovery and activation mechanism supported by the installed Tiki version.
 
-The Tiki preference overlay and database administration page are implemented on the `feature/tiki-admin-settings` development branch. They still require validation against the target Tiki 30.1 installation. Back up Tiki files and the database before testing.
+The standalone chat URL is `/chat`. The Tiki admin page creates `TIKI_ROOT/chat/index.php` only if it does not already belong to another file. Apache serves this physical directory directly, so the chat does not require a custom Tiki route, SEF route registration, `_custom/shared/custom.php`, or Tiki core modifications.
 
 See `README-TIKI-BRIDGE.md` and `PROJECT-STATUS.md` for development notes.

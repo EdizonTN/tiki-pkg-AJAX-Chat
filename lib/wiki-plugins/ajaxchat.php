@@ -2,7 +2,7 @@
 /**
  * Embed the AJAX Chat from this Tiki package's own src directory.
  *
- * Usage: {package package="edizontn/ajax_chat" plugin="ajaxchat"}
+ * Usage: {package package="edizontn/ajaxchat" plugin="ajaxchat"}
  */
 function ajaxchat_info()
 {
@@ -30,8 +30,8 @@ function ajaxchat($content, $params)
     }
 
     if (
-        isset($prefs['tp_edizontn__ajax_chat__chat_enabled'])
-        && $prefs['tp_edizontn__ajax_chat__chat_enabled'] !== 'y'
+        isset($prefs['tp_edizontn__ajaxchat__chat_enabled'])
+        && $prefs['tp_edizontn__ajaxchat__chat_enabled'] !== 'y'
     ) {
         return '';
     }

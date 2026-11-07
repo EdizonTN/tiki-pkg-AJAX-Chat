@@ -58,13 +58,19 @@ class AJAXChat {
 
 	function initConfig() {
 		$configFile = AJAX_CHAT_PATH.'lib/Chat-config.php';
-		if (!is_file($configFile) || !is_readable($configFile)) {
-			echo('<strong>Error:</strong> Could not find a readable Chat-config.php file in "'.AJAX_CHAT_PATH.'lib/".');
-			die();
+		// Integrated deployments may provide a protected configuration from
+		// outside the package directory (for example Tiki's temp/ajax-chat).
+		// Prefer that trusted bootstrap value and only require the legacy local
+		// file for standalone installations.
+		if (isset($GLOBALS['ajaxChatConfig']) && is_array($GLOBALS['ajaxChatConfig'])) {
+			$config = $GLOBALS['ajaxChatConfig'];
+		} else {
+			if (!is_file($configFile) || !is_readable($configFile)) {
+				echo('<strong>Error:</strong> Could not find a readable Chat-config.php file in "'.AJAX_CHAT_PATH.'lib/".');
+				die();
+			}
+			$config = require($configFile);
 		}
-		$config = (isset($GLOBALS['ajaxChatConfig']) && is_array($GLOBALS['ajaxChatConfig']))
-			? $GLOBALS['ajaxChatConfig']
-			: require($configFile);
 		if (!is_array($config)) {
 			echo('<strong>Error:</strong> Chat-config.php must return a configuration array.');
 			die();
