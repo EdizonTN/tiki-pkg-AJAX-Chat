@@ -76,7 +76,7 @@ class AjaxChatPackageInstaller
         }
         chmod($this->config, 0640);
         if (!is_file($dir . '/.htaccess')) {
-            file_put_contents($dir . '/.htaccess', "Require all denied\n", LOCK_EX);
+            file_put_contents($dir . '/.htaccess', "# EdizonTN AJAX Chat protected config directory\nRequire all denied\n", LOCK_EX);
         }
         if (!is_file($dir . '/index.php')) {
             file_put_contents($dir . '/index.php', "<?php\n// EdizonTN AJAX Chat protected config directory\nhttp_response_code(404);\nexit;\n", LOCK_EX);
@@ -157,7 +157,7 @@ class AjaxChatPackageInstaller
                 $path = $dir . '/' . $name;
                 if (is_file($path)) {
                     $contents = (string) file_get_contents($path);
-                    $owned = ($name === '.htaccess' && strpos($contents, 'Require all denied') !== false)
+                    $owned = ($name === '.htaccess' && strpos($contents, 'EdizonTN AJAX Chat protected config directory') !== false)
                         || ($name === 'index.php' && strpos($contents, 'EdizonTN AJAX Chat protected config directory') !== false);
                     if ($owned) {
                         unlink($path);
