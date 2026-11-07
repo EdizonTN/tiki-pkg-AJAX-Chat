@@ -26,6 +26,7 @@
 ### Administrácia
 
 - Konfigurácia chatu je v `Settings → Packages → Extension Preferences` (Tiki môže túto kartu zobrazovať pod názvom `Extension Preferences`).
+- Čistá verejná URL sa nastavuje preferenciou `Standalone chat URL` (predvolene `/chat`). V Tiki musí byť zapnuté SEF URL a Custom Routes; vytvor route `/chat` smerujúcu na wiki stránku `Chat`. Na stránku `Chat` vlož plugin `{package package="edizontn/ajax_chat" plugin="ajaxchat"}`. Takto URL zostáva spravovaná Tiki routovaním bez úpravy koreňového `.htaccess` alebo jadra.
 - Pri preferencii `Enable Ajax Chat` je kontextový administračný odkaz `urladmin`, ktorý otvorí `vendor_custom/tiki-pkg-ajax-chat/src/admin.php`. Ak ešte neexistuje `Chat-config.php`, stránka presmeruje na chránený webový inštalátor `src/install.php`. Balík tým nepridáva vlastnú položku do Tiki administračného menu ani nemení jadro Tiki.
 - Stránka správy databázy je dostupná iba prihláseným administrátorom TikiWiki a všetky POST operácie sú chránené jednorazovým CSRF tokenom.
 - Inštalácia vytvára/overuje presne šesť tabuliek `tiki_ajaxchat_*`; existujúce tabuľky a dáta zachováva. Odinštalácia vyžaduje najprv vypnúť chat a zadať potvrdzovaciu frázu; odstráni iba týchto šesť tabuliek.
@@ -80,6 +81,7 @@ Všetky chatové dáta sú v tej istej databáze ako TikiWiki. Používajú šes
 ### Administration
 
 - Chat configuration is available under `Settings → Packages → Extension Preferences` (the tab may be labelled `Extension Preferences`).
+- The clean public URL is configured with the `Standalone chat URL` preference (default `/chat`). Enable Tiki SEF URLs and Custom Routes, then create a `/chat` route pointing to a wiki page named `Chat`. Put `{package package="edizontn/ajax_chat" plugin="ajaxchat"}` on that page. This uses Tiki's own routing and does not require changes to the root `.htaccess` or Tiki core.
 - The `Enable Ajax Chat` preference provides a contextual `urladmin` link to `vendor_custom/tiki-pkg-ajax-chat/src/admin.php`. If `Chat-config.php` does not exist yet, the page redirects to the protected web installer at `src/install.php`. The package does not add a custom Tiki administration menu entry or modify Tiki core.
 - The database administration page is restricted to authenticated TikiWiki administrators, and all POST operations use a one-time CSRF token.
 - Installation creates/verifies exactly six `tiki_ajaxchat_*` tables and preserves existing tables and data. Uninstallation requires the chat to be disabled first and an explicit confirmation phrase; it drops only those six tables.
