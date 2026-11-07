@@ -102,6 +102,19 @@ class AjaxChatPackageInstaller
         }
 
         if (is_file($this->config)) {
+            $existingContents = (string) file_get_contents($this->config);
+            if (strpos($existingContents, 'Generated and managed by the EdizonTN AJAX Chat Tiki package.') === false) {
+                throw new RuntimeException('A configuration file already exists but is not managed by this package; it was not overwritten.');
+            }
+            $existingConfig = require $this->config;
+            if (!is_array($existingConfig)
+                || empty($existingConfig['ajaxChatSharedSecret'])
+                || !is_string($existingConfig['ajaxChatSharedSecret'])
+                || strlen($existingConfig['ajaxChatSharedSecret']) < 64
+                || empty($existingConfig['paths']['chatRootPath'])
+                || empty($existingConfig['paths']['chatUrlPath'])) {
+                throw new RuntimeException('The existing package configuration is incomplete or invalid.');
+            }
             return;
         }
         $template = $this->package . '/src/lib/Chat-config.php.example';
