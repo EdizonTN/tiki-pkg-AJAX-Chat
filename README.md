@@ -39,7 +39,7 @@ TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/
 TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/src/
 ```
 
-The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. The installer stores the chat filesystem path and URL, as well as the Tiki root path and URL, in the protected `src/lib/Chat-config.php` configuration file.
+The wiki plugin embeds `vendor_custom/tiki-pkg-ajax-chat/src/index.php`. A separate clean URL (default `/chat`) is configured in **Settings → Packages → Extension Preferences**. To activate it, create a Tiki Custom Route from `/chat` to a wiki page named `Chat`, and place the AJAX Chat package plugin on that page. The plugin's iframe continues to target the package engine directly, so the routed page does not recursively embed itself. The installer stores the chat filesystem path and URL, as well as the Tiki root path and URL, in the protected `src/lib/Chat-config.php` configuration file.
 
 ## Tiki package metadata
 
