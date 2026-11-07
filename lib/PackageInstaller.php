@@ -16,7 +16,7 @@ class AjaxChatPackageInstaller
     public function __construct($package)
     {
         $this->package = realpath($package);
-        $this->root = realpath(dirname(__DIR__, 2));
+        $this->root = realpath(dirname(__DIR__, 3));
         if (!$this->package || !$this->root || !is_file($this->root . '/tiki-setup.php')) {
             throw new RuntimeException('Tiki root or package directory could not be located.');
         }
