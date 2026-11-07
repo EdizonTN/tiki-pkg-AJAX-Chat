@@ -139,7 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'All six AJAX Chat tables are installed. Existing tables and their data were preserved.';
                 $messageType = 'success';
             } elseif ($action === 'uninstall') {
-                global $prefs;
                 if (isset($prefs['tp_edizontn__ajax_chat__chat_enabled']) && $prefs['tp_edizontn__ajax_chat__chat_enabled'] === 'y') {
                     throw new RuntimeException('Disable Ajax Chat in Extension Preferences before uninstalling its database tables.');
                 }
