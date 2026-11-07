@@ -91,6 +91,23 @@ class AjaxChatPackageInstaller
         return $count === count($this->tables) ? 'complete' : ($count ? 'partial' : 'missing');
     }
 
+    /**
+     * True only when the generated config, schema and owned /chat entry point
+     * are all present. Used to avoid offering a broken chat link in admin UI.
+     */
+    public function isReady()
+    {
+        $entry = $this->root . '/chat/index.php';
+        if ($this->status() !== 'complete' || !is_file($this->config) || !is_readable($this->config)
+            || !is_file($entry) || !is_readable($entry)) {
+            return false;
+        }
+        $entryContents = (string) file_get_contents($entry);
+        $configContents = (string) file_get_contents($this->config);
+        return strpos($entryContents, 'EdizonTN AJAX Chat managed entry point') !== false
+            && strpos($configContents, 'Generated and managed by the EdizonTN AJAX Chat Tiki package.') !== false;
+    }
+
     private function validateSchema()
     {
         $expected = array(
