@@ -59,13 +59,13 @@ Optional iframe height:
 {package package="edizontn/ajaxchat" plugin="ajaxchat" height="520"}
 ```
 
-The package exposes the configurable, runtime-safe AJAX Chat options through **Settings → Packages → Extension Preferences**. This includes language and style, public/private rooms and private messages, nickname policies, opening hours, message/history limits, moderation defaults, log retention/access, IP checks and optional socket-server settings. Moderator group mapping and administrator stealth are Tiki bridge settings. Guest logins remain disabled by design because Tiki authentication is mandatory. Tiki administrators retain the highest chat role; moderator status does not grant membership in private rooms.
+The package exposes all runtime-safe options on its dedicated **Ajax Chat settings** administration page (`tiki-admin.php?page=tp_edizontn_ajaxchat`). Settings are stored in the package-owned `tiki_ajaxchat_settings` table, not in Tiki's global `tiki_preferences` table. This avoids undefined-preference warnings when the extension is disabled; the package administration page is only available while the extension is enabled. Existing values from both former preference namespaces are migrated automatically on first visit to the settings page or during install/repair. This includes language and style, public/private rooms and private messages, nickname policies, opening hours, message/history limits, moderation defaults, log retention/access, IP checks and optional socket-server settings. Moderator group mapping and administrator stealth are also stored there. Guest logins remain disabled by design because Tiki authentication is mandatory. Tiki administrators retain the highest chat role; moderator status does not grant membership in private rooms.
 
 Database and file lifecycle management is provided by the native Tiki extension administration page: `tiki-admin.php?page=tp_edizontn_ajaxchat`. It is available to Tiki administrators after enabling the package under Admin → Packages. Install / repair creates the configuration, secret, database tables and `/chat` entry point. Uninstall requires the chat to be disabled and an explicit confirmation phrase; it removes only the six package tables and files marked as package-owned.
 
 ## Database
 
-The integrated chat reuses TikiWiki's active database connection through `TikiDb`; it does not create a separate database connection. Its six extension tables use the `tiki_ajaxchat_` prefix:
+The integrated chat reuses TikiWiki's active database connection through `TikiDb`; it does not create a separate database connection. Its six message/runtime tables use the `tiki_ajaxchat_` prefix:
 
 - `tiki_ajaxchat_online`
 - `tiki_ajaxchat_messages`
@@ -73,6 +73,8 @@ The integrated chat reuses TikiWiki's active database connection through `TikiDb
 - `tiki_ajaxchat_invitations`
 - `tiki_ajaxchat_rooms`
 - `tiki_ajaxchat_room_members`
+
+The package settings are stored separately in `tiki_ajaxchat_settings` and are retained when the extension is disabled. They are removed only by the package's explicit uninstall operation.
 
 Generated configuration and secrets are stored outside the package in the protected Tiki `temp/ajax-chat/` directory so package updates cannot overwrite them.
 
