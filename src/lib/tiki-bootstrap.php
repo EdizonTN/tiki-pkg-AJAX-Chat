@@ -47,14 +47,17 @@ function AjaxChatBootstrapTiki(array $config)
         throw new RuntimeException('Tiki database connection is not available.');
     }
 
-    $packageRoot = dirname(rtrim($paths['chatRootPath'], '/\\\\'));
-    $settingsStoreFile = $packageRoot . '/lib/SettingsStore.php';
-    if (!is_file($settingsStoreFile)) {
-        throw new RuntimeException('AJAX Chat settings store is missing.');
+    // Isolated bootstrap tests and non-chat Tiki integrations may omit this path.
+    if (!empty($paths['chatRootPath'])) {
+        $packageRoot = dirname(rtrim($paths['chatRootPath'], '/\\\\'));
+        $settingsStoreFile = $packageRoot . '/lib/SettingsStore.php';
+        if (!is_file($settingsStoreFile)) {
+            throw new RuntimeException('AJAX Chat settings store is missing.');
+        }
+        require_once $settingsStoreFile;
+        $settingsStore = new AjaxChatSettingsStore();
+        $settingsStore->loadIntoPreferences();
     }
-    require_once $settingsStoreFile;
-    $settingsStore = new AjaxChatSettingsStore();
-    $settingsStore->loadIntoPreferences();
 
     return $tikiRoot;
 }
