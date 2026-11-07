@@ -43,6 +43,74 @@ function ajaxChatFindTikiRoot($startDirectory) {
 	}
 }
 
+/**
+ * Register the package-owned standalone route in Tiki's supported custom
+ * bootstrap file. Existing administrator customizations are preserved.
+ */
+function ajaxChatRegisterStandaloneRouter($tikiRoot, $chatRoot) {
+	$customDirectory = rtrim($tikiRoot, '/\\').DIRECTORY_SEPARATOR.'_custom'.DIRECTORY_SEPARATOR.'shared';
+	$customFile = $customDirectory.DIRECTORY_SEPARATOR.'custom.php';
+	$routerFile = rtrim($chatRoot, '/\\').DIRECTORY_SEPARATOR.'lib'.DIRECTORY_SEPARATOR.'standalone-router.php';
+	$marker = 'EdizonTN AJAX Chat standalone route';
+
+	if (!is_file($routerFile) || !is_readable($routerFile)) {
+		throw new RuntimeException('Súbor standalone-router.php chýba alebo nie je čitateľný.');
+	}
+	if (!is_dir($customDirectory) && !@mkdir($customDirectory, 0755, true) && !is_dir($customDirectory)) {
+		throw new RuntimeException('Nepodarilo sa vytvoriť adresár _custom/shared.');
+	}
+
+	$include = "\n// BEGIN ".$marker."\nrequire_once ".var_export($routerFile, true).";\n// END ".$marker."\n";
+	if (!is_file($customFile)) {
+		$contents = "<?php\n".$include;
+		if (@file_put_contents($customFile, $contents, LOCK_EX) === false) {
+			throw new RuntimeException('Nepodarilo sa vytvoriť _custom/shared/custom.php.');
+		}
+		return true;
+	}
+	if (!is_readable($customFile) || !is_writable($customFile)) {
+		throw new RuntimeException('_custom/shared/custom.php už existuje, ale nie je zapisovateľný. Router nebol zaregistrovaný.');
+	}
+	$contents = file_get_contents($customFile);
+	if ($contents === false) {
+		throw new RuntimeException('_custom/shared/custom.php sa nepodarilo prečítať.');
+	}
+	if (strpos($contents, $marker) !== false) {
+		return true;
+	}
+	if (!preg_match('/\\A(\\s*<\\?php\\s*(?:declare\\s*\\(\\s*strict_types\\s*=\\s*1\\s*\\)\\s*;\\s*)?)/', $contents, $match)) {
+		throw new RuntimeException('_custom/shared/custom.php nemá očakávaný PHP začiatok; súbor nebol zmenený.');
+	}
+	$offset = strlen($match[1]);
+	$newContents = substr($contents, 0, $offset).$include.substr($contents, $offset);
+	$handle = @fopen($customFile, 'c+');
+	if ($handle === false || !flock($handle, LOCK_EX)) {
+		if (is_resource($handle)) {
+			fclose($handle);
+		}
+		throw new RuntimeException('_custom/shared/custom.php sa nepodarilo bezpečne otvoriť na zápis.');
+	}
+	$success = ftruncate($handle, 0) && rewind($handle);
+	$written = 0;
+	while ($success && $written < strlen($newContents)) {
+		$count = fwrite($handle, substr($newContents, $written));
+		if ($count === false || $count === 0) {
+			$success = false;
+			break;
+		}
+		$written += $count;
+	}
+	if ($success) {
+		$success = fflush($handle);
+	}
+	flock($handle, LOCK_UN);
+	fclose($handle);
+	if (!$success) {
+		throw new RuntimeException('Nepodarilo sa bezpečne zapísať _custom/shared/custom.php.');
+	}
+	return true;
+}
+
 function ajaxChatInstallerSchemaStatus() {
 	$tables = array(
 		'tiki_ajaxchat_online',
@@ -361,6 +429,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		} else {
 			$resultMessage = 'Chat je úspešne nakonfigurovaný a pripravený na testovanie. Databázová schéma už existovala; cesty a konfigurácia bridge boli aktualizované, tabuľky sa nemenili.';
 		}
+		ajaxChatRegisterStandaloneRouter($tikiRootReal, $chatRootReal);
+		$resultMessage .= ' Integrácia čistej URL bola zaregistrovaná v Tiki custom bootstrap súbore.';
 		$resultClass = 'success';
 	} catch (Throwable $e) {
 		error_log('Ajax Chat installer: '.$e->getMessage().' in '.$e->getFile().':'.$e->getLine());
