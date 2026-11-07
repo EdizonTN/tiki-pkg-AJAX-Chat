@@ -26,10 +26,21 @@ class AjaxChatPackageInstaller
     public function status()
     {
         $db = TikiDb::get();
+        $result = $db->query('SHOW TABLES', array(), -1, -1, TikiDb::ERR_EXCEPTION);
+        $actual = array();
+        if ($result) {
+            while ($row = $result->fetchRow()) {
+                if (is_array($row)) {
+                    $values = array_values($row);
+                    if (isset($values[0])) {
+                        $actual[] = (string) $values[0];
+                    }
+                }
+            }
+        }
         $count = 0;
         foreach ($this->tables as $table) {
-            $result = $db->query('SHOW TABLES LIKE ' . $db->qstr($table), array(), -1, -1, TikiDb::ERR_EXCEPTION);
-            if ($result && $result->fetchRow()) {
+            if (in_array($table, $actual, true)) {
                 $count++;
             }
         }
