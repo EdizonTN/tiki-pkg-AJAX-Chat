@@ -154,8 +154,14 @@ class AjaxChatPackageInstaller
             unlink($this->config);
             $dir = dirname($this->config);
             foreach (array('.htaccess', 'index.php') as $name) {
-                if (is_file($dir . '/' . $name)) {
-                    unlink($dir . '/' . $name);
+                $path = $dir . '/' . $name;
+                if (is_file($path)) {
+                    $contents = (string) file_get_contents($path);
+                    $owned = ($name === '.htaccess' && strpos($contents, 'Require all denied') !== false)
+                        || ($name === 'index.php' && strpos($contents, 'EdizonTN AJAX Chat protected config directory') !== false);
+                    if ($owned) {
+                        unlink($path);
+                    }
                 }
             }
             if (count(scandir($dir)) === 2) {
