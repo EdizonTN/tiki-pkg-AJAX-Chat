@@ -23,50 +23,6 @@ class AjaxChatPackageInstaller
         $this->config = $this->root . '/temp/ajax-chat/Chat-config.php';
     }
 
-    private function getStoredPreferencesWithPrefix($prefix)
-    {
-        $db = TikiDb::get();
-        $result = $db->query(
-            'SELECT name, value FROM tiki_preferences WHERE LEFT(name, ?) = ?',
-            array(strlen($prefix), $prefix),
-            -1,
-            -1,
-            TikiDb::ERR_EXCEPTION
-        );
-        $preferences = array();
-        while ($row = $result->fetchRow()) {
-            if (isset($row['name'])) {
-                $preferences[$row['name']] = $row['value'];
-            }
-        }
-        return $preferences;
-    }
-
-    public function migrateLegacyPreferences()
-    {
-        $tikilib = TikiLib::lib('tiki');
-        $legacyPrefix = 'tp_edizontn__ajax_chat__';
-        $currentPrefix = 'tp_edizontn__ajaxchat__';
-        $legacy = $this->getStoredPreferencesWithPrefix($legacyPrefix);
-        if (!$legacy) {
-            return 0;
-        }
-        $current = $this->getStoredPreferencesWithPrefix($currentPrefix);
-        $migrated = 0;
-        foreach ($legacy as $oldName => $value) {
-            $newName = $currentPrefix . substr($oldName, strlen($legacyPrefix));
-            if (!array_key_exists($newName, $current)) {
-                if (!$tikilib->set_preference($newName, $value)) {
-                    throw new RuntimeException('Could not migrate legacy AJAX Chat preference ' . $oldName . '.');
-                }
-                $current[$newName] = $value;
-                $migrated++;
-            }
-            $tikilib->delete_preference($oldName);
-        }
-        return $migrated;
-    }
-
     public function status()
     {
         $db = TikiDb::get();
@@ -312,8 +268,159 @@ class AjaxChatPackageInstaller
         }
     }
 
+    /**
+     * Register the settings page in Tiki's actual administration navigation.
+     *
+     * Tiki 30.1 includes _custom/shared/custom.php at the end of tiki-setup.php.
+     * tiki-admin.php subsequently includes admin/define_admin_icons.php. The
+     * package bootstrap uses that ordering to load the core navigation definition
+     * once and add a package-owned entry before tiki-admin.php renders it.
+     */
+    public function ensureAdminNavigation()
+    {
+        $shared = $this->root . '/_custom/shared';
+        if (is_link($shared)) {
+            throw new RuntimeException('_custom/shared is a symbolic link; AJAX Chat navigation was not installed.');
+        }
+        if (!is_dir($shared) && !mkdir($shared, 0755, true) && !is_dir($shared)) {
+            throw new RuntimeException('Cannot create _custom/shared for AJAX Chat administration navigation.');
+        }
+        if (!is_writable($shared)) {
+            throw new RuntimeException('_custom/shared is not writable; AJAX Chat navigation was not installed.');
+        }
+
+        $helper = $shared . '/ajaxchat-admin-navigation.php';
+        $helperMarker = 'EdizonTN AJAX Chat admin navigation helper';
+        if (is_link($helper) || (file_exists($helper) && !is_file($helper))) {
+            throw new RuntimeException('_custom/shared/ajaxchat-admin-navigation.php is not a regular file; it was not overwritten.');
+        }
+        $helperSource = "<?php\n// " . $helperMarker . ".\n"
+            . "if (!isset(\$_SERVER['SCRIPT_NAME']) || basename(\$_SERVER['SCRIPT_NAME']) !== 'tiki-admin.php') { return; }\n"
+            . "global \$prefs, \$admin_icons;\n"
+            . "if (!class_exists('Tiki\\Package\\ExtensionManager') || !Tiki\\Package\\ExtensionManager::isExtensionEnabled('edizontn/ajaxchat')) { return; }\n"
+            . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { require_once dirname(__DIR__, 2) . '/admin/define_admin_icons.php'; }\n"
+            . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { return; }\n"
+            . "\$page = 'tp_edizontn_ajaxchat';\n"
+            . "\$entry = array('title' => tr('AJAX Chat settings'), 'description' => tr('Configure AJAX Chat settings'), 'help' => 'Packages', 'icon' => 'comments');\n"
+            . "if (isset(\$prefs['theme_unified_admin_backend']) && \$prefs['theme_unified_admin_backend'] === 'y' && isset(\$admin_icons['backend']['children']) && is_array(\$admin_icons['backend']['children'])) {\n"
+            . "    \$admin_icons['backend']['children'][\$page] = \$entry;\n"
+            . "} else {\n"
+            . "    \$admin_icons[\$page] = \$entry;\n"
+            . "}\n";
+        if (is_file($helper)) {
+            $existingHelper = (string) file_get_contents($helper);
+            if (strpos($existingHelper, $helperMarker) === false) {
+                throw new RuntimeException('An unrelated _custom/shared/ajaxchat-admin-navigation.php already exists; it was not overwritten.');
+            }
+            if ($existingHelper !== $helperSource && file_put_contents($helper, $helperSource, LOCK_EX) === false) {
+                throw new RuntimeException('Could not update the AJAX Chat administration navigation helper.');
+            }
+        } elseif (file_put_contents($helper, $helperSource, LOCK_EX) === false) {
+            throw new RuntimeException('Could not create the AJAX Chat administration navigation helper.');
+        }
+
+        $custom = $shared . '/custom.php';
+        $begin = '// BEGIN EdizonTN AJAX Chat admin navigation';
+        $end = '// END EdizonTN AJAX Chat admin navigation';
+        $block = "\n" . $begin . "\n"
+            . "if (isset(\$_SERVER['SCRIPT_NAME']) && basename(\$_SERVER['SCRIPT_NAME']) === 'tiki-admin.php' && is_file(__DIR__ . '/ajaxchat-admin-navigation.php')) {\n"
+            . "    require_once __DIR__ . '/ajaxchat-admin-navigation.php';\n"
+            . "}\n" . $end . "\n";
+        if (is_link($custom) || (file_exists($custom) && !is_file($custom))) {
+            throw new RuntimeException('_custom/shared/custom.php is not a regular file; it was not modified.');
+        }
+        if (is_file($custom)) {
+            $contents = (string) file_get_contents($custom);
+            if ($contents === '') {
+                $contents = "<?php\n";
+            } elseif (strpos($contents, '<?php') === false) {
+                throw new RuntimeException('The existing _custom/shared/custom.php is not a PHP file; it was not modified.');
+            }
+            if (strpos($contents, $begin) !== false) {
+                if (strpos($contents, $end) === false) {
+                    throw new RuntimeException('The existing custom.php contains an incomplete AJAX Chat marker block.');
+                }
+                require_once $helper;
+                $this->removeLegacyApplicationMenuLink();
+                return;
+            }
+            $closingTag = strrpos($contents, '?>');
+            if ($closingTag !== false) {
+                $contents = substr($contents, 0, $closingTag) . $block . substr($contents, $closingTag);
+            } else {
+                $contents .= $block;
+            }
+        } else {
+            $contents = "<?php\n// Generated by the EdizonTN AJAX Chat Tiki package.\n" . $block;
+        }
+        if (file_put_contents($custom, $contents, LOCK_EX) === false) {
+            throw new RuntimeException('Could not register AJAX Chat navigation in _custom/shared/custom.php.');
+        }
+
+        // tiki-admin.php has already loaded define_admin_icons.php before its
+        // package admin include is dispatched, so this also updates the current
+        // request. On later requests the custom.php bootstrap does it earlier.
+        require_once $helper;
+        $this->removeLegacyApplicationMenuLink();
+    }
+
+    /**
+     * Remove the package-owned bootstrap while preserving all unrelated custom.php code.
+     */
+    private function removeAdminNavigation()
+    {
+        $shared = $this->root . '/_custom/shared';
+        $custom = $shared . '/custom.php';
+        $helper = $shared . '/ajaxchat-admin-navigation.php';
+        $begin = '// BEGIN EdizonTN AJAX Chat admin navigation';
+        $end = '// END EdizonTN AJAX Chat admin navigation';
+        if (is_file($custom)) {
+            $contents = (string) file_get_contents($custom);
+            $start = strpos($contents, $begin);
+            $finish = $start === false ? false : strpos($contents, $end, $start);
+            if ($start !== false && $finish !== false) {
+                $finish += strlen($end);
+                if (substr($contents, $finish, 1) === "\n") {
+                    $finish++;
+                }
+                $contents = substr($contents, 0, $start) . substr($contents, $finish);
+                $generated = strpos($contents, '// Generated by the EdizonTN AJAX Chat Tiki package.') !== false;
+                $remaining = preg_replace('/^<\\?php\\s*/', '', $contents);
+                $remaining = str_replace('// Generated by the EdizonTN AJAX Chat Tiki package.', '', $remaining);
+                if ($generated && trim($remaining) === '') {
+                    unlink($custom);
+                } else {
+                    file_put_contents($custom, $contents, LOCK_EX);
+                }
+            }
+        }
+        if (is_file($helper)
+            && strpos((string) file_get_contents($helper), 'EdizonTN AJAX Chat admin navigation helper') !== false) {
+            unlink($helper);
+        }
+        if (is_dir($shared) && count(scandir($shared)) === 2) {
+            rmdir($shared);
+        }
+    }
+
+    /** Remove the obsolete Application-menu entry created by earlier PR builds. */
+    private function removeLegacyApplicationMenuLink()
+    {
+        TikiDb::get()->query(
+            'DELETE FROM tiki_menu_options WHERE menuId = 42 AND url = ?',
+            array('tiki-admin.php?page=tp_edizontn_ajaxchat'),
+            -1,
+            -1,
+            TikiDb::ERR_EXCEPTION
+        );
+    }
+
     public function install()
     {
+        require_once __DIR__ . '/SettingsStore.php';
+        $settingsStore = new AjaxChatSettingsStore();
+        $settingsStore->ensureTable();
+        $settingsStore->migratePreferences();
         $this->assertCleanUrlAvailable();
         $this->writeConfig();
         $sql = file_get_contents($this->package . '/src/chat.sql');
@@ -347,18 +454,26 @@ class AjaxChatPackageInstaller
         $this->writeCleanUrl();
         $this->writeAuthEndpoint();
         $this->writeAssetRouting();
+        $this->ensureAdminNavigation();
     }
 
     public function uninstall()
     {
-        global $prefs;
-        if (($prefs['tp_edizontn__ajaxchat__chat_enabled'] ?? 'y') === 'y') {
-            throw new RuntimeException('Disable AJAX Chat in Extension Preferences before uninstalling.');
+        require_once __DIR__ . '/SettingsStore.php';
+        $settingsStore = new AjaxChatSettingsStore();
+        $settingsStore->ensureTable();
+        $settingsStore->migratePreferences();
+        $settings = $settingsStore->getAll();
+        if (($settings['chat_enabled'] ?? 'y') === 'y') {
+            throw new RuntimeException('Disable AJAX Chat on the Ajax Chat settings page before uninstalling.');
         }
         $db = TikiDb::get();
         foreach ($this->tables as $table) {
             $db->query('DROP TABLE IF EXISTS ' . chr(96) . $table . chr(96), array(), -1, -1, TikiDb::ERR_EXCEPTION);
         }
+        $settingsStore->remove();
+        $this->removeLegacyApplicationMenuLink();
+        $this->removeAdminNavigation();
         $entry = $this->root . '/chat/index.php';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') !== false) {
             unlink($entry);

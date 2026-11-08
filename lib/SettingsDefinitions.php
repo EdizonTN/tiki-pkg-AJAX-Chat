@@ -1,12 +1,12 @@
 <?php
 /**
- * Site-wide preferences for the AJAX Chat extension.
+ * Database-backed settings for the AJAX Chat extension.
  *
  * Only runtime-safe options are exposed here. Database credentials, table
  * names, filesystem paths, authentication secrets and reserved ID ranges stay
  * installer-managed and are deliberately not editable in the Tiki UI.
  */
-function prefs_tp_edizontn__ajaxchat_list()
+function ajax_chat_setting_definitions()
 {
     $prefs = [
         'tp_edizontn__ajaxchat__chat_enabled' => [

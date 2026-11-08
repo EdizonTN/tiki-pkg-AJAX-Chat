@@ -59,6 +59,9 @@ class AJAXChatTemplate {
 
 	function replaceTemplateTags($tagData) {
 		switch($tagData[1]) {
+            case 'AJAX_CHAT_VERSION':
+                return isset($GLOBALS['ajaxChatPackageVersion']) ? htmlspecialchars((string) $GLOBALS['ajaxChatPackageVersion'], ENT_QUOTES, 'UTF-8') : 'unknown';
+
 			case 'AJAX_CHAT_URL':
 				return $this->ajaxChat->htmlEncode($this->ajaxChat->getChatURL());
 
