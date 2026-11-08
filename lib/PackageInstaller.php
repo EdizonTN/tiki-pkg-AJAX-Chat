@@ -308,8 +308,8 @@ class AjaxChatPackageInstaller
     private function removeAdminMenuLink()
     {
         TikiDb::get()->query(
-            'DELETE FROM tiki_menu_options WHERE menuId = 42 AND name = ? AND url = ?',
-            array('AJAX Chat', 'tiki-admin.php?page=tp_edizontn_ajaxchat'),
+            'DELETE FROM tiki_menu_options WHERE menuId = 42 AND url = ?',
+            array('tiki-admin.php?page=tp_edizontn_ajaxchat'),
             -1,
             -1,
             TikiDb::ERR_EXCEPTION
