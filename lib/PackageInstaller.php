@@ -269,9 +269,9 @@ class AjaxChatPackageInstaller
     }
 
     /**
-     * Add a package-owned shortcut to Tiki's standard Application menu.
-     * Menu 42 is Tiki's stock Application menu in the supported 30.1 schema.
-     * The permission check keeps the shortcut visible to administrators only.
+     * Add the package settings link to the unified administration backend menu.
+     * Tiki 30.1 exposes the Admin Icons Dashboard in menu 42 under the
+     * theme_unified_admin_backend section; place AJAX Chat beside that entry.
      */
     public function ensureAdminMenuLink()
     {
@@ -283,13 +283,21 @@ class AjaxChatPackageInstaller
 
         $url = 'tiki-admin.php?page=tp_edizontn_ajaxchat';
         $existing = $db->query('SELECT optionId FROM tiki_menu_options WHERE menuId = 42 AND url = ?', array($url), -1, -1, TikiDb::ERR_EXCEPTION);
-        if ($existing && $existing->fetchRow()) {
+        $row = $existing ? $existing->fetchRow() : false;
+        if ($row && isset($row['optionId'])) {
+            $db->query(
+                'UPDATE tiki_menu_options SET name = ?, position = 1054, section = ?, perm = ?, icon = ? WHERE optionId = ? AND menuId = 42',
+                array('AJAX Chat settings', 'theme_unified_admin_backend', 'tiki_p_admin', 'comments', $row['optionId']),
+                -1,
+                -1,
+                TikiDb::ERR_EXCEPTION
+            );
             return;
         }
 
         $db->query(
-            'INSERT INTO tiki_menu_options (menuId, type, name, url, position, section, perm, groupname, userlevel, icon) VALUES (42, ?, ?, ?, 1052, ?, ?, ?, 0, ?)',
-            array('o', 'AJAX Chat', $url, '', 'tiki_p_admin', '', 'comments'),
+            'INSERT INTO tiki_menu_options (menuId, type, name, url, position, section, perm, groupname, userlevel, icon) VALUES (42, ?, ?, ?, 1054, ?, ?, ?, 0, ?)',
+            array('o', 'AJAX Chat settings', $url, 'theme_unified_admin_backend', 'tiki_p_admin', '', 'comments'),
             -1,
             -1,
             TikiDb::ERR_EXCEPTION
