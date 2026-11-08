@@ -12,7 +12,7 @@ require_once dirname(__DIR__) . '/lib/PackageInstaller.php';
 require_once dirname(__DIR__) . '/lib/SettingsStore.php';
 
 $ajaxChatInstaller = new AjaxChatPackageInstaller(dirname(__DIR__));
-$ajaxChatInstaller->ensureAdminMenuLink();
+$ajaxChatInstaller->ensureAdminNavigation();
 $ajaxChatSettings = new AjaxChatSettingsStore();
 $ajaxChatSettings->ensureTable();
 $ajaxChatSettings->migratePreferences();
