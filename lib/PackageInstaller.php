@@ -273,7 +273,7 @@ class AjaxChatPackageInstaller
      * Menu 42 is Tiki's stock Application menu in the supported 30.1 schema.
      * The permission check keeps the shortcut visible to administrators only.
      */
-    private function installAdminMenuLink()
+    public function ensureAdminMenuLink()
     {
         $db = TikiDb::get();
         $menu = $db->query('SELECT menuId FROM tiki_menus WHERE menuId = 42', array(), -1, -1, TikiDb::ERR_EXCEPTION);
@@ -347,7 +347,7 @@ class AjaxChatPackageInstaller
         $this->writeCleanUrl();
         $this->writeAuthEndpoint();
         $this->writeAssetRouting();
-        $this->installAdminMenuLink();
+        $this->ensureAdminMenuLink();
     }
 
     public function uninstall()
