@@ -268,6 +268,46 @@ class AjaxChatPackageInstaller
         }
     }
 
+    /**
+     * Add a package-owned shortcut to Tiki's standard Application menu.
+     * Menu 42 is Tiki's stock Application menu in the supported 30.1 schema.
+     * The permission check keeps the shortcut visible to administrators only.
+     */
+    private function installAdminMenuLink()
+    {
+        $db = TikiDb::get();
+        $menu = $db->query('SELECT menuId FROM tiki_menus WHERE menuId = 42', array(), -1, -1, TikiDb::ERR_EXCEPTION);
+        if (!$menu || !$menu->fetchRow()) {
+            return;
+        }
+
+        $url = 'tiki-admin.php?page=tp_edizontn_ajaxchat';
+        $existing = $db->query('SELECT optionId FROM tiki_menu_options WHERE menuId = 42 AND url = ?', array($url), -1, -1, TikiDb::ERR_EXCEPTION);
+        if ($existing && $existing->fetchRow()) {
+            return;
+        }
+
+        $db->query(
+            'INSERT INTO tiki_menu_options (menuId, type, name, url, position, section, perm, groupname, userlevel, icon) VALUES (42, ?, ?, ?, 1052, ?, ?, ?, 0, ?)',
+            array('o', 'AJAX Chat', $url, '', 'tiki_p_admin', '', 'comments'),
+            -1,
+            -1,
+            TikiDb::ERR_EXCEPTION
+        );
+    }
+
+    /** Remove only the exact menu entry owned by this package. */
+    private function removeAdminMenuLink()
+    {
+        TikiDb::get()->query(
+            'DELETE FROM tiki_menu_options WHERE menuId = 42 AND name = ? AND url = ?',
+            array('AJAX Chat', 'tiki-admin.php?page=tp_edizontn_ajaxchat'),
+            -1,
+            -1,
+            TikiDb::ERR_EXCEPTION
+        );
+    }
+
     public function install()
     {
         require_once __DIR__ . '/SettingsStore.php';
@@ -307,6 +347,7 @@ class AjaxChatPackageInstaller
         $this->writeCleanUrl();
         $this->writeAuthEndpoint();
         $this->writeAssetRouting();
+        $this->installAdminMenuLink();
     }
 
     public function uninstall()
@@ -324,6 +365,7 @@ class AjaxChatPackageInstaller
             $db->query('DROP TABLE IF EXISTS ' . chr(96) . $table . chr(96), array(), -1, -1, TikiDb::ERR_EXCEPTION);
         }
         $settingsStore->remove();
+        $this->removeAdminMenuLink();
         $entry = $this->root . '/chat/index.php';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') !== false) {
             unlink($entry);
