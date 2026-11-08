@@ -279,6 +279,9 @@ class AjaxChatPackageInstaller
     public function ensureAdminNavigation()
     {
         $shared = $this->root . '/_custom/shared';
+        if (is_link($shared)) {
+            throw new RuntimeException('_custom/shared is a symbolic link; AJAX Chat navigation was not installed.');
+        }
         if (!is_dir($shared) && !mkdir($shared, 0755, true) && !is_dir($shared)) {
             throw new RuntimeException('Cannot create _custom/shared for AJAX Chat administration navigation.');
         }
@@ -288,6 +291,9 @@ class AjaxChatPackageInstaller
 
         $helper = $shared . '/ajaxchat-admin-navigation.php';
         $helperMarker = 'EdizonTN AJAX Chat admin navigation helper';
+        if (is_link($helper) || (file_exists($helper) && !is_file($helper))) {
+            throw new RuntimeException('_custom/shared/ajaxchat-admin-navigation.php is not a regular file; it was not overwritten.');
+        }
         $helperSource = "<?php\n// " . $helperMarker . ".\n"
             . "if (!isset(\$_SERVER['SCRIPT_NAME']) || basename(\$_SERVER['SCRIPT_NAME']) !== 'tiki-admin.php') { return; }\n"
             . "global \$prefs, \$admin_icons;\n"
@@ -320,8 +326,16 @@ class AjaxChatPackageInstaller
             . "if (isset(\$_SERVER['SCRIPT_NAME']) && basename(\$_SERVER['SCRIPT_NAME']) === 'tiki-admin.php' && is_file(__DIR__ . '/ajaxchat-admin-navigation.php')) {\n"
             . "    require_once __DIR__ . '/ajaxchat-admin-navigation.php';\n"
             . "}\n" . $end . "\n";
+        if (is_link($custom) || (file_exists($custom) && !is_file($custom))) {
+            throw new RuntimeException('_custom/shared/custom.php is not a regular file; it was not modified.');
+        }
         if (is_file($custom)) {
             $contents = (string) file_get_contents($custom);
+            if ($contents === '') {
+                $contents = "<?php\n";
+            } elseif (strpos($contents, '<?php') === false) {
+                throw new RuntimeException('The existing _custom/shared/custom.php is not a PHP file; it was not modified.');
+            }
             if (strpos($contents, $begin) !== false) {
                 if (strpos($contents, $end) === false) {
                     throw new RuntimeException('The existing custom.php contains an incomplete AJAX Chat marker block.');
