@@ -269,9 +269,12 @@ class AjaxChatPackageInstaller
     }
 
     /**
-     * Add the package settings link to the unified administration backend menu.
-     * Tiki 30.1 exposes the Admin Icons Dashboard in menu 42 under the
-     * theme_unified_admin_backend section; place AJAX Chat beside that entry.
+     * Add the package settings link to Tiki's classic text-based Admin menu.
+     *
+     * In Tiki 30.1 the classic Settings/Admin branch is in the default
+     * Application menu (ID 42). Its Control Panels and other admin entries
+     * use an empty section; theme_unified_admin_backend is only for the
+     * optional unified dashboard and hides entries in the classic menu.
      */
     public function ensureAdminMenuLink()
     {
@@ -286,8 +289,8 @@ class AjaxChatPackageInstaller
         $row = $existing ? $existing->fetchRow() : false;
         if ($row && isset($row['optionId'])) {
             $db->query(
-                'UPDATE tiki_menu_options SET name = ?, position = 1054, section = ?, perm = ?, icon = ? WHERE optionId = ? AND menuId = 42',
-                array('AJAX Chat settings', 'theme_unified_admin_backend', 'tiki_p_admin', 'comments', $row['optionId']),
+                'UPDATE tiki_menu_options SET type = ?, name = ?, position = 1054, section = ?, perm = ?, groupname = ?, userlevel = 0, icon = ? WHERE optionId = ? AND menuId = 42',
+                array('o', 'AJAX Chat settings', '', 'tiki_p_admin', '', 'comments', $row['optionId']),
                 -1,
                 -1,
                 TikiDb::ERR_EXCEPTION
@@ -297,7 +300,7 @@ class AjaxChatPackageInstaller
 
         $db->query(
             'INSERT INTO tiki_menu_options (menuId, type, name, url, position, section, perm, groupname, userlevel, icon) VALUES (42, ?, ?, ?, 1054, ?, ?, ?, 0, ?)',
-            array('o', 'AJAX Chat settings', $url, 'theme_unified_admin_backend', 'tiki_p_admin', '', 'comments'),
+            array('o', 'AJAX Chat settings', $url, '', 'tiki_p_admin', '', 'comments'),
             -1,
             -1,
             TikiDb::ERR_EXCEPTION
