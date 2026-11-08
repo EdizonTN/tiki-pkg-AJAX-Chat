@@ -317,7 +317,7 @@ class AjaxChatPackageInstaller
         $begin = '// BEGIN EdizonTN AJAX Chat admin navigation';
         $end = '// END EdizonTN AJAX Chat admin navigation';
         $block = "\n" . $begin . "\n"
-            . "if (isset(\$_SERVER['SCRIPT_NAME']) && basename(\$_SERVER['SCRIPT_NAME']) === 'tiki-admin.php') {\n"
+            . "if (isset(\$_SERVER['SCRIPT_NAME']) && basename(\$_SERVER['SCRIPT_NAME']) === 'tiki-admin.php' && is_file(__DIR__ . '/ajaxchat-admin-navigation.php')) {\n"
             . "    require_once __DIR__ . '/ajaxchat-admin-navigation.php';\n"
             . "}\n" . $end . "\n";
         if (is_file($custom)) {
@@ -326,6 +326,7 @@ class AjaxChatPackageInstaller
                 if (strpos($contents, $end) === false) {
                     throw new RuntimeException('The existing custom.php contains an incomplete AJAX Chat marker block.');
                 }
+                require_once $helper;
                 return;
             }
             $closingTag = strrpos($contents, '?>');
