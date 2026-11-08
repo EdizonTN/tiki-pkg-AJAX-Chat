@@ -341,6 +341,7 @@ class AjaxChatPackageInstaller
                     throw new RuntimeException('The existing custom.php contains an incomplete AJAX Chat marker block.');
                 }
                 require_once $helper;
+                $this->removeLegacyApplicationMenuLink();
                 return;
             }
             $closingTag = strrpos($contents, '?>');
@@ -360,6 +361,7 @@ class AjaxChatPackageInstaller
         // package admin include is dispatched, so this also updates the current
         // request. On later requests the custom.php bootstrap does it earlier.
         require_once $helper;
+        $this->removeLegacyApplicationMenuLink();
     }
 
     /**
@@ -452,7 +454,6 @@ class AjaxChatPackageInstaller
         $this->writeCleanUrl();
         $this->writeAuthEndpoint();
         $this->writeAssetRouting();
-        $this->removeLegacyApplicationMenuLink();
         $this->ensureAdminNavigation();
     }
 
