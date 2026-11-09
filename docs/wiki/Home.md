@@ -14,3 +14,11 @@ AJAX Chat je TikiWiki Extension Package. Celý balík sa nasadzuje do `vendor_cu
 **Dôležité:** adresár `src/` zostáva v balíku. Nekopírujte ho do koreňa Tiki ani do `_CHAT/`.
 
 Cieľová platforma: TikiWiki 30.1 a PHP 8.1+. Integrácia je vo vývoji; pred produkčným nasadením ju otestujte na stagingu.
+
+## English / Anglická verzia
+
+- [Home (EN)](en/Home.md)
+- [Architecture (EN)](en/Architecture.md)
+- [Installation (EN)](en/Installation.md)
+- [Configuration (EN)](en/Configuration.md)
+- [Maintenance (EN)](en/Maintenance.md)
