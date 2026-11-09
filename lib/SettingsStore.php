@@ -262,12 +262,6 @@ class AjaxChatSettingsStore
             $normalized[$suffix] = $value;
         }
 
-        $effective = array_merge($current, $normalized);
-        if (isset($effective['opening_hour'], $effective['closing_hour'])
-            && (int) $effective['opening_hour'] >= (int) $effective['closing_hour']) {
-            throw new RuntimeException('Closing hour must be later than opening hour.');
-        }
-
         foreach ($normalized as $suffix => $value) {
             $this->saveOne($suffix, $value);
         }
