@@ -14,10 +14,10 @@ class AjaxChatSettingsStore
 
     private $definitions;
 
-    public function __construct()
+    public function __construct(array $runtimeConfig = array(), array $groups = array())
     {
         require_once __DIR__ . '/SettingsDefinitions.php';
-        $this->definitions = ajax_chat_setting_definitions();
+        $this->definitions = ajax_chat_setting_definitions($runtimeConfig, $groups);
     }
 
     public function ensureTable()
@@ -152,24 +152,116 @@ class AjaxChatSettingsStore
         foreach ($this->definitions as $fullName => $definition) {
             $allowed[$this->suffix($fullName)] = $definition;
         }
+        $normalized = array();
+
         foreach ($allowed as $suffix => $definition) {
             if (!array_key_exists($suffix, $submitted)) {
                 continue;
             }
-            if (!is_scalar($submitted[$suffix])) {
+            $value = $submitted[$suffix];
+            $type = $definition['type'];
+
+            if ($type === 'multi') {
+                if (!is_array($value)) {
+                    throw new RuntimeException('Invalid selection for setting: ' . $suffix);
+                }
+                $validOptions = array();
+                foreach ($definition['options'] as $option) {
+                    $validOptions[] = (string) $option['value'];
+                }
+                $selected = array();
+                foreach ($value as $item) {
+                    $item = trim((string) $item);
+                    if ($item === '') {
+                        continue;
+                    }
+                    if (!in_array($item, $validOptions, true)) {
+                        throw new RuntimeException('Invalid selection for setting: ' . $suffix);
+                    }
+                    if (!in_array($item, $selected, true)) {
+                        $selected[] = $item;
+                    }
+                }
+                sort($selected, SORT_NUMERIC);
+                $normalized[$suffix] = implode(',', $selected);
+                continue;
+            }
+
+            if (!is_scalar($value)) {
                 throw new RuntimeException('Invalid value for setting: ' . $suffix);
             }
-            $value = trim((string) $submitted[$suffix]);
-            if (strlen($value) > 1000) {
-                throw new RuntimeException('Setting is too long: ' . $suffix);
+            $value = trim((string) $value);
+
+            if ($type === 'checkbox') {
+                if (!in_array($value, array('y', 'n'), true)) {
+                    throw new RuntimeException('Invalid checkbox value for setting: ' . $suffix);
+                }
+            } elseif ($type === 'number' || $type === 'hour' || $type === 'year') {
+                if ($value === '' && !empty($definition['allow_empty'])) {
+                    $normalized[$suffix] = '';
+                    continue;
+                }
+                if (!preg_match('/^-?[0-9]+$/', $value)) {
+                    throw new RuntimeException('This setting requires an integer: ' . $suffix);
+                }
+                $number = (int) $value;
+                if ($number < (int) $definition['min'] || $number > (int) $definition['max']) {
+                    throw new RuntimeException('Value out of range for setting: ' . $suffix . ' (' . $definition['min'] . '–' . $definition['max'] . ')');
+                }
+                $value = (string) $number;
+            } elseif ($type === 'select') {
+                $validOptions = array();
+                foreach ($definition['options'] as $option) {
+                    $validOptions[] = (string) $option['value'];
+                }
+                if (!in_array($value, $validOptions, true)) {
+                    throw new RuntimeException('Invalid selection for setting: ' . $suffix);
+                }
+            } elseif ($type === 'url') {
+                if (strlen($value) > 255) {
+                    throw new RuntimeException('Socket server URL must not exceed 255 characters.');
+                }
+                if ($value !== '') {
+                    $url = filter_var($value, FILTER_VALIDATE_URL);
+                    $parts = $url ? parse_url($url) : false;
+                    if (!$parts || empty($parts['host']) || empty($parts['scheme'])
+                        || !in_array(strtolower($parts['scheme']), array('http', 'https', 'ws', 'wss'), true)) {
+                        throw new RuntimeException('Enter a valid socket server URL for setting: ' . $suffix);
+                    }
+                }
+            } elseif ($type === 'ip') {
+                if (!filter_var($value, FILTER_VALIDATE_IP)) {
+                    throw new RuntimeException('Enter a valid IPv4 or IPv6 address for setting: ' . $suffix);
+                }
+            } elseif ($type === 'text') {
+                $maxLength = isset($definition['maxlength']) ? (int) $definition['maxlength'] : 1000;
+                $length = function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
+                if ($length > $maxLength) {
+                    throw new RuntimeException('Setting is too long: ' . $suffix . ' (maximum ' . $maxLength . ' characters)');
+                }
+                if (in_array($suffix, array('limit_channel_list', 'request_messages_prior_channel_enter_list', 'logs_user_access_channel_list'), true)) {
+                    if ($value !== '') {
+                        $ids = array();
+                        foreach (explode(',', $value) as $id) {
+                            $id = trim($id);
+                            if (!ctype_digit($id) || (int) $id >= 500000000) {
+                                throw new RuntimeException('Enter comma-separated channel IDs below 500000000 for setting: ' . $suffix);
+                            }
+                            $id = (string) (int) $id;
+                            if (!in_array($id, $ids, true)) {
+                                $ids[] = $id;
+                            }
+                        }
+                        $value = implode(',', $ids);
+                    }
+                }
+            } else {
+                throw new RuntimeException('Unsupported setting type: ' . $type);
             }
-            if ($definition['type'] === 'flag' && !in_array($value, array('y', 'n'), true)) {
-                throw new RuntimeException('Invalid flag value for setting: ' . $suffix);
-            }
-            if ($definition['type'] === 'text' && preg_match('/(?:^|_)(?:hour|id|limit|length|timeout|interval|diff|users|rate|time|year|days|port|chat_id)$/', $suffix)
-                && $value !== '' && !preg_match('/^-?[0-9]+$/', $value)) {
-                throw new RuntimeException('This setting requires an integer: ' . $suffix);
-            }
+            $normalized[$suffix] = $value;
+        }
+
+        foreach ($normalized as $suffix => $value) {
             $this->saveOne($suffix, $value);
         }
     }
