@@ -8,6 +8,10 @@ $access->check_permission('tiki_p_admin');
 $admintitle = tra('Ajax Chat settings');
 $description = tra('Configure and maintain the AJAX Chat extension.');
 
+// Tiki's breadcrumb help link prefixes helpUrl with prefs.helpurl.
+// Override the base for this request only so the page help icon opens the project wiki.
+$prefs['helpurl'] = 'https://github.com/Frug/AJAX-Chat/';
+
 require_once dirname(__DIR__) . '/lib/PackageInstaller.php';
 require_once dirname(__DIR__) . '/lib/SettingsStore.php';
 
