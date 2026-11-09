@@ -15,7 +15,7 @@
                         <div class="mb-3 row">
                             <label class="col-sm-3 col-form-label" for="ajax-chat-setting-{$setting.key|escape}" title="{$setting.description|escape}">
                                 {$setting.name|escape}
-                                <span class="tips" title="{$setting.description|escape}">{icon name="help"}</span>
+                                <a href="#" class="tikihelp text-info" title="{$setting.name|escape}: {$setting.description|escape}" onclick="return false;">{icon name="help"}</a>
                             </label>
                             <div class="col-sm-7 offset-sm-1">
                                 {if $setting.type eq 'checkbox'}
