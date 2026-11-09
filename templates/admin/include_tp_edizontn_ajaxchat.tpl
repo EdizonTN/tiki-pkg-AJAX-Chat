@@ -1,4 +1,4 @@
-<h1>{tr}Ajax Chat settings{/tr}</h1>
+<h1>{tr}Ajax Chat{/tr}</h1>
 
 <p>{tr}Configure AJAX Chat. Each option includes a short explanation next to its name. Settings are stored in the package-owned database table.{/tr}</p>
 
@@ -62,7 +62,7 @@
                 {/foreach}
                 <div class="mb-3 row">
                     <div class="col-sm-7 offset-sm-4">
-                        <button type="submit" class="btn btn-primary">{tr}Save AJAX Chat settings{/tr}</button>
+                        <button type="submit" class="btn btn-primary">{tr}Save settings{/tr}</button>
                     </div>
                 </div>
             </form>

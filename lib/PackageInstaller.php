@@ -301,7 +301,7 @@ class AjaxChatPackageInstaller
             . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { require_once dirname(__DIR__, 2) . '/admin/define_admin_icons.php'; }\n"
             . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { return; }\n"
             . "\$page = 'tp_edizontn_ajaxchat';\n"
-            . "\$entry = array('title' => tr('AJAX Chat settings'), 'description' => tr('Configure AJAX Chat settings'), 'help' => 'wiki', 'icon' => 'comments');\n"
+            . "\$entry = array('title' => tr('AJAX Chat'), 'description' => tr('Configure AJAX Chat'), 'help' => 'wiki', 'icon' => 'comments');\n"
             . "if (isset(\$prefs['theme_unified_admin_backend']) && \$prefs['theme_unified_admin_backend'] === 'y' && isset(\$admin_icons['backend']['children']) && is_array(\$admin_icons['backend']['children'])) {\n"
             . "    \$admin_icons['backend']['children'][\$page] = \$entry;\n"
             . "} else {\n"
@@ -465,7 +465,7 @@ class AjaxChatPackageInstaller
         $settingsStore->migratePreferences();
         $settings = $settingsStore->getAll();
         if (($settings['chat_enabled'] ?? 'y') === 'y') {
-            throw new RuntimeException('Disable AJAX Chat on the Ajax Chat settings page before uninstalling.');
+            throw new RuntimeException('Disable AJAX Chat on the Ajax Chat page before uninstalling.');
         }
         $db = TikiDb::get();
         foreach ($this->tables as $table) {
