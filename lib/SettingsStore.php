@@ -219,6 +219,9 @@ class AjaxChatSettingsStore
                     throw new RuntimeException('Invalid selection for setting: ' . $suffix);
                 }
             } elseif ($type === 'url') {
+                if (strlen($value) > 255) {
+                    throw new RuntimeException('Socket server URL must not exceed 255 characters.');
+                }
                 if ($value !== '') {
                     $url = filter_var($value, FILTER_VALIDATE_URL);
                     $parts = $url ? parse_url($url) : false;
