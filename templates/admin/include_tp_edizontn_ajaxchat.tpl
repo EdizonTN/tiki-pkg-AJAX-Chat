@@ -2,6 +2,19 @@
 
 <p>{tr}Configure AJAX Chat. Each option includes a short explanation next to its name. Settings are stored in the package-owned database table.{/tr}</p>
 
+{if !$ajax_chat_chat_ready}
+    <div class="alert alert-info" role="status">
+        <p><strong>{tr}The AJAX Chat package is enabled, but chat initialization is not complete yet.{/tr}</strong></p>
+        <p>{tr}Initialize the database tables, protected configuration and /chat entry point to finish setting up AJAX Chat. This does not modify Tiki core files.{/tr}</p>
+        <form method="post" action="{$ajax_chat_admin_url|escape}">
+            {ticket}
+            <input type="hidden" name="redirect" value="0">
+            <input type="hidden" name="ajax_chat_action" value="install">
+            <button type="submit" class="btn btn-primary">{tr}Initialize AJAX Chat now{/tr}</button>
+        </form>
+    </div>
+{/if}
+
 {tabset name="ajaxchat-settings"}
     {foreach from=$ajax_chat_tabs key=tab item=sections}
         {tab name=$tab}
