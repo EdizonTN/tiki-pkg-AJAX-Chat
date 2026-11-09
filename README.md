@@ -1,70 +1,117 @@
 # AJAX Chat for TikiWiki
 
-TikiWiki Extension Package, ktorý integruje **AJAX Chat** priamo do TikiWiki. Používa Tiki používateľov, prihlasovaciu reláciu, skupiny, oprávnenia a existujúce databázové pripojenie.
+> **Autori / Credits:** Tento repozitár bol vytvorený a dokumentovaný s pomocou ChatGPT od OpenAI. / This repository was created and documented with the assistance of ChatGPT by OpenAI.
 
-## Čo balík poskytuje
+## 🇸🇰 Slovenčina
 
+TikiWiki Extension Package, ktorý integruje **AJAX Chat** priamo do TikiWiki. Využíva existujúcich používateľov, session, skupiny, oprávnenia a databázové pripojenie TikiWiki.
+
+### Funkcie
 - Samostatný chat na URL `/chat/` aj vloženie do wiki stránky.
-- Verejné a súkromné miestnosti, súkromné správy a históriu.
+- Verejné a súkromné miestnosti, súkromné správy a história.
 - Roly používateľ, moderátor a administrátor odvodené od Tiki účtu a skupín.
-- Administráciu nastavení, inštaláciu, opravu a odinštalovanie cez Tiki.
-- Vlastnú databázovú vrstvu postavenú na TikiDb; samostatná databáza nie je potrebná.
+- Administrácia nastavení, inštalácia, oprava a odinštalovanie cez Tiki.
+- TikiDb – samostatná databáza nie je potrebná.
 
-## Požiadavky a stav
-
+### Požiadavky
 - TikiWiki **30.1** (cieľová verzia integrácie).
-- PHP **8.1 alebo novšie**.
-- Databáza používaná TikiWiki; chatové tabuľky vyžadujú InnoDB a utf8mb4.
-- Webserver musí vedieť obslúžiť PHP a pravidlá `.htaccess` v adresári `/chat` (pri Apache).
+- PHP **8.1+**.
+- Databáza Tiki s InnoDB a utf8mb4.
+- Webserver s podporou PHP a pravidiel `.htaccess` (pri Apache).
 
-Integrácia je vo vývoji a nebola potvrdená integračným testom na čistej živej inštalácii TikiWiki 30.1. Pred produkčným nasadením ju otestujte na stagingu a zálohujte databázu aj súbory. Automatické kontroly v GitHub Actions pokrývajú PHP lint, testy s MariaDB a kontrolu JavaScriptu.
+Integrácia je vo vývoji. Pred produkčným nasadením ju otestujte na stagingu a zálohujte databázu aj súbory. CI vykonáva PHP lint, testy s MariaDB a kontrolu JavaScriptu.
 
-## Rýchla inštalácia
+### Rýchla inštalácia
+1. Skopírujte celý repozitár do `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
+2. V Tiki otvorte **Admin → Packages** a aktivujte `edizontn/ajaxchat`.
+3. Otvorte **AJAX Chat settings → Maintenance**.
+4. Kliknite na **Install / reinstall / repair AJAX Chat**.
+5. Otvorte **Open Chat** alebo vložte chat do wiki stránky.
 
-1. Skopírujte **celý repozitár** do `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
-2. V Tiki otvorte **Admin → Packages** a balík aktivujte.
-3. Prejdite na administračnú stránku **AJAX Chat settings**.
-4. V časti **Maintenance** kliknite na **Install / reinstall / repair AJAX Chat**.
-5. Po úspešnej inštalácii otvorte **Open Chat** alebo vložte chat do wiki stránky.
+**Dôležité:** Nekopírujte `src/` do koreňa Tiki ani do `_CHAT/`. Celý balík musí zostať v `vendor_custom/tiki-pkg-ajax-chat/`.
 
-> Nekopírujte `src/` do koreňa Tiki a nepremiestňujte ho do `_CHAT/`. Balík musí zostať celý v `vendor_custom/tiki-pkg-ajax-chat/`.
-
-## Vloženie do wiki stránky
-
-Základné vloženie:
-
+### Vloženie do wiki stránky
 ```text
 {package package="edizontn/ajaxchat" plugin="ajaxchat"}
 ```
-
-Vlastná výška iframe (200–1200 px):
-
+Voliteľná výška iframe (200–1200 px):
 ```text
 {package package="edizontn/ajaxchat" plugin="ajaxchat" height="520"}
 ```
+Používateľ musí byť prihlásený do TikiWiki; anonymný prístup nie je povolený.
 
-Používateľ musí byť prihlásený do TikiWiki. Anonymný prístup chatový plugin nepovoľuje.
-
-## Umiestnenie a databáza
-
+### Umiestnenie a dáta
 - Balík: `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`
-- Jadro chatu: `vendor_custom/tiki-pkg-ajax-chat/src/`
-- Vygenerovaná konfigurácia a HMAC secret: `TIKI_ROOT/temp/ajax-chat/Chat-config.php`
-- Verejný vstup: `TIKI_ROOT/chat/` (vytvára ho inštalátor)
-- Šesť runtime tabuliek: `tiki_ajaxchat_*`
-- Nastavenia balíka: `tiki_ajaxchat_settings`
+- Jadro: `vendor_custom/tiki-pkg-ajax-chat/src/`
+- Konfigurácia a HMAC secret: `TIKI_ROOT/temp/ajax-chat/Chat-config.php`
+- Verejný endpoint: `TIKI_ROOT/chat/`
+- Runtime tabuľky: `tiki_ajaxchat_*`
+- Nastavenia: `tiki_ajaxchat_settings`
 
-Konfiguráciu ani secret neupravujte v repozitári. Inštalátor ich generuje mimo balíka, aby aktualizácia zdrojových súborov neprepísala lokálne tajomstvá.
+Konfigurácia a secret sa generujú mimo repozitára, aby ich aktualizácia neprepísala.
 
-## Dokumentácia
-
-Podrobné návody sú v [dokumentačnej wiki](docs/wiki/Home.md):
-
-- [Architektúra a štruktúra súborov](docs/wiki/Architecture.md)
+### Dokumentácia
+- [Úvod](docs/wiki/Home.md)
+- [Architektúra](docs/wiki/Architecture.md)
 - [Inštalácia a aktualizácia](docs/wiki/Installation.md)
 - [Nastavenia a oprávnenia](docs/wiki/Configuration.md)
 - [Údržba a riešenie problémov](docs/wiki/Maintenance.md)
 
-## Licencia
+## 🇬🇧 English
 
-Pozri [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) a licenčné súbory v `src/`.
+A TikiWiki Extension Package that integrates **AJAX Chat** directly into TikiWiki. It reuses TikiWiki users, sessions, groups, permissions, and the existing database connection.
+
+### Features
+- Standalone chat at `/chat/` or embedded in a wiki page.
+- Public and private rooms, private messages, and message history.
+- User, moderator, and administrator roles derived from Tiki accounts and groups.
+- Tiki administration for settings, installation, repair, and uninstall.
+- Uses TikiDb; no separate database is required.
+
+### Requirements
+- TikiWiki **30.1** (integration target).
+- PHP **8.1+**.
+- Tiki database with InnoDB and utf8mb4.
+- PHP-capable web server and `.htaccess` support (Apache).
+
+The integration is under development. Test it on a staging instance and back up the database and files before production deployment. CI runs PHP linting, MariaDB-backed tests, and JavaScript checks.
+
+### Quick installation
+1. Copy the entire repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
+2. In Tiki, open **Admin → Packages** and enable `edizontn/ajaxchat`.
+3. Open **AJAX Chat settings → Maintenance**.
+4. Click **Install / reinstall / repair AJAX Chat**.
+5. Use **Open Chat** or embed the chat in a wiki page.
+
+**Important:** Do not copy `src/` into the Tiki root or move it to `_CHAT/`. Keep the complete package in `vendor_custom/tiki-pkg-ajax-chat/`.
+
+### Embed in a wiki page
+```text
+{package package="edizontn/ajaxchat" plugin="ajaxchat"}
+```
+Optional iframe height (200–1200 px):
+```text
+{package package="edizontn/ajaxchat" plugin="ajaxchat" height="520"}
+```
+The visitor must be logged in to TikiWiki. Anonymous access is not supported.
+
+### Paths and data
+- Package: `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`
+- Chat engine: `vendor_custom/tiki-pkg-ajax-chat/src/`
+- Generated configuration and HMAC secret: `TIKI_ROOT/temp/ajax-chat/Chat-config.php`
+- Public endpoint: `TIKI_ROOT/chat/`
+- Runtime tables: `tiki_ajaxchat_*`
+- Package settings: `tiki_ajaxchat_settings`
+
+Configuration and the secret are generated outside the repository so package updates do not overwrite local secrets.
+
+### Documentation
+- [Home](docs/wiki/Home.md)
+- [Architecture](docs/wiki/Architecture.md)
+- [Installation and upgrades](docs/wiki/Installation.md)
+- [Configuration and permissions](docs/wiki/Configuration.md)
+- [Maintenance and troubleshooting](docs/wiki/Maintenance.md)
+
+## License
+
+See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and the license files in `src/`.
