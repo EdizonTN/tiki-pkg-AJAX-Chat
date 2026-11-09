@@ -3,7 +3,7 @@
     "description": "EdizonTN AJAX Chat integration package for TikiWiki",
     "type": "tiki-package",
     "license": "MIT",
-    "version": "0.1.10",
+    "version": "0.1.11",
     "homepage": "https://github.com/PetoJanis/tiki-AJAX-Chat",
     "require": {
         "php": ">=8.1"
