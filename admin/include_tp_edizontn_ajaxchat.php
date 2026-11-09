@@ -88,6 +88,16 @@ foreach ($ajaxChatSettings->getDefinitions() as $fullName => $definition) {
     $key = substr($fullName, strlen(AjaxChatSettingsStore::PREFIX));
     $definition['key'] = $key;
     $definition['value'] = isset($ajaxChatSettingValues[$key]) ? $ajaxChatSettingValues[$key] : $definition['default'];
+    if ($key === 'moderator_groups' && strpos($definition['value'], ',') !== false) {
+        $legacyGroups = array_map('trim', explode(',', $definition['value']));
+        $definition['value'] = '';
+        foreach ($legacyGroups as $legacyGroup) {
+            if (in_array($legacyGroup, $ajaxChatGroupNames, true)) {
+                $definition['value'] = $legacyGroup;
+                break;
+            }
+        }
+    }
     if ($definition['type'] === 'multi') {
         $definition['selected_values'] = $definition['value'] === '' ? array() : explode(',', $definition['value']);
     } else {
