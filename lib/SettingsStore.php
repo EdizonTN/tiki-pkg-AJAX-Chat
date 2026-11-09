@@ -152,7 +152,6 @@ class AjaxChatSettingsStore
         foreach ($this->definitions as $fullName => $definition) {
             $allowed[$this->suffix($fullName)] = $definition;
         }
-        $current = $this->getAll();
         $normalized = array();
 
         foreach ($allowed as $suffix => $definition) {
