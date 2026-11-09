@@ -68,7 +68,7 @@ function ajax_chat_setting_definitions(array $runtimeConfig = array(), array $gr
     $add('General Settings', 'Cookies', 'Session preference cookie lifetime (days)', 'session_cookie_lifetime', 'number', 'Lifetime of the language, style and preference cookies.', '365', array('min' => 0, 'max' => 1460));
 
     $add('General Settings', 'Open/close', 'Opening hour', 'opening_hour', 'hour', 'Hour of day when chat availability starts (0–23).', '0', array('min' => 0, 'max' => 23));
-    $add('General Settings', 'Open/close', 'Closing hour', 'closing_hour', 'hour', 'Hour of day when chat availability ends (1–24). Must be later than the opening hour.', '24', array('min' => 1, 'max' => 24));
+    $add('General Settings', 'Open/close', 'Closing hour', 'closing_hour', 'hour', 'Hour of day when chat availability ends (1–24). The chat engine supports schedules that cross midnight.', '24', array('min' => 1, 'max' => 24));
     $add('General Settings', 'Open/close', 'Open weekdays', 'opening_week_days', 'multi', 'Select the days when the chat is available. Stored as weekday numbers 0–6, where 0 is Sunday.', '0,1,2,3,4,5,6', array(
         'options' => array(
             array('value' => '0', 'label' => tra('Sunday')),
