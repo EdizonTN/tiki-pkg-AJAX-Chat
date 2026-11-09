@@ -20,11 +20,11 @@ V koreňovom adresári musia zostať `composer.json` a `tiki-package.json`.
 
 ## 2. Aktivácia
 1. Prihláste sa ako Tiki administrátor.
-2. Otvorte **Admin → Packages**.
-3. Vyhľadajte a aktivujte `edizontn/ajaxchat`.
-4. Otvorte **AJAX Chat settings**.
+2. Otvorte **Admin → Advanced → Packages**.
+3. Vyhľadajte a aktivujte balík `edizontn/ajaxchat`.
+4. Otvorte **AJAX Chat settings** v časti **Admin → Advanced**.
 
-Položka administrácie sa registruje v Tiki administračnej navigácii. Pri Unified Admin Backend sa zobrazuje v časti Advanced; v klasickom rozhraní ako administračná položka.
+Povolenie package a zobrazenie odkazu na chat v používateľskom menu sú dve odlišné veci. Aktivácia balíka sama osebe nepridá položku AJAX Chat do hlavného navigačného menu webu. Ak chcete mať chat dostupný z menu, pridajte odkaz na `/chat/` do príslušného Tiki menu. Ak sa nezobrazuje ani administračná stránka **AJAX Chat settings**, skontrolujte, či je balík skutočne povolený a či používate účet s administrátorskými oprávneniami.
 
 ## 3. Inštalácia
 Na stránke **AJAX Chat settings → Maintenance** kliknite na **Install / reinstall / repair AJAX Chat**. Inštalátor:
