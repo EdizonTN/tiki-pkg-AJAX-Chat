@@ -123,8 +123,15 @@ function AjaxChatApplyTikiPreferences(array $config)
                 if (in_array($value, isset($config['styleAvailable']) ? $config['styleAvailable'] : array(), true)) {
                     $config[$key] = $value;
                 }
-            } elseif ($key === 'socketServerHost' && $value === '') {
-                $config[$key] = null;
+            } elseif ($key === 'socketServerHost') {
+                if ($value === '') {
+                    $config[$key] = null;
+                } else {
+                    $parts = parse_url($value);
+                    $config[$key] = (is_array($parts) && !empty($parts['host'])) ? $parts['host'] : null;
+                }
+            } elseif ($key === 'defaultChannelName' && strlen($value) <= 40) {
+                $config[$key] = $value;
             } elseif (in_array($key, array('privateRoomPrefix', 'privateRoomSuffix', 'privateChannelPrefix', 'privateChannelSuffix', 'guestUserPrefix', 'guestUserSuffix', 'changedNickPrefix', 'changedNickSuffix'), true) && strlen($value) <= 16) {
                 $config[$key] = $value;
             } elseif ($value !== '' && strlen($value) <= 255) {
@@ -136,7 +143,7 @@ function AjaxChatApplyTikiPreferences(array $config)
     $numberMap = array(
         'default_channel_id' => array('defaultChannelID', 0, 100000000),
         'max_private_rooms_per_user' => array('maxPrivateRoomsPerUser', 0, 100),
-        'private_room_max_name_length' => array('privateRoomMaxNameLength', 1, 48),
+        'private_room_max_name_length' => array('privateRoomMaxNameLength', 1, 40),
         'opening_hour' => array('openingHour', 0, 23),
         'closing_hour' => array('closingHour', 1, 24),
         'inactive_timeout' => array('inactiveTimeout', 2, 1440),
@@ -149,10 +156,10 @@ function AjaxChatApplyTikiPreferences(array $config)
         'max_message_rate' => array('maxMessageRate', 1, 1000),
         'default_ban_time' => array('defaultBanTime', 1, 525600),
         'logs_request_messages_time_diff' => array('logsRequestMessagesTimeDiff', 1, 8760),
-        'logs_request_messages_limit' => array('logsRequestMessagesLimit', 1, 500),
+        'logs_request_messages_limit' => array('logsRequestMessagesLimit', 0, 65536),
         'logs_first_year' => array('logsFirstYear', 2000, (int) date('Y')),
-        'logs_purge_time_diff' => array('logsPurgeTimeDiff', 1, 36500),
-        'session_cookie_lifetime' => array('sessionCookieLifeTime', 0, 3650),
+        'logs_purge_time_diff' => array('logsPurgeTimeDiff', 0, 1460),
+        'session_cookie_lifetime' => array('sessionCookieLifeTime', 0, 1460),
         'socket_server_port' => array('socketServerPort', 1, 65535),
         'socket_server_chat_id' => array('socketServerChatID', 0, 2147483647),
     );
@@ -209,9 +216,7 @@ function AjaxChatApplyTikiPreferences(array $config)
                 }
             }
         }
-        if ($days) {
-            $config['openingWeekDays'] = $days;
-        }
+        $config['openingWeekDays'] = $days;
     }
 
     return $config;
