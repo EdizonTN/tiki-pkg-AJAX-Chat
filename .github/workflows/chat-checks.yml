@@ -38,10 +38,11 @@ jobs:
 
       - name: Lint all PHP files
         run: |
-          find lib prefs src tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          find admin lib prefs src tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Run PHP tests
         run: |
+          php tests/test_admin_settings_catalogue.php
           php tests/test_ajax_chat_auth.php
           php tests/test_tiki_bootstrap_scope.php
           php tests/test_chat_schema.php
