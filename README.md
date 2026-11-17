@@ -1,5 +1,7 @@
 # AJAX Chat for TikiWiki
 
+**Verzia balíka / Package version: 0.1.17**
+
 > **Autori / Credits:** Tento repozitár bol vytvorený a dokumentovaný s pomocou ChatGPT od OpenAI. / This repository was created and documented with the assistance of ChatGPT by OpenAI.
 
 ## 🇸🇰 Slovenčina
@@ -14,7 +16,7 @@ TikiWiki Extension Package, ktorý integruje **AJAX Chat** priamo do TikiWiki. V
 - TikiDb – samostatná databáza nie je potrebná.
 
 ### Požiadavky
-- TikiWiki **30.1** (cieľová verzia integrácie).
+- TikiWiki **30.2** (cieľová verzia integrácie; runtime test ešte neprebehol).
 - PHP **8.1+**.
 - Databáza Tiki s InnoDB a utf8mb4.
 - Webserver s podporou PHP a pravidiel `.htaccess` (pri Apache).
@@ -24,9 +26,13 @@ Integrácia je vo vývoji. Pred produkčným nasadením ju otestujte na stagingu
 ### Rýchla inštalácia
 1. Skopírujte celý repozitár do `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. V Tiki otvorte **Admin → Packages** a aktivujte `edizontn/ajaxchat`.
-3. Otvorte **AJAX Chat settings → Maintenance**.
+3. V administračnom menu UAB otvorte **Manage → Website Functions → AJAX Chat**.
 4. Kliknite na **Install / reinstall / repair AJAX Chat**.
 5. Otvorte **Open Chat** alebo vložte chat do wiki stránky.
+
+**Umiestnenie v administračnom menu:** Balík dodáva vlastnú kópiu šablóny `templates/admin/include_anchors.tpl` cez podporovanú vyhľadávaciu cestu šablón Extension Packages. Odkaz **AJAX Chat** je vložený priamo do pevnej sekcie **Manage → Website Functions** a zobrazuje sa administrátorom (`tiki_p_admin`). Pri deaktivovaní balíka sa jeho šablóna prestane používať; pri opätovnom aktivovaní sa znovu načíta. Jadro Tiki ani súbory témy sa nemenia. Tiki téma, ktorá dodáva vlastnú verziu tejto šablóny, má prednosť pred šablónou balíka a môže preto prekryť túto úpravu.
+
+Šablóna vychádza z `templates/admin/include_anchors.tpl` v poskytnutom zdrojovom strome TikiWiki 30.2. **Live runtime overenie po aktivácii balíka ešte neprebehlo.** Priamy odkaz na administráciu je `tiki-admin.php?page=tp_edizontn_ajaxchat`.
 
 **Dôležité:** Nekopírujte `src/` do koreňa Tiki ani do `_CHAT/`. Celý balík musí zostať v `vendor_custom/tiki-pkg-ajax-chat/`.
 
@@ -69,7 +75,7 @@ A TikiWiki Extension Package that integrates **AJAX Chat** directly into TikiWik
 - Uses TikiDb; no separate database is required.
 
 ### Requirements
-- TikiWiki **30.1** (integration target).
+- TikiWiki **30.2** (integration target under verification).
 - PHP **8.1+**.
 - Tiki database with InnoDB and utf8mb4.
 - PHP-capable web server and `.htaccess` support (Apache).
@@ -79,9 +85,13 @@ The integration is under development. Test it on a staging instance and back up 
 ### Quick installation
 1. Copy the entire repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. In Tiki, open **Admin → Packages** and enable `edizontn/ajaxchat`.
-3. Open **AJAX Chat settings → Maintenance**.
+3. In the UAB administration sidebar, open **Manage → Website Functions → AJAX Chat**.
 4. Click **Install / reinstall / repair AJAX Chat**.
 5. Use **Open Chat** or embed the chat in a wiki page.
+
+**Administration menu placement:** The package supplies its own `templates/admin/include_anchors.tpl` through the supported Extension Package Smarty template search path. The **AJAX Chat** link is placed directly in the fixed **Manage → Website Functions** section and is shown to administrators (`tiki_p_admin`). Disabling the package removes its template from the active search path; enabling it again makes the template available. No Tiki core or theme files are modified. A site theme that provides its own copy of this template takes precedence over the package template and can therefore override this addition.
+
+The override is based on `templates/admin/include_anchors.tpl` from the supplied TikiWiki 30.2 source tree. **Live runtime verification after enabling the package has not yet been performed.** The direct administration URL is `tiki-admin.php?page=tp_edizontn_ajaxchat`.
 
 **Important:** Do not copy `src/` into the Tiki root or move it to `_CHAT/`. Keep the complete package in `vendor_custom/tiki-pkg-ajax-chat/`.
 
