@@ -14,7 +14,7 @@ TikiWiki Extension Package, ktorý integruje **AJAX Chat** priamo do TikiWiki. V
 - TikiDb – samostatná databáza nie je potrebná.
 
 ### Požiadavky
-- TikiWiki **30.2** (overovaná cieľová verzia integrácie).
+- TikiWiki **30.2** (cieľová verzia integrácie; runtime test ešte neprebehol).
 - PHP **8.1+**.
 - Databáza Tiki s InnoDB a utf8mb4.
 - Webserver s podporou PHP a pravidiel `.htaccess` (pri Apache).
