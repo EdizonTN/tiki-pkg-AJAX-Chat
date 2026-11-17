@@ -389,6 +389,7 @@ class AjaxChatPackageInstaller
         }
         $settingsStore->remove();
         $this->removeLegacyApplicationMenuLink();
+        $this->removeAdminNavigation();
         $entry = $this->root . '/chat/index.php';
         if (is_file($entry) && strpos((string) file_get_contents($entry), 'EdizonTN AJAX Chat managed entry point') !== false) {
             unlink($entry);
