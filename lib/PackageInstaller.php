@@ -269,6 +269,100 @@ class AjaxChatPackageInstaller
     }
 
     /**
+     * Create and load the package-owned admin navigation bootstrap.
+     *
+     * Tiki loads _custom/shared/custom.php during tiki-setup.php, before the
+     * administration navigation is rendered. The generated helper then adds
+     * the AJAX Chat page to the native admin icon registry for enabled-package
+     * admin requests. Existing custom.php content is preserved.
+     */
+    public function ensureAdminNavigation()
+    {
+        $shared = $this->root . '/_custom/shared';
+        if (is_link($shared)) {
+            throw new RuntimeException('_custom/shared is a symbolic link; AJAX Chat navigation was not installed.');
+        }
+        if (!is_dir($shared) && !mkdir($shared, 0755, true) && !is_dir($shared)) {
+            throw new RuntimeException('Cannot create _custom/shared for AJAX Chat administration navigation.');
+        }
+        if (!is_writable($shared)) {
+            throw new RuntimeException('_custom/shared is not writable; AJAX Chat navigation was not installed.');
+        }
+
+        $helper = $shared . '/ajaxchat-admin-navigation.php';
+        $helperMarker = 'EdizonTN AJAX Chat admin navigation helper';
+        if (is_link($helper) || (file_exists($helper) && !is_file($helper))) {
+            throw new RuntimeException('_custom/shared/ajaxchat-admin-navigation.php is not a regular file; it was not overwritten.');
+        }
+        $helperSource = "<?php\n// " . $helperMarker . ".\n"
+            . "if (!isset(\$_SERVER['SCRIPT_NAME']) || basename(\$_SERVER['SCRIPT_NAME']) !== 'tiki-admin.php') { return; }\n"
+            . "global \$prefs, \$admin_icons;\n"
+            . "if (!class_exists('Tiki\\\\Package\\\\ExtensionManager') || !Tiki\\\\Package\\\\ExtensionManager::isExtensionEnabled('edizontn/ajaxchat')) { return; }\n"
+            . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { require_once dirname(__DIR__, 2) . '/admin/define_admin_icons.php'; }\n"
+            . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { return; }\n"
+            . "\$page = 'tp_edizontn_ajaxchat';\n"
+            . "\$entry = array('title' => tr('AJAX Chat'), 'description' => tr('Configure AJAX Chat'), 'help' => 'wiki', 'icon' => 'comments');\n"
+            . "if (isset(\$prefs['theme_unified_admin_backend']) && \$prefs['theme_unified_admin_backend'] === 'y' && isset(\$admin_icons['backend']['children']) && is_array(\$admin_icons['backend']['children'])) {\n"
+            . "    \$admin_icons['backend']['children'][\$page] = \$entry;\n"
+            . "} else {\n"
+            . "    \$admin_icons[\$page] = \$entry;\n"
+            . "}\n";
+        if (is_file($helper)) {
+            $existingHelper = (string) file_get_contents($helper);
+            if (strpos($existingHelper, $helperMarker) === false) {
+                throw new RuntimeException('An unrelated _custom/shared/ajaxchat-admin-navigation.php already exists; it was not overwritten.');
+            }
+            if ($existingHelper !== $helperSource && file_put_contents($helper, $helperSource, LOCK_EX) === false) {
+                throw new RuntimeException('Could not update the AJAX Chat administration navigation helper.');
+            }
+        } elseif (file_put_contents($helper, $helperSource, LOCK_EX) === false) {
+            throw new RuntimeException('Could not create the AJAX Chat administration navigation helper.');
+        }
+
+        $custom = $shared . '/custom.php';
+        $begin = '// BEGIN EdizonTN AJAX Chat admin navigation';
+        $end = '// END EdizonTN AJAX Chat admin navigation';
+        $block = "\n" . $begin . "\n"
+            . "if (isset(\$_SERVER['SCRIPT_NAME']) && basename(\$_SERVER['SCRIPT_NAME']) === 'tiki-admin.php' && is_file(__DIR__ . '/ajaxchat-admin-navigation.php')) {\n"
+            . "    require_once __DIR__ . '/ajaxchat-admin-navigation.php';\n"
+            . "}\n" . $end . "\n";
+        if (is_link($custom) || (file_exists($custom) && !is_file($custom))) {
+            throw new RuntimeException('_custom/shared/custom.php is not a regular file; it was not modified.');
+        }
+        if (is_file($custom)) {
+            $contents = (string) file_get_contents($custom);
+            if ($contents === '') {
+                $contents = "<?php\n";
+            } elseif (strpos($contents, '<?php') === false) {
+                throw new RuntimeException('The existing _custom/shared/custom.php is not a PHP file; it was not modified.');
+            }
+            if (strpos($contents, $begin) !== false) {
+                if (strpos($contents, $end) === false) {
+                    throw new RuntimeException('The existing custom.php contains an incomplete AJAX Chat marker block.');
+                }
+                require_once $helper;
+                $this->removeLegacyApplicationMenuLink();
+                return;
+            }
+            $closingTag = strrpos($contents, '?>');
+            if ($closingTag !== false) {
+                $contents = substr($contents, 0, $closingTag) . $block . substr($contents, $closingTag);
+            } else {
+                $contents .= $block;
+            }
+        } else {
+            $contents = "<?php\n// Generated by the EdizonTN AJAX Chat Tiki package.\n" . $block;
+        }
+        if (file_put_contents($custom, $contents, LOCK_EX) === false) {
+            throw new RuntimeException('Could not register AJAX Chat navigation in _custom/shared/custom.php.');
+        }
+
+        // Load it now as well; future admin requests load it through custom.php.
+        require_once $helper;
+        $this->removeLegacyApplicationMenuLink();
+    }
+
+    /**
      * Remove the package-owned bootstrap while preserving all unrelated custom.php code.
      */
     private function removeAdminNavigation()
@@ -358,7 +452,7 @@ class AjaxChatPackageInstaller
         $this->writeCleanUrl();
         $this->writeAuthEndpoint();
         $this->writeAssetRouting();
-        $this->removeAdminNavigation(); // Clean up bootstrap files created by earlier package releases.
+        $this->ensureAdminNavigation();
     }
 
     public function uninstall()
