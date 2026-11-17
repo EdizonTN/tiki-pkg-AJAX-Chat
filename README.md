@@ -1,6 +1,6 @@
 # AJAX Chat for TikiWiki
 
-**Verzia balíka / Package version: 0.1.15**
+**Verzia balíka / Package version: 0.1.16**
 
 > **Autori / Credits:** Tento repozitár bol vytvorený a dokumentovaný s pomocou ChatGPT od OpenAI. / This repository was created and documented with the assistance of ChatGPT by OpenAI.
 
@@ -26,7 +26,7 @@ Integrácia je vo vývoji. Pred produkčným nasadením ju otestujte na stagingu
 ### Rýchla inštalácia
 1. Skopírujte celý repozitár do `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. V Tiki otvorte **Admin → Packages** a aktivujte `edizontn/ajaxchat`.
-3. Otvorte administračnú stránku AJAX Chat; balík pri prvom načítaní stránky automaticky vytvorí svoj navigačný bootstrap.
+3. Po aktivácii otvorte v ľavom stĺpci menu **AJAX Chat → AJAX Chat** (odkaz sa vytvorí profilom pri povolení package).
 4. Kliknite na **Install / reinstall / repair AJAX Chat**.
 5. Otvorte **Open Chat** alebo vložte chat do wiki stránky.
 
@@ -87,7 +87,7 @@ The integration is under development. Test it on a staging instance and back up 
 ### Quick installation
 1. Copy the entire repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. In Tiki, open **Admin → Packages** and enable `edizontn/ajaxchat`.
-3. Open the AJAX Chat administration page; on first load the package creates its navigation bootstrap automatically.
+3. After enabling the package, click **AJAX Chat → AJAX Chat** in the left-column menu (the link is created by the profile during package enablement).
 4. Click **Install / reinstall / repair AJAX Chat**.
 5. Use **Open Chat** or embed the chat in a wiki page.
 
