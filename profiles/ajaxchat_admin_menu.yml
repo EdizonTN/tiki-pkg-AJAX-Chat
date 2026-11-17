@@ -1,0 +1,16 @@
+objects:
+  -
+    type: menu
+    ref: edizontn_ajaxchat_admin_menu
+    data:
+      name: AJAX Chat administration
+      description: Direct link to the AJAX Chat package administration page
+      collapse: none
+      position: left
+      order: 1
+      groups: [ Admins ]
+      items:
+        -
+          name: AJAX Chat
+          url: tiki-admin.php?page=tp_edizontn_ajaxchat
+          groups: [ Admins ]
