@@ -85,7 +85,7 @@ The integration is under development. Test it on a staging instance and back up 
 ### Quick installation
 1. Copy the entire repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. In Tiki, open **Admin → Packages** and enable `edizontn/ajaxchat`.
-3. After enabling the package, click **AJAX Chat → AJAX Chat** in the left-column menu (the link is created by the profile during package enablement).
+3. In the UAB administration sidebar, open **Manage → Website Functions → AJAX Chat**.
 4. Click **Install / reinstall / repair AJAX Chat**.
 5. Use **Open Chat** or embed the chat in a wiki page.
 
