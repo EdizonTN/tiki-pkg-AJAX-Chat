@@ -1,6 +1,6 @@
 # AJAX Chat for TikiWiki
 
-**Verzia balíka / Package version: 0.1.13**
+**Verzia balíka / Package version: 0.1.15**
 
 > **Autori / Credits:** Tento repozitár bol vytvorený a dokumentovaný s pomocou ChatGPT od OpenAI. / This repository was created and documented with the assistance of ChatGPT by OpenAI.
 
@@ -91,7 +91,7 @@ The integration is under development. Test it on a staging instance and back up 
 
 **Protection of existing Tiki customizations:** The package never replaces the entire existing `_custom/shared/custom.php`. If that file already exists, it adds only a separately marked `BEGIN/END EdizonTN AJAX Chat admin navigation` block; all other content is preserved. The `ajaxchat-admin-navigation.php` helper is a separate file, and an existing same-named file without the package marker is never overwritten — installation stops with an error instead. Uninstall removes only the marked block and the package-owned helper. Tiki template files (`.tpl`) and theme files are not modified.
 
-**Administration navigation — important limitation:** The current bootstrap creates `_custom/shared/custom.php` and its helper `_custom/shared/ajaxchat-admin-navigation.php`, preserving unrelated content in an existing `custom.php`. It registers the page through Tiki's native `$admin_icons` Control Panels registry. This registry is not the UAB **Manage → Website Functions** sidebar; in UAB it places the item under **Configure → Advanced**. Therefore this implementation does not yet meet the requested **Manage → Website Functions** placement. Creating `custom.php` or registering an `$admin_icons` entry does not prove that an item is present in the UAB sidebar. The direct URL is `tiki-admin.php?page=tp_edizontn_ajaxchat`. The bootstrap is created on the first settings-page visit or by Install/repair; uninstall removes only package-marked blocks and files.
+**Administration navigation — important limitation:** The current bootstrap creates `_custom/shared/custom.php` and its helper `_custom/shared/ajaxchat-admin-navigation.php`, preserving unrelated content in an existing `custom.php`. It registers the page in both the UAB backend child registry (when available) and the top-level `$admin_icons` Control Panels registry as a fallback. The item is intended to be reachable from the administration Control Panels area (typically **Configure → Advanced**); the exact placement and visibility in TikiWiki 30.2 still require runtime confirmation. Creating `custom.php` or registering an `$admin_icons` entry does not prove that an item is present in the UAB sidebar. The direct URL is `tiki-admin.php?page=tp_edizontn_ajaxchat`. The bootstrap is created on the first settings-page visit or by Install/repair; uninstall removes only package-marked blocks and files.
 
 **Important:** Do not copy `src/` into the Tiki root or move it to `_CHAT/`. Keep the complete package in `vendor_custom/tiki-pkg-ajax-chat/`.
 
