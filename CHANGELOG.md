@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.15] - 2026-11-17
+
+- Register the AJAX Chat administration page in both the UAB backend child registry (when available) and the top-level Control Panels registry as a fallback, so it has more than one supported navigation registration path.
+- TikiWiki 30.2 runtime visibility and exact menu placement remain unverified.
+
+
 ## [0.1.14] - 2026-11-17
 
 - Document and make explicit the customization-safety contract: preserve all unrelated content in an existing `_custom/shared/custom.php`; append/remove only the package-marked navigation block.
