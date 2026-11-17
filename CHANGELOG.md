@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.16] - 2026-11-17
+
+- Add an admin-only Tiki menu profile and register it in `tiki-package.json`; Tiki applies package profiles when the extension package is enabled, exposing a direct AJAX Chat administration link in the left-column menu.
+- Document the direct administration URL and the runtime-verification limitation.
+
+
 ## [0.1.15] - 2026-11-17
 
 - Register the AJAX Chat administration page in both the UAB backend child registry (when available) and the top-level Control Panels registry as a fallback, so it has more than one supported navigation registration path.
