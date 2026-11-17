@@ -309,9 +309,9 @@ class AjaxChatPackageInstaller
             . "\$entry = array('title' => tr('AJAX Chat'), 'description' => tr('Configure AJAX Chat'), 'help' => 'wiki', 'icon' => 'comments');\n"
             . "if (isset(\$prefs['theme_unified_admin_backend']) && \$prefs['theme_unified_admin_backend'] === 'y' && isset(\$admin_icons['backend']['children']) && is_array(\$admin_icons['backend']['children'])) {\n"
             . "    \$admin_icons['backend']['children'][\$page] = \$entry;\n"
-            . "} else {\n"
-            . "    \$admin_icons[\$page] = \$entry;\n"
-            . "}\n";
+            . "}\n"
+            . "// Keep a top-level Control Panels entry as a fallback for classic and alternate admin navigation layouts.\n"
+            . "\$admin_icons[\$page] = \$entry;\n";
         if (is_file($helper)) {
             $existingHelper = (string) file_get_contents($helper);
             if (strpos($existingHelper, $helperMarker) === false) {
