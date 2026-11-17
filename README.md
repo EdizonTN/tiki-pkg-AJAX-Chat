@@ -1,5 +1,7 @@
 # AJAX Chat for TikiWiki
 
+**Verzia balíka / Package version: 0.1.12**
+
 > **Autori / Credits:** Tento repozitár bol vytvorený a dokumentovaný s pomocou ChatGPT od OpenAI. / This repository was created and documented with the assistance of ChatGPT by OpenAI.
 
 ## 🇸🇰 Slovenčina
