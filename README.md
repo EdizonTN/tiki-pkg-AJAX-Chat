@@ -14,7 +14,7 @@ TikiWiki Extension Package, ktorý integruje **AJAX Chat** priamo do TikiWiki. V
 - TikiDb – samostatná databáza nie je potrebná.
 
 ### Požiadavky
-- TikiWiki **30.1** (cieľová verzia integrácie).
+- TikiWiki **30.2** (overovaná cieľová verzia integrácie).
 - PHP **8.1+**.
 - Databáza Tiki s InnoDB a utf8mb4.
 - Webserver s podporou PHP a pravidiel `.htaccess` (pri Apache).
@@ -24,9 +24,11 @@ Integrácia je vo vývoji. Pred produkčným nasadením ju otestujte na stagingu
 ### Rýchla inštalácia
 1. Skopírujte celý repozitár do `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. V Tiki otvorte **Admin → Packages** a aktivujte `edizontn/ajaxchat`.
-3. Otvorte **AJAX Chat settings → Maintenance**.
+3. Otvorte administračnú stránku `tiki-admin.php?page=tp_edizontn_ajaxchat` (priamy odkaz).
 4. Kliknite na **Install / reinstall / repair AJAX Chat**.
 5. Otvorte **Open Chat** alebo vložte chat do wiki stránky.
+
+**Navigácia v administrácii:** Stránka nastavení je dostupná cez `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatické zaradenie do ľavého menu Unified Admin Backend v sekcii **Manage → Website Functions** zatiaľ nie je implementované; tento bod sa rieši v [PR #10](https://github.com/EdizonTN/tiki-pkg-AJAX-Chat/pull/10). Nepovažujte ho preto za hotovú funkciu.
 
 **Dôležité:** Nekopírujte `src/` do koreňa Tiki ani do `_CHAT/`. Celý balík musí zostať v `vendor_custom/tiki-pkg-ajax-chat/`.
 
@@ -69,7 +71,7 @@ A TikiWiki Extension Package that integrates **AJAX Chat** directly into TikiWik
 - Uses TikiDb; no separate database is required.
 
 ### Requirements
-- TikiWiki **30.1** (integration target).
+- TikiWiki **30.2** (integration target under verification).
 - PHP **8.1+**.
 - Tiki database with InnoDB and utf8mb4.
 - PHP-capable web server and `.htaccess` support (Apache).
@@ -79,9 +81,11 @@ The integration is under development. Test it on a staging instance and back up 
 ### Quick installation
 1. Copy the entire repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. In Tiki, open **Admin → Packages** and enable `edizontn/ajaxchat`.
-3. Open **AJAX Chat settings → Maintenance**.
+3. Open the administration page `tiki-admin.php?page=tp_edizontn_ajaxchat` (direct URL).
 4. Click **Install / reinstall / repair AJAX Chat**.
 5. Use **Open Chat** or embed the chat in a wiki page.
+
+**Administration navigation:** The settings page is available at `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatic registration in the Unified Admin Backend sidebar under **Manage → Website Functions** is not implemented yet; this is still being investigated in [PR #10](https://github.com/EdizonTN/tiki-pkg-AJAX-Chat/pull/10). Do not treat that menu entry as an available feature yet.
 
 **Important:** Do not copy `src/` into the Tiki root or move it to `_CHAT/`. Keep the complete package in `vendor_custom/tiki-pkg-ajax-chat/`.
 
