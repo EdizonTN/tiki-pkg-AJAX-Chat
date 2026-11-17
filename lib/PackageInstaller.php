@@ -297,7 +297,7 @@ class AjaxChatPackageInstaller
         $helperSource = "<?php\n// " . $helperMarker . ".\n"
             . "if (!isset(\$_SERVER['SCRIPT_NAME']) || basename(\$_SERVER['SCRIPT_NAME']) !== 'tiki-admin.php') { return; }\n"
             . "global \$prefs, \$admin_icons;\n"
-            . "if (!class_exists('Tiki\\\\Package\\\\ExtensionManager') || !Tiki\\\\Package\\\\ExtensionManager::isExtensionEnabled('edizontn/ajaxchat')) { return; }\n"
+            . "if (!class_exists('Tiki\\Package\\ExtensionManager') || !Tiki\\Package\\ExtensionManager::isExtensionEnabled('edizontn/ajaxchat')) { return; }\n"
             . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { require_once dirname(__DIR__, 2) . '/admin/define_admin_icons.php'; }\n"
             . "if (!isset(\$admin_icons) || !is_array(\$admin_icons)) { return; }\n"
             . "\$page = 'tp_edizontn_ajaxchat';\n"
