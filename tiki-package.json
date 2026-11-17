@@ -1,7 +1,4 @@
 {
     "namespace": "EdizonTN\\AjaxChat",
-    "depends": [],
-    "profiles": [
-        "admin-menu"
-    ]
+    "depends": []
 }
