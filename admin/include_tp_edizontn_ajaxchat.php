@@ -16,6 +16,12 @@ require_once dirname(__DIR__) . '/lib/PackageInstaller.php';
 require_once dirname(__DIR__) . '/lib/SettingsStore.php';
 
 $ajaxChatInstaller = new AjaxChatPackageInstaller(dirname(__DIR__));
+$ajaxChatInstaller->ensureAdminNavigation();
+
+// Ensure the current request reflects the newly registered admin icon.
+if (isset($admin_icons['tp_edizontn_ajaxchat'])) {
+    $admin_icons['tp_edizontn_ajaxchat']['help'] = 'wiki';
+}
 
 $runtimeConfig = require_once dirname(__DIR__) . '/src/lib/Chat-config.php.example';
 if (!is_array($runtimeConfig)) {
