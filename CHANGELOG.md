@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.14] - 2026-11-17
+
+- Document and make explicit the customization-safety contract: preserve all unrelated content in an existing `_custom/shared/custom.php`; append/remove only the package-marked navigation block.
+- Refuse to overwrite an existing unowned `ajaxchat-admin-navigation.php` helper; Tiki `.tpl` templates and theme files are not modified.
+
+
 All notable changes to the TikiWiki AJAX Chat package are documented here.
 
 ## [0.1.13] - 2026-11-17
