@@ -1,5 +1,5 @@
 {
-    "namespace": "EdizonTN\\\\AjaxChat",
+    "namespace": "EdizonTN\\AjaxChat",
     "depends": [],
     "profiles": [
         "ajaxchat_admin_menu.yml"
