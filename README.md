@@ -24,8 +24,8 @@ Integrácia je vo vývoji. Pred produkčným nasadením ju otestujte na stagingu
 ### Rýchla inštalácia
 1. Skopírujte celý repozitár do `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. V Tiki otvorte **Admin → Packages** a aktivujte `edizontn/ajaxchat`.
-3. Otvorte **AJAX Chat settings → Maintenance**.
-4. Kliknite na **Install / reinstall / repair AJAX Chat**.
+3. Po aktivácii sa automaticky zobrazí položka **AJAX Chat** v administračnom menu v sekcii **Website functions**.
+4. Otvorte **AJAX Chat** a na karte **Maintenance** kliknite na **Install / reinstall / repair AJAX Chat**.
 5. Otvorte **Open Chat** alebo vložte chat do wiki stránky.
 
 **Dôležité:** Nekopírujte `src/` do koreňa Tiki ani do `_CHAT/`. Celý balík musí zostať v `vendor_custom/tiki-pkg-ajax-chat/`.
@@ -79,8 +79,8 @@ The integration is under development. Test it on a staging instance and back up 
 ### Quick installation
 1. Copy the entire repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. In Tiki, open **Admin → Packages** and enable `edizontn/ajaxchat`.
-3. Open **AJAX Chat settings → Maintenance**.
-4. Click **Install / reinstall / repair AJAX Chat**.
+3. The **AJAX Chat** entry is added automatically to the administration menu under **Website functions**.
+4. Open **AJAX Chat** and, on the **Maintenance** tab, click **Install / reinstall / repair AJAX Chat**.
 5. Use **Open Chat** or embed the chat in a wiki page.
 
 **Important:** Do not copy `src/` into the Tiki root or move it to `_CHAT/`. Keep the complete package in `vendor_custom/tiki-pkg-ajax-chat/`.
