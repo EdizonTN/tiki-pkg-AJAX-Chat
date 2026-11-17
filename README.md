@@ -30,7 +30,7 @@ Integrácia je vo vývoji. Pred produkčným nasadením ju otestujte na stagingu
 4. Kliknite na **Install / reinstall / repair AJAX Chat**.
 5. Otvorte **Open Chat** alebo vložte chat do wiki stránky.
 
-**Navigácia v administrácii:** Stránka nastavení je dostupná cez `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatické zaradenie do ľavého menu Unified Admin Backend v sekcii **Manage → Website Functions** zatiaľ nie je implementované; tento bod sa rieši v [PR #10](https://github.com/EdizonTN/tiki-pkg-AJAX-Chat/pull/10). Nepovažujte ho preto za hotovú funkciu.
+**Navigácia v administrácii:** Stránka nastavení je dostupná cez `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatické zaradenie do ľavého menu Unified Admin Backend v sekcii **Manage → Website Functions** zatiaľ nie je implementované. Overuje sa, či sa dá bezpečne dosiahnuť podporovaným override UAB šablóny cez extension package; balík zatiaľ túto položku neregistruje.
 
 **Dôležité:** Nekopírujte `src/` do koreňa Tiki ani do `_CHAT/`. Celý balík musí zostať v `vendor_custom/tiki-pkg-ajax-chat/`.
 
@@ -87,7 +87,7 @@ The integration is under development. Test it on a staging instance and back up 
 4. Click **Install / reinstall / repair AJAX Chat**.
 5. Use **Open Chat** or embed the chat in a wiki page.
 
-**Administration navigation:** The settings page is available at `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatic registration in the Unified Admin Backend sidebar under **Manage → Website Functions** is not implemented yet; this is still being investigated in [PR #10](https://github.com/EdizonTN/tiki-pkg-AJAX-Chat/pull/10). Do not treat that menu entry as an available feature yet.
+**Administration navigation:** The settings page is available at `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatic registration in the Unified Admin Backend sidebar under **Manage → Website Functions** is not implemented yet. A supported extension-package template override is being investigated as a possible route; the package does not currently register this menu item.
 
 **Important:** Do not copy `src/` into the Tiki root or move it to `_CHAT/`. Keep the complete package in `vendor_custom/tiki-pkg-ajax-chat/`.
 
