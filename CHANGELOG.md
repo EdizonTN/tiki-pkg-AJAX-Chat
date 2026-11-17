@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.17] - 2026-11-17
+
+- Add an Extension Package Smarty template override for `templates/admin/include_anchors.tpl`; place the admin-only AJAX Chat link directly in **Manage → Website Functions** in the Tiki 30.2 UAB sidebar.
+- Remove the incorrect ordinary left-column menu profile and stop creating `_custom/shared/custom.php` navigation bootstrap files as part of install or settings-page access.
+- Update README with the actual template-override behavior, theme precedence, and unverified runtime status.
+
+
 ## [0.1.16] - 2026-11-17
 
 - Add an admin-only Tiki menu profile and register it in `tiki-package.json`; Tiki applies package profiles when the extension package is enabled, exposing a direct AJAX Chat administration link in the left-column menu.
