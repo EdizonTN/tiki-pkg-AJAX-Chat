@@ -1,6 +1,6 @@
 # AJAX Chat for TikiWiki
 
-**Verzia balíka / Package version: 0.1.12**
+**Verzia balíka / Package version: 0.1.13**
 
 > **Autori / Credits:** Tento repozitár bol vytvorený a dokumentovaný s pomocou ChatGPT od OpenAI. / This repository was created and documented with the assistance of ChatGPT by OpenAI.
 
@@ -26,11 +26,11 @@ Integrácia je vo vývoji. Pred produkčným nasadením ju otestujte na stagingu
 ### Rýchla inštalácia
 1. Skopírujte celý repozitár do `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. V Tiki otvorte **Admin → Packages** a aktivujte `edizontn/ajaxchat`.
-3. Otvorte administračnú stránku `tiki-admin.php?page=tp_edizontn_ajaxchat` (priamy odkaz).
+3. Otvorte administračnú stránku AJAX Chat; balík pri prvom načítaní stránky automaticky vytvorí svoj navigačný bootstrap.
 4. Kliknite na **Install / reinstall / repair AJAX Chat**.
 5. Otvorte **Open Chat** alebo vložte chat do wiki stránky.
 
-**Navigácia v administrácii:** Stránka nastavení je dostupná cez `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatické zaradenie do ľavého menu Unified Admin Backend v sekcii **Manage → Website Functions** zatiaľ nie je implementované. Overuje sa, či sa dá bezpečne dosiahnuť podporovaným override UAB šablóny cez extension package; balík zatiaľ túto položku neregistruje.
+**Navigácia v administrácii:** Balík automaticky vytvorí `_custom/shared/custom.php` a pomocný súbor `_custom/shared/ajaxchat-admin-navigation.php`, ak ešte neexistujú, a zachová nesúvisiaci obsah existujúceho `custom.php`. V UAB registruje položku AJAX Chat cez natívny `$admin_icons` strom v skupine **Configure → Advanced** (rovnako ako pôvodné riešenie PR #7); v klasickom administračnom rozhraní ju registruje medzi administračnými položkami. Bootstrap sa vytvorí pri prvom otvorení stránky nastavení alebo pri spustení Install/repair. Pri odinštalovaní sa odstránia iba balíkom označené časti a súbory. Priamy odkaz zostáva `tiki-admin.php?page=tp_edizontn_ajaxchat`. Umiestnenie v UAB **Manage → Website Functions** týmto obnovením zatiaľ nie je potvrdené.
 
 **Dôležité:** Nekopírujte `src/` do koreňa Tiki ani do `_CHAT/`. Celý balík musí zostať v `vendor_custom/tiki-pkg-ajax-chat/`.
 
@@ -83,11 +83,11 @@ The integration is under development. Test it on a staging instance and back up 
 ### Quick installation
 1. Copy the entire repository to `TIKI_ROOT/vendor_custom/tiki-pkg-ajax-chat/`.
 2. In Tiki, open **Admin → Packages** and enable `edizontn/ajaxchat`.
-3. Open the administration page `tiki-admin.php?page=tp_edizontn_ajaxchat` (direct URL).
+3. Open the AJAX Chat administration page; on first load the package creates its navigation bootstrap automatically.
 4. Click **Install / reinstall / repair AJAX Chat**.
 5. Use **Open Chat** or embed the chat in a wiki page.
 
-**Administration navigation:** The settings page is available at `tiki-admin.php?page=tp_edizontn_ajaxchat`. Automatic registration in the Unified Admin Backend sidebar under **Manage → Website Functions** is not implemented yet. A supported extension-package template override is being investigated as a possible route; the package does not currently register this menu item.
+**Administration navigation:** The package automatically creates `_custom/shared/custom.php` and its helper `_custom/shared/ajaxchat-admin-navigation.php` when needed, preserving unrelated content in an existing `custom.php`. In UAB it registers AJAX Chat through Tiki's native `$admin_icons` tree under **Configure → Advanced**, matching the original PR #7 behavior; in the classic admin layout it registers a standard admin entry. The bootstrap is created when the settings page is first opened or when Install/repair runs. Uninstall removes only package-marked blocks and files. The direct URL remains `tiki-admin.php?page=tp_edizontn_ajaxchat`. This restoration does not yet establish placement under **Manage → Website Functions**.
 
 **Important:** Do not copy `src/` into the Tiki root or move it to `_CHAT/`. Keep the complete package in `vendor_custom/tiki-pkg-ajax-chat/`.
 
