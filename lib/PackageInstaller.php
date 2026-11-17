@@ -271,6 +271,11 @@ class AjaxChatPackageInstaller
     /**
      * Create and load the package-owned admin navigation bootstrap.
      *
+     * Customization safety: never replace an existing custom.php. The only
+     * permitted edit to that file is appending/removing this package's marked
+     * include block; unrelated user code and Tiki templates remain untouched.
+     * The separate helper is written only when absent or already package-owned.
+     *
      * Tiki loads _custom/shared/custom.php during tiki-setup.php, before the
      * administration navigation is rendered. The generated helper then adds
      * the AJAX Chat page to the native admin icon registry for enabled-package
